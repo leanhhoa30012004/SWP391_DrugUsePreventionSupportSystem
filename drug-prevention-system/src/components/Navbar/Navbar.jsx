@@ -46,7 +46,7 @@ const Navbar = () => {
                       <Link
                           key={item.id}
                           to={item.link}
-                          className="text-gray-700 font-medium hover:text-red-500 px-1 py-2 text-center transition-colors duration-200 whitespace-nowrap"
+                          className="text-gray-700 font-medium hover:text-red-600 px-1 py-2 text-center transition-colors duration-200 whitespace-nowrap"
                       >
                           {item.title}
                       </Link>
@@ -62,8 +62,8 @@ const Navbar = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-32 sm:w-40 lg:w-48 h-9 border-2 border-gray-200 rounded-full 
-                                 px-4 pr-6 text-sm focus:outline-none focus:border-red-400
-                                 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                 px-4 pr-6 text-sm focus:outline-none focus:border-red-500
+                                 transition-all duration-200 bg-white hover:bg-gray-50"
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
                       <IoMdSearch className="w-4 h-4" />
@@ -72,14 +72,6 @@ const Navbar = () => {
 
                   {/* Auth Buttons */}
                   <div className="flex items-center gap-2">
-                    {/* Sign in Button */}
-                    <Link 
-                      to="/signin"
-                      className="px-3 py-1.5 border border-red-500 text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-colors duration-200 text-sm whitespace-nowrap"
-                    >
-                      Sign in
-                    </Link>
-
                     {/* Login Button */}
                     <Link 
                       to="/login"
