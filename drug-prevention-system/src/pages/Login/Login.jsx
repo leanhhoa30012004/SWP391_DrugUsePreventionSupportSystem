@@ -12,7 +12,7 @@ const Login = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+    console.log("Username: ", username, ", Password: ", password)
     if (!username.trim()) {
       newErrors.username = 'Username is required';
     }
@@ -40,8 +40,9 @@ const Login = () => {
         username,
         password
       });
-
-      if (response.data.success) {
+      console.log(response)
+      if (response.status === 200) {
+        console.log("----Pass 1 ------")
         // Store token in localStorage
         localStorage.setItem('token', response.data.token);
         // Store user info
@@ -56,7 +57,6 @@ const Login = () => {
           timer: 2000,
           showConfirmButton: false
         });
-
         // Navigate to homepage after successful login
         navigate('/');
       }
@@ -103,7 +103,7 @@ const Login = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6" >
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
@@ -190,6 +190,7 @@ const Login = () => {
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                   }`}
+                  onClick={(e) => handleLogin(e)}
               >
                 {loading ? (
                   <span className="flex items-center">
