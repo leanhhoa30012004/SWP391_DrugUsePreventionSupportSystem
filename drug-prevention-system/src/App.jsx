@@ -1,13 +1,16 @@
 import React from 'react'
 import './App.css'
 import Homepage from './pages/Homepage/Homepage'
-function App() {
+import SignUp from './components/SignUp'
 
+import { Routes, Route } from 'react-router-dom'
+
+function App() {
   return (
-    <>
-    <h1>j</h1>
-      <Homepage/>
-    </>
+    <Routes>
+      <Route path="/" element={<Homepage />} />
+      <Route path="/signup" element={<SignUp />} />
+    </Routes>
   )
 }
 
