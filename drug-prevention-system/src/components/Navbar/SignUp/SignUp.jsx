@@ -1,6 +1,6 @@
 import React from 'react';
-import logo from '../assets/logo-WeHope.png';
-import signupImg from '../assets/logo_signup.svg';
+import logo from '../../assets/logo-WeHope.png';
+import signupImg from '../../assets/logo_signup.svg';
 
 const SignUp = () => {
     return (
