@@ -23,7 +23,7 @@ export const NavbarMenu = [
   {
     id: 5,
     title: "Online Consultation",
-    link: "/online-consultation",
+    link: "/consultant",
   },
   {
     id: 6,
