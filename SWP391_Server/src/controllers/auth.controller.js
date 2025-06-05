@@ -12,7 +12,7 @@ const generateToken = (userId) => {
 };
 
 // Regular login
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -63,7 +63,7 @@ exports.login = async (req, res) => {
 };
 
 // Register new user
-exports.register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { username, email, password, fullName, phone, address } = req.body;
 
@@ -110,7 +110,7 @@ exports.register = async (req, res) => {
 };
 
 // Google login
-exports.googleLogin = async (req, res) => {
+const googleLogin = async (req, res) => {
   try {
     const { token } = req.body;
 

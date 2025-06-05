@@ -1,49 +1,91 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import Swal from 'sweetalert2'
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!validateForm()) {
+      return;
+    }
 
+    setLoading(true);
     try {
-      // TODO: Replace with actual login API call
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success message
-      await Swal.fire({
-        title: "Login Successful!",
-        text: "Welcome back to Drug Prevention Support System",
-        icon: "success",
-        confirmButtonColor: "#ef4444",
-        timer: 2000,
-        showConfirmButton: false
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
+        username,
+        password
       });
 
-      // Navigate to homepage after successful login
-      navigate('/');
+      if (response.data.success) {
+        // Store token in localStorage
+        localStorage.setItem('token', response.data.token);
+        // Store user info
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Show success message
+        await Swal.fire({
+          title: "Login Successful!",
+          text: "Welcome back to Drug Prevention Support System",
+          icon: "success",
+          confirmButtonColor: "#ef4444",
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        // Navigate to homepage after successful login
+        navigate('/');
+      }
     } catch (error) {
+      console.error('Login error:', error);
+      let errorMessage = 'Invalid username or password. Please try again.';
+      
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = 'Invalid username or password';
+            break;
+          case 403:
+            errorMessage = 'Your account has been disabled. Please contact support.';
+            break;
+          case 429:
+            errorMessage = 'Too many login attempts. Please try again later.';
+            break;
+          default:
+            errorMessage = error.response.data?.message || errorMessage;
+        }
+      } else if (error.request) {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+      }
+
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
-        text: 'Invalid username or password. Please try again.',
+        text: errorMessage,
         confirmButtonColor: "#ef4444"
       });
     } finally {
@@ -61,7 +103,7 @@ const Login = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
@@ -72,10 +114,21 @@ const Login = () => {
                   name="username"
                   type="text"
                   required
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    if (errors.username) {
+                      setErrors(prev => ({ ...prev, username: '' }));
+                    }
+                  }}
+                  className={`appearance-none block w-full px-3 py-2 border ${
+                    errors.username ? 'border-red-500' : 'border-gray-300'
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500`}
+                  placeholder="Enter your username"
                 />
+                {errors.username && (
+                  <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                )}
               </div>
             </div>
 
@@ -90,10 +143,21 @@ const Login = () => {
                   type="password"
                   autoComplete="current-password"
                   required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) {
+                      setErrors(prev => ({ ...prev, password: '' }));
+                    }
+                  }}
+                  className={`appearance-none block w-full px-3 py-2 border ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500`}
+                  placeholder="Enter your password"
                 />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                )}
               </div>
             </div>
 
@@ -111,9 +175,9 @@ const Login = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-red-600 hover:text-red-500">
+                <Link to="/forgot-password" className="font-medium text-red-600 hover:text-red-500">
                   Forgot your password?
-                </a>
+                </Link>
               </div>
             </div>
 
