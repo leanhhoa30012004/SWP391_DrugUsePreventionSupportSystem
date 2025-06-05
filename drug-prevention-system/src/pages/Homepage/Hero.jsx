@@ -29,12 +29,10 @@ const ImageList = [
       title: "Professional Consultation - 24/7 Support",
       description: "Experienced counseling team ready to accompany and support you anytime, anywhere.",
       buttonText: "Book Consultation",
-      buttonLink: "/consultation"
-    },
-   ];
+      buttonLink: "/consultant"
+  },
+];
 
-
-   
 const PrevArrow = ({ onClick }) => (
   <button
     onClick={onClick}
@@ -58,18 +56,16 @@ const NextArrow = ({ onClick }) => (
 const Hero = () => {
   const settings = {
     dots: true,
-    arrows: true,
+    arrows: false,
     infinite: true,
     speed: 800,
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 5000,
+    autoplaySpeed: 2000,
     cssEase: "ease-in-out",
     pauseOnHover: true,
     pauseOnFocus: true,
-    nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />,
     dotsClass: "slick-dots custom-dots",
   };
 
@@ -86,8 +82,8 @@ const Hero = () => {
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30"></div>
+                {/* Overlay with red gradient - reduced opacity */}
+                <div className="absolute inset-0 bg-gradient-to-r from-red-900/50 via-red-800/40 to-red-700/30"></div>
                 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-center">
@@ -102,15 +98,9 @@ const Hero = () => {
                       <div className="flex flex-col sm:flex-row gap-4">
                         <Link
                           to={item.buttonLink}
-                          className="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+                          className="inline-flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
                         >
                           {item.buttonText}
-                        </Link>
-                        <Link
-                          to="/about"
-                          className="inline-flex items-center justify-center border-2 border-white text-white hover:bg-white hover:text-blue-700 font-semibold py-3 px-8 rounded-full transition-all duration-300"
-                        >
-                          Tìm Hiểu Thêm
                         </Link>
                       </div>
                     </div>
@@ -126,54 +116,54 @@ const Hero = () => {
       <div className="absolute bottom-0 left-0 right-0 transform translate-y-1/2 z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-            {/* Khóa Học */}
+            {/* Online Courses */}
             <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
                   <FaBookOpen className="text-blue-600 text-xl" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">Khóa Học Online</h3>
+                <h3 className="text-xl font-bold text-gray-800">Online Courses</h3>
               </div>
-              <p className="text-gray-600 mb-4">Học tập linh hoạt với nội dung được phân theo độ tuổi</p>
+              <p className="text-gray-600 mb-4">Flexible learning with age-appropriate content and skill levels</p>
               <Link 
                 to="/courses" 
-                className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+                className="text-red-600 font-semibold hover:text-red-700 transition-colors"
               >
-                Xem khóa học →
+                View Courses →
               </Link>
             </div>
 
-            {/* Đánh Giá */}
+            {/* Risk Assessment */}
             <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                  <FaShieldAlt className="text-green-600 text-xl" />
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                  <FaShieldAlt className="text-blue-600 text-xl" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">Đánh Giá Nguy Cơ</h3>
+                <h3 className="text-xl font-bold text-gray-800">Risk Assessment</h3>
               </div>
-              <p className="text-gray-600 mb-4">Bài khảo sát ASSIST, CRAFFT để đánh giá mức độ nguy cơ</p>
+              <p className="text-gray-600 mb-4">ASSIST and CRAFFT surveys to evaluate risk levels and provide appropriate guidance</p>
               <Link 
                 to="/assessment" 
-                className="text-green-600 font-semibold hover:text-green-700 transition-colors"
+                className="text-red-600 font-semibold hover:text-red-700 transition-colors"
               >
-                Làm bài đánh giá →
+                Take Assessment →
               </Link>
             </div>
 
-            {/* Tư Vấn */}
+            {/* Expert Consultation */}
             <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
-                  <FaUserMd className="text-purple-600 text-xl" />
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                  <FaUserMd className="text-blue-600 text-xl" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800">Tư Vấn Chuyên Gia</h3>
+                <h3 className="text-xl font-bold text-gray-800">Expert Consultation</h3>
               </div>
-              <p className="text-gray-600 mb-4">Đặt lịch hẹn với chuyên viên tư vấn giàu kinh nghiệm</p>
+              <p className="text-gray-600 mb-4">Schedule appointments with experienced counseling professionals</p>
               <Link 
                 to="/consultation" 
-                className="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
+                className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
               >
-                Đặt lịch hẹn →
+                Book Appointment →
               </Link>
             </div>
           </div>
@@ -192,7 +182,7 @@ const Hero = () => {
         }
         .custom-dots li.slick-active button:before {
           opacity: 1;
-          color: #3B82F6;
+          color: #EF4444;
         }
       `}</style>
     </div>
