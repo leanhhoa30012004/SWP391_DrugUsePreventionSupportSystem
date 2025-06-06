@@ -6,13 +6,15 @@ import Swal from 'sweetalert2'
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: '',
     username: '',
+    password: '',
     email: '',
-    password: ''
+    fullname: ''
+
   });
   const [loading, setLoading] = useState(false);
 
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -21,20 +23,28 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/register', {
-        fullName: formData.fullName,
+      // Thêm dòng này để debug
+      console.log('Sending registration data:', {
         username: formData.username,
+        password: formData.password,
         email: formData.email,
-        password: formData.password
+        fullname: formData.fullname
+      });
+
+      const response = await axios.post('http://localhost:3000/api/auth/register', {
+        username: formData.username,
+        password: formData.password,
+        email: formData.email,
+        fullname: formData.fullname
       });
       
-      if (response.data.success) {
-        // Show success message
+      if (response.status === 201) {
+        console.log("Registration successful:", response.data);
         await Swal.fire({
           title: "Registration Successful!",
           text: "Welcome to Drug Prevention Support System",
@@ -44,11 +54,12 @@ const Register = () => {
           showConfirmButton: false
         });
 
-        // Navigate to login page after successful registration
         navigate('/login');
       }
     } catch (error) {
       console.error('Registration error:', error);
+      console.error('Error response:', error.response?.data); // Thêm dòng này
+      
       Swal.fire({
         icon: 'error',
         title: 'Registration Failed',
@@ -58,7 +69,7 @@ const Register = () => {
     } finally {
       setLoading(false);
     }
-  };
+};
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -72,16 +83,16 @@ const Register = () => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="fullname" className="block text-sm font-medium text-gray-700">
                 Full Name
               </label>
               <div className="mt-1">
                 <input
-                  id="fullName"
-                  name="fullName"
+                  id="fullname"
+                  name="fullname"
                   type="text"
                   required
-                  value={formData.fullName}
+                  value={formData.fullname}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter your full name"
