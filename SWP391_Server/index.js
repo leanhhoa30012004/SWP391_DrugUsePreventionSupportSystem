@@ -5,8 +5,7 @@ const authRoutes = require("./src/routes/auth.routes"); // đường dẫn đế
 const cors = require("cors")
 app.use(express.json());
 app.use(cors())
-// Các routes
-app.use("/api/auth", authRoutes);
+
 
 // Chạy server
 const PORT = process.env.PORT || 3000;

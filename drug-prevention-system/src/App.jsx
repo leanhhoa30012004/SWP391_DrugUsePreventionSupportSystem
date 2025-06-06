@@ -4,6 +4,7 @@ import './App.css'
 
 // Import existing pages
 import Homepage from './pages/Homepage/Homepage'
+
 import Aboutus from './pages/Homepage/Aboutus'
 import OnlineConsultation from './pages/Homepage/Onlineconsultant'
 import Register from './pages/Register/Register'
@@ -16,10 +17,12 @@ import Login from './pages/Login/Login'
 // import Blogs from './pages/Homepage/Blogs'
 // import Contact from './pages/Homepage/Contact'
 
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Homepage />} />
+
       <Route path="/aboutus" element={<Aboutus />} />
       <Route path="/online-consultation" element={<OnlineConsultation />} />
       
@@ -31,6 +34,7 @@ function App() {
       {/* <Route path="/contact" element={<Contact />} /> */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+
     </Routes>
   )
 }

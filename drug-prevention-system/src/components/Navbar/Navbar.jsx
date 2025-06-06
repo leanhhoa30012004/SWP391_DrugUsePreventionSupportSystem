@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom'
-import Logo from "../../assets/logo-WeHope.png";  
+import Logo from "../../assets/logo-WeHope.png";
 import { NavbarMenu } from './Data';
 import { IoMdSearch } from "react-icons/io";
 
@@ -21,24 +21,24 @@ const Navbar = () => {
     <>
       {/* Spacer for fixed navbar */}
       <div className="h-[70px] sm:h-[80px] lg:h-[90px] w-full">
-      
+
         <nav className={`fixed top-0 left-0 right-0 h-[70px] w-full sm:h-[80px] lg:h-[90px] bg-white z-[1000] transition-all duration-300
         ${isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md' : 'bg-white shadow-md'}
         `}>
-            <div className="h-full w-full max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-10 lg:px-4">
-              {/* Logo container */}
-                <div className="w-[120px] h-[50px] sm:w-[140px] sm:h-[60px] lg:w-[200px] lg:h-[90px] flex items-center">
-                    <Link to="/" className="block w-full h-full relative">
-                    <img 
-                        src={Logo} 
-                        alt="Logo" 
-                        className="absolute inset-0 w-full h-full object-contain"
-                    />
-                    </Link>
-                </div>
+          <div className="h-full w-full max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-10 lg:px-4">
+            {/* Logo container */}
+            <div className="w-[120px] h-[50px] sm:w-[140px] sm:h-[60px] lg:w-[200px] lg:h-[90px] flex items-center">
+              <Link to="/" className="block w-full h-full relative">
+                <img
+                  src={Logo}
+                  alt="Logo"
+                  className="absolute inset-0 w-full h-full object-contain"
+                />
+              </Link>
+            </div>
 
-                {/* Right side: Menu, Search, and Auth */}
-                <div className="flex items-center gap-6 grow justify-end">
+            {/* Right side: Menu, Search, and Auth */}
+            <div className="flex items-center gap-6 grow justify-end">
 
                   {/* Menu items */}
                   <div className="hidden lg:flex items-center justify-center space-x-4 grow">
@@ -68,7 +68,9 @@ const Navbar = () => {
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
                       <IoMdSearch className="w-4 h-4" />
                     </div>
+
                   </div>
+                </div>
 
                   {/* Auth Buttons */}
                   <div className="flex items-center gap-2">
@@ -81,8 +83,11 @@ const Navbar = () => {
                     </Link>
                   </div>
                   </div>
+
                 </div>
               </div>
+            </div>
+          </div>
         </nav>
       </div>
     </>
