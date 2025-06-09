@@ -29,12 +29,9 @@ const ImageList = [
       title: "Professional Consultation - 24/7 Support",
       description: "Experienced counseling team ready to accompany and support you anytime, anywhere.",
       buttonText: "Book Consultation",
-
       buttonLink: "/online-consultation"
     },
-   ];
-
-
+];
 
 const PrevArrow = ({ onClick }) => (
   <button
@@ -105,15 +102,34 @@ const Hero = () => {
                         >
                           {item.buttonText}
                         </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </Slider>
+      </div>
 
+      {/* Features Section */}
+      <div className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Online Courses */}
+            <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
                   <FaBookOpen className="text-red-600 text-xl" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">Online Courses</h3>
               </div>
               <p className="text-gray-600 mb-4">Flexible learning with age-appropriate content</p>
-
+              <Link 
+                to="/courses" 
+                className="text-red-600 font-semibold hover:text-red-700 transition-colors"
+              >
                 View courses →
-
               </Link>
             </div>
 
@@ -121,20 +137,16 @@ const Hero = () => {
             <div className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
-
                   <FaShieldAlt className="text-red-600 text-xl" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">Risk Assessment</h3>
               </div>
               <p className="text-gray-600 mb-4">ASSIST and CRAFFT surveys to evaluate risk levels</p>
-
               <Link 
                 to="/assessment" 
                 className="text-red-600 font-semibold hover:text-red-700 transition-colors"
               >
-
                 Take assessment →
-
               </Link>
             </div>
 
@@ -152,7 +164,6 @@ const Hero = () => {
                 className="text-red-600 font-semibold hover:text-red-700 transition-colors"
               >
                 Book appointment →
-
               </Link>
             </div>
           </div>

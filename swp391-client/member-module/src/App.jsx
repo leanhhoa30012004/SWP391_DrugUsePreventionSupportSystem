@@ -1,6 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import './App.css'
+import Dashboard from './pages/Homepage/Dashboard'
 
 // Import existing pages
 import Homepage from './pages/Homepage/Homepage'
@@ -34,6 +35,7 @@ function App() {
       {/* <Route path="/contact" element={<Contact />} /> */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
 
     </Routes>
   )
