@@ -3,11 +3,11 @@ require("dotenv").config();
 
 const pool = mysql.createPool({
 
-  host: "localhost",
-  user: "root",
-  password: "123456",
-  database: "swp-db",
-  port: 3307,
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "123456",
+  database: process.env.DB_NAME || "swp-db",
+  port: process.env.DB_PORT || 3307,
 
 });
 
