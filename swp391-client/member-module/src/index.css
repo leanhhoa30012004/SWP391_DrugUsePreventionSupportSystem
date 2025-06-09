@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+/* Reset styles */
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom styles for slick slider */
+.slick-slider {
+  width: 100%;
+  position: relative;
+}
+
+.slick-prev,
+.slick-next {
+  z-index: 10;
+}
+
+.slick-dots {
+  bottom: 20px;
+}
+
+.slick-dots li button:before {
+  font-size: 12px;
+  color: white;
+  opacity: 0.5;
+}
+
+.slick-dots li.slick-active button:before {
+  opacity: 1;
+  color: #3B82F6;
+}
+
+/* Style for slider arrows */
+.slick-prev,
+.slick-next {
+  z-index: 10;
+}
+
+/* Style for slider dots */
+.slick-dots {
+  bottom: 20px;
+}
+
+.slick-dots li button:before {
+  font-size: 12px;
+  color: white;
+  opacity: 0.5;
+}
+
+.slick-dots li.slick-active button:before {
+  opacity: 1;
+  color: #3B82F6;
+}
