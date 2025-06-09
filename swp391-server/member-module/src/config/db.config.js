@@ -5,9 +5,9 @@ const pool = mysql.createPool({
 
   host: "localhost",
   user: "root",
-  password: "root",
-  database: "swp391_drug",
-  port: 3306,
+  password: "123456",
+  database: "swp-db",
+  port: 3307,
 
 });
 
