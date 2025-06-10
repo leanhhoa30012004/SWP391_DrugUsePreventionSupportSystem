@@ -1,11 +1,9 @@
 import React from 'react'
 
-function Aboutus() {
+export default function Survey() {
   return (
     <div>
       
     </div>
   )
 }
-
-export default Aboutus
