@@ -1,3 +1,4 @@
+const { response, json } = require("express");
 const db = require("../../config/db.config")
 
 const listOfSurvey = async () => {
@@ -7,11 +8,49 @@ const listOfSurvey = async () => {
 
 const findSurveyByType = async (type) => {
     const searchType = `%${type}%`;
-    const [rows] = await db.execute("SELECT * FROM Survey WHERE survey_type like ? AND is_active = 1", [searchType]);
+    const [rows] = await db.execute("SELECT * FROM Survey s WHERE s.survey_type LIKE ? AND s.is_active = 1 ORDER BY s.version DESC LIMIT 1", [searchType]);
     if (rows.length === 0) {
         throw new Error("Survey not found");
     }
 
+    return {
+        survey_id: rows[0].survey_id,
+        survey_type: rows[0].survey_type,
+        content: JSON.parse(rows[0].content),
+        created_by: rows[0].created_by,
+        created_at: rows[0].created_at,
+        edit_by: rows[0].edit_by,
+        edit_at: rows[0].edit_at,
+        version: rows[0].version
+    }
+}
+
+const findSurveyBySurveyID = async (survey_id) => {
+    const [rows] = await db.execute("SELECT * FROM Survey s WHERE s.survey_id = ? AND s.is_active = 1", [survey_id]);
+    if (rows.length === 0) {
+        throw new Error("Survey not found");
+    }
+
+    return {
+        survey_id: rows[0].survey_id,
+        survey_type: rows[0].survey_type,
+        content: JSON.parse(rows[0].content),
+        created_by: rows[0].created_by,
+        created_at: rows[0].created_at,
+        edit_by: rows[0].edit_by,
+        edit_at: rows[0].edit_at,
+        version: rows[0].version
+    }
+}
+
+const findSurveyByTypeAndVersion = async (type, version) => {
+    const searchType = `%${type}%`;
+    const [rows] = await db.execute("SELECT * FROM Survey s WHERE s.survey_type LIKE ? AND s.version = ? AND s.is_active = 1",
+        [searchType, version]
+    )
+    if (row.length === 0) {
+        throw new Error("Servey not found");
+    }
     return {
         survey_id: rows[0].survey_id,
         survey_type: rows[0].survey_type,
@@ -47,8 +86,29 @@ const calculateScore = (questions, answers) => {
     return totalScore;
 }
 
+const getSurveyHistoryByMember = async (member_id) => {
+    const [rows] = await db.execute("SELECT s.survey_id, u.fullname, se.response, se.`date`, se.member_version FROM Survey_enrollment se JOIN Survey s ON se.survey_id = s.survey_id JOIN Users u ON se.member_id = u.user_id WHERE u.user_id = ?",
+        [member_id]
+    );
+    return rows;
+}
+
+const addEnrollmentSurvey = async (survey_id, member_id, response, member_version) => {
+    const [rows] = await db.execute("INSERT INTO Survey_enrollment (survey_id, member_id, response, date, member_version) VALUES(?, ?, ?, NOW(), ?)",
+        [survey_id, member_id, response, member_version]
+    );
+    return rows;
+
+}
+
+
+
 module.exports = {
     listOfSurvey,
     findSurveyByType,
-    calculateScore
+    findSurveyBySurveyID,
+    findSurveyByTypeAndVersion,
+    calculateScore,
+    getSurveyHistoryByMember,
+    addEnrollmentSurvey
 }
