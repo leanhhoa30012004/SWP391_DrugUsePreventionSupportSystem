@@ -140,7 +140,7 @@ const Hero = () => {
               </div>
               <h3 className="text-xl font-bold text-gray-800">Risk Assessment</h3>
             </div>
-            <p className="text-gray-600 mb-4">ASSIST and CRAFFT surveys to evaluate risk levels</p>
+            <p className="text-gray-600 mb-4">ASSIST survey to evaluate risk levels</p>
             <Link to="/assessment" className="text-red-600 font-semibold hover:text-red-700 transition-colors">
               Take assessment →
             </Link>
