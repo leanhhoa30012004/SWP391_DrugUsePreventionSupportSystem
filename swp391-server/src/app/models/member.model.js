@@ -2,21 +2,21 @@ const db = require("../../config/db.config");
 
 const createMember = async ({ username, password, email, fullname }) => {
   const [rows] = await db.execute(
-    "INSERT INTO Member (username, password, email, fullname) VALUES (?, ?, ?, ?)",
+    "INSERT INTO Users (username, password, email, fullname, role) VALUES (?, ?, ?, ?, 'member')",
     [username, password, email, fullname]
   );
   return rows;
 };
 
 const findByUsername = async (username) => {
-  const [rows] = await db.execute("SELECT * FROM Member WHERE username = ?", [
+  const [rows] = await db.execute("SELECT * FROM Users WHERE username = ?", [
     username,
   ]);
   return rows[0];
 };
 
 const findByEmail = async (email) => {
-  const [rows] = await db.execute("SELECT * FROM Member WHERE email = ?", [
+  const [rows] = await db.execute("SELECT * FROM Users WHERE email = ?", [
     email,
   ]);
   return rows[0];
@@ -24,14 +24,17 @@ const findByEmail = async (email) => {
 
 const updateResetToken = async (email, token, expiry) => {
   await db.execute(
-    "UPDATE Member SET reset_token = ?, reset_token_expiry = ? WHERE email = ?",
+    "UPDATE Users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?",
     [token, expiry, email]
   );
+};
+const updateRole = async (id, role) => {
+  await db.execute("UPDATE Users SET role = ? WHERE user_id = ?", [role, id]);
 };
 
 const findByResetToken = async (token) => {
   const [rows] = await db.execute(
-    "SELECT * FROM Member WHERE reset_token = ? AND reset_token_expiry > NOW()",
+    "SELECT * FROM Users WHERE reset_token = ? AND reset_token_expiry > NOW()",
     [token]
   );
   return rows[0];
@@ -39,7 +42,7 @@ const findByResetToken = async (token) => {
 
 const updatePassword = async (id, newPassword) => {
   await db.execute(
-    "UPDATE Member SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE member_id = ?",
+    "UPDATE Users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE member_id = ?",
     [newPassword, id]
   );
 };
@@ -51,4 +54,5 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
+  updateRole,
 };
