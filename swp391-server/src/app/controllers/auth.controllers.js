@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const memberModel = require("../models/member.model");
+const managerModels = require("../models/manager.model");
 
 exports.register = async (req, res) => {
   const { username, password, email, fullname } = req.body;
@@ -57,8 +58,8 @@ exports.forgotPassword = async (req, res) => {
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "Password Reset",
-    html: `<a href="http://localhost:3000/reset-password/${token}">Click here to reset your password</a>`,
+    subject: "Reset Password Drug Use Prevention System",
+    html: `Click link to reset password <a href="http://localhost:3000/reset-password/${token}">Click here to reset your password</a>`,
   });
 
   res.json({ message: "Password reset email sent" });
@@ -74,4 +75,23 @@ exports.resetPassword = async (req, res) => {
   const hashed = await bcrypt.hash(newPassword, 10);
   await memberModel.updatePassword(member.member_id, hashed);
   res.json({ message: "Password reset successful" });
+};
+exports.loginManager = async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await managerModels.findByUsername(username);
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+    // Tạo JWT token
+    const token = jwt.sign(
+      { userId: user.user_id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+    res.status(200).json({ message: "Login successful", token, user });
+  } catch (error) {
+    console.error("Error logging in manager:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };

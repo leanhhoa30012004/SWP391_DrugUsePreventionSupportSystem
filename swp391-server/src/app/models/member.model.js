@@ -9,16 +9,17 @@ const createMember = async ({ username, password, email, fullname }) => {
 };
 
 const findByUsername = async (username) => {
-  const [rows] = await db.execute("SELECT * FROM Users WHERE username = ?", [
-    username,
-  ]);
+  const [rows] = await db.execute(
+    "SELECT * FROM Users WHERE username = ? AND role = 'member' AND is_active = 1",
+    [username]
+  );
   return rows[0];
 };
-
 const findByEmail = async (email) => {
-  const [rows] = await db.execute("SELECT * FROM Users WHERE email = ?", [
-    email,
-  ]);
+  const [rows] = await db.execute(
+    "SELECT * FROM Users WHERE email = ? AND role = 'member' AND is_active = 1",
+    [email]
+  );
   return rows[0];
 };
 
@@ -27,9 +28,6 @@ const updateResetToken = async (email, token, expiry) => {
     "UPDATE Users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?",
     [token, expiry, email]
   );
-};
-const updateRole = async (id, role) => {
-  await db.execute("UPDATE Users SET role = ? WHERE user_id = ?", [role, id]);
 };
 
 const findByResetToken = async (token) => {
@@ -54,5 +52,4 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
-  updateRole,
 };
