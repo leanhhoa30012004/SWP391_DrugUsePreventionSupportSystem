@@ -112,6 +112,16 @@ const Hero = () => {
         </Slider>
       </div>
 
+      {/* Nút chuyển sang Admin Dashboard */}
+      <div className="flex justify-center mt-8">
+        <Link
+          to="/admin/dashboard"
+          className="inline-flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg"
+        >
+          Go to Admin Dashboard
+        </Link>
+      </div>
+
       {/* Features Section */}
       <div className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
