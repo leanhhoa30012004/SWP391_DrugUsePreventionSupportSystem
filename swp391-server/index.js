@@ -3,14 +3,16 @@ const express = require("express");
 const app = express();
 const authRoutes = require("./src/routes/auth.routes"); // đường dẫn đến routes bạn đã tạo
 const surveyRoutes = require("./src/routes/survey.routes");
-const courseRoutes = require("./src/routes/course.routes");
-const cors = require("cors")
-app.use(express.json());
-app.use(cors())
 
-app.use('/api', authRoutes);
-app.use('/api', surveyRoutes);
-app.use('/api', courseRoutes);
+const courseRoutes = require("./src/routes/course.routes");
+const cors = require("cors");
+app.use(express.json());
+app.use(cors());
+
+
+app.use('/api/course', courseRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/survey", surveyRoutes);
 
 // Chạy server
 const PORT = process.env.PORT || 3000;
