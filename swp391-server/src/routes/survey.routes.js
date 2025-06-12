@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const survey = require("../app/controllers/survey.controller");
-const { model } = require("mongoose");
 
 router.get('/viewSurvey', survey.viewSurvey);
 router.get('/typeSurvey', survey.findSurveyByType);

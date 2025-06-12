@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axiosInstance from '../../config/axios/axiosInstance'
 import Swal from 'sweetalert2'
 import Logo from '../../assets/logo-WeHope.png'
 
@@ -37,7 +37,7 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axiosInstance.post('/api/auth/login', {
         username,
         password
       });
