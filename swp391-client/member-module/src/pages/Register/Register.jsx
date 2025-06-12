@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axiosInstance from '../../config/axios/axiosInstance'
 import Swal from 'sweetalert2'
 
 const Register = () => {
@@ -28,7 +28,6 @@ const handleSubmit = async (e) => {
     setLoading(true);
 
     try {
-      // Thêm dòng này để debug
       console.log('Sending registration data:', {
         username: formData.username,
         password: formData.password,
@@ -36,7 +35,7 @@ const handleSubmit = async (e) => {
         fullname: formData.fullname
       });
 
-      const response = await axios.post('http://localhost:3000/api/auth/register', {
+      const response = await axiosInstance.post('/api/auth/register', {
         username: formData.username,
         password: formData.password,
         email: formData.email,
@@ -58,7 +57,7 @@ const handleSubmit = async (e) => {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      console.error('Error response:', error.response?.data); // Thêm dòng này
+      console.error('Error response:', error.response?.data);
       
       Swal.fire({
         icon: 'error',
