@@ -13,7 +13,7 @@ import Login from './pages/Login/Login'
 import Contact from './pages/Contact/Contact'
 
 // TODO: Create these components
-// import Courses from './pages/Homepage/Courses'
+import Courses from './pages/Homepage/Courses'
 // import Survey from './pages/Homepage/Survey'
 // import News from './pages/Homepage/News'
 // import Blogs from './pages/Homepage/Blogs'
@@ -29,7 +29,7 @@ function App() {
       <Route path="/online-consultation" element={<OnlineConsultation />} />
 
       {/* TODO: Uncomment these routes after creating their components */}
-      {/* <Route path="/courses" element={<Courses />} /> */}
+      {<Route path="/courses" element={<Courses />} />}
       {/* <Route path="/survey" element={<Survey />} /> */}
       {/* <Route path="/news" element={<News />} /> */}
       {/* <Route path="/blogs" element={<Blogs />} /> */}
