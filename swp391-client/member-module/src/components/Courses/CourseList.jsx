@@ -19,7 +19,8 @@ const courses = [
     ageRange: "Ages 13-15",
     level: "Beginner",
     duration: "45 mins",
-    lessons: 8
+    lessons: 8,
+    test : "https://www.youtube.com/watch?v=example1"
   },
   {
     id: 2,
