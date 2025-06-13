@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import Logo from "../../assets/logo-WeHope.png";
 import { NavbarMenu } from './Data';
 import { IoMdSearch } from "react-icons/io";
+import FaceIcon from '@mui/icons-material/Face';
+
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -70,19 +72,34 @@ const Navbar = () => {
                 {/* Auth Buttons */}
                 <div className="flex items-center gap-2">
                   {/* Register Button */}
-                  <Link 
-                    to="/register"
-                    className="px-3 py-1.5 border-2 border-red-500 text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200 text-sm whitespace-nowrap"
-                  >
-                    Register
-                  </Link>
+                  
                   {/* Login Button */}
-                  <Link 
-                    to="/login"
-                    className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap"
-                  >
-                    Log in
-                  </Link>
+                  {localStorage.getItem('user') ? (
+                    <Link 
+                      to="/profile"
+                      className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap flex items-center gap-2"
+                    >
+                      <FaceIcon className="text-white" />
+                      Profile
+                    </Link>
+                  ) : (
+                    <>
+                      <Link 
+                        to="/register"
+                        className="px-3 py-1.5 border-2 border-red-500 text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200 text-sm whitespace-nowrap"
+                      >
+                        Register
+                      </Link>
+                      <Link 
+                        to="/login"
+                        className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap"
+                      >
+                        Log in
+                      </Link>
+                    </>
+
+                  )}
+                  
                 </div>
               </div>
             </div>

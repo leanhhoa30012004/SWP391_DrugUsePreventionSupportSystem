@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axiosInstance from '../../config/axios/axiosInstance'
 import Swal from 'sweetalert2'
+import axios from 'axios'
 
 const Register = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const handleSubmit = async (e) => {
         fullname: formData.fullname
       });
 
-      const response = await axiosInstance.post('/api/auth/register', {
+      const response = await axios.post('http://localhost:3000/api/auth/register', {
         username: formData.username,
         password: formData.password,
         email: formData.email,

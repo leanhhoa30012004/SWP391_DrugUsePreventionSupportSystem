@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axiosInstance from '../../config/axios/axiosInstance'
 import Swal from 'sweetalert2'
+import axios from 'axios'
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
+    console.log("----Validating------")
     const newErrors = {};
     console.log("Username: ", username, ", Password: ", password)
     if (!username.trim()) {
@@ -29,14 +31,14 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+    console.log("----Pass 0 ------")
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axiosInstance.post('/api/auth/login', {
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
         username,
         password
       });
