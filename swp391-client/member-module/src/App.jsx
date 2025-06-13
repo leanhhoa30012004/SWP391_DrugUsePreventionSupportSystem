@@ -2,6 +2,9 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import './App.css'
 import Dashboard from './pages/Homepage/Dashboard'
+import ForgotPassword from './pages/ForgotPassword/forgotPassword';
+import ResetPassword from './pages/ForgotPassword/resetPassword';
+import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode';
 
 // Import existing pages
 import Homepage from './pages/Homepage/Homepage'
@@ -37,6 +40,9 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/confirmation-code" element={<ConfirmationCode />} />
 
     </Routes>
   )
