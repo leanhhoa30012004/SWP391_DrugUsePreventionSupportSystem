@@ -87,7 +87,7 @@ exports.loginManager = async (req, res) => {
     const token = jwt.sign(
       { userId: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "1h" }
     );
     res.status(200).json({ message: "Login successful", token, user });
   } catch (error) {
