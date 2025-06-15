@@ -7,5 +7,4 @@ router.get("/typeSurvey", survey.findSurveyByType);
 router.get("/surveyById", survey.findSurveyBySurveyId);
 router.post("/submitSurvey", survey.submitSurvey);
 router.post("/surveyHistory", survey.getSurveyHistoryByMember);
-
 module.exports = router;

@@ -38,6 +38,7 @@ exports.protectManager = async (req, res, next) => {
       }
 
       // Add user to request
+
       req.user = user;
       next();
     } catch (error) {
