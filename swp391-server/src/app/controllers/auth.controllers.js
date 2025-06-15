@@ -5,7 +5,7 @@ const memberModel = require("../models/member.model");
 const managerModels = require("../models/manager.model");
 
 exports.register = async (req, res) => {
-  const { username, password, email, fullname } = req.body;
+  const { username, password, email, fullname, age } = req.body;
   try {
     const existing = await memberModel.findByUsername(username);
     if (existing) {
@@ -16,6 +16,7 @@ exports.register = async (req, res) => {
       password,
       email,
       fullname,
+      age,
     });
     res.status(201).json({ message: "User registered successfully", id });
   } catch (err) {
