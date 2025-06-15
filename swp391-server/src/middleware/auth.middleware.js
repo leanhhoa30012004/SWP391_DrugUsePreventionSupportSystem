@@ -21,17 +21,14 @@ exports.protectManager = async (req, res, next) => {
     try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Decoded JWT:", decoded);
       // Get user from token
       const user = await managerModel.findByUsername(decoded.username);
-      console.log(user);
       if (!user) {
         return res.status(401).json({
           success: false,
           message: "User not found",
         });
       }
-      console.log("user.is_active:", user.is_active, typeof user.is_active);
       // Check if user is active
       if (user.is_active == 0 || user.is_active == false) {
         return res.status(401).json({
@@ -41,6 +38,7 @@ exports.protectManager = async (req, res, next) => {
       }
 
       // Add user to request
+
       req.user = user;
       next();
     } catch (error) {

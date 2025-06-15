@@ -14,7 +14,18 @@ router.post(
   restrictTo("manager", "admin"),
   managerController.createUser
 );
-
+router.post(
+  "/update-role",
+  protectManager,
+  restrictTo("manager", "admin"),
+  managerController.updateRole
+);
+router.post(
+  "/delete",
+  protectManager,
+  restrictTo("manager", "admin"),
+  managerController.deleteUser
+);
 // Chỉ cho phép manager truy cập
 router.post(
   "/profile",
@@ -24,6 +35,6 @@ router.post(
 );
 
 // Cho phép tất cả user đã đăng nhập truy cập
-router.post("/users", protectManager, managerController.getAllUsers);
+router.get("/users", protectManager, managerController.getAllUsers);
 router.post("/login-manager", authController.loginManager);
 module.exports = router;
