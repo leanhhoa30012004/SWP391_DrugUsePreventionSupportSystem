@@ -1,7 +1,14 @@
+<<<<<<< Updated upstream
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../config/axios/axiosInstance";
 import Swal from "sweetalert2";
+=======
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import axios from 'axios'
+>>>>>>> Stashed changes
 
 const Register = () => {
   const navigate = useNavigate();
@@ -35,7 +42,11 @@ const Register = () => {
         age: formData.age,
       });
 
+<<<<<<< Updated upstream
       const response = await axiosInstance.post("/api/auth/register", {
+=======
+      const response = await axios.post('http://localhost:3000/api/auth/register', {
+>>>>>>> Stashed changes
         username: formData.username,
         password: formData.password,
         email: formData.email,

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import './App.css'
+<<<<<<< Updated upstream
 
 // Homepage components
 // import Dashboard from './pages/Homepage/Dashboard' // Comment out vì file không tồn tại
@@ -27,13 +28,37 @@ import Survey from './pages/Admin/Survey/Survey/Survey'
 import Staff from './pages/Admin/Staff/Staff/Staff'
 import Setting from './pages/Admin/Setting/Setting/Setting'
 
+=======
+import Dashboard from './pages/Homepage/Dashboard'
+
+// Import existing pages
+import Homepage from './pages/Homepage/Homepage'
+
+import Aboutus from './pages/Homepage/Aboutus'
+import OnlineConsultation from './pages/Homepage/Onlineconsultant'
+import Register from './pages/Register/Register'
+import Login from './pages/Login/Login'
+import Contact from './pages/Contact/Contact'
+
+// TODO: Create these components
+import Courses from './pages/Homepage/Courses'
+import Survey from './pages/Survey/Survey'
+import SurveySelectionPage from './pages/Survey/ViewSurvey'
+// import News from './pages/Homepage/News'
+// import Blogs from './pages/Homepage/Blogs'
+// import Contact from './pages/Homepage/Contact'
+
+
+>>>>>>> Stashed changes
 function App() {
   return (
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Homepage />} />
+
       <Route path="/aboutus" element={<Aboutus />} />
       <Route path="/online-consultation" element={<OnlineConsultation />} />
+<<<<<<< Updated upstream
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
 
@@ -58,6 +83,21 @@ function App() {
         <Route path="staff" element={<Staff />} />
         <Route path="setting" element={<Setting />} />
       </Route>
+=======
+
+      {/* TODO: Uncomment these routes after creating their components */}
+      {<Route path="/courses" element={<Courses />} />}
+      <Route path="/survey" element={<SurveySelectionPage />} />
+      {/* Dynamic route for survey details */}
+      <Route path="/survey/:sid" element={<Survey />} />
+      {/* <Route path="/news" element={<News />} /> */}
+      {/* <Route path="/blogs" element={<Blogs />} /> */}
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+
+>>>>>>> Stashed changes
     </Routes>
   )
 }
