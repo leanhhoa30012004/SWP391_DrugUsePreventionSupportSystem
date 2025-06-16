@@ -7,6 +7,7 @@ import './App.css'
 import Homepage from './pages/Homepage/Homepage'
 import Aboutus from './pages/Homepage/Aboutus'
 import OnlineConsultation from './pages/Homepage/Onlineconsultant'
+import Contact from './pages/Contact/contact'
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -31,6 +32,7 @@ function App() {
       <Route path="/" element={<Homepage />} />
       <Route path="/aboutus" element={<Aboutus />} />
       <Route path="/online-consultation" element={<OnlineConsultation />} />
+      <Route path="/contact" element={<Contact />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
