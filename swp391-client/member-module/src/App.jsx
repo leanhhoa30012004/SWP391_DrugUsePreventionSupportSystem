@@ -15,6 +15,7 @@ import Contact from './pages/Contact/Contact'
 // TODO: Create these components
 import Courses from './pages/Homepage/Courses'
 import Survey from './pages/Survey/Survey'
+import SurveySelectionPage from './pages/Survey/ViewSurvey'
 // import News from './pages/Homepage/News'
 // import Blogs from './pages/Homepage/Blogs'
 // import Contact from './pages/Homepage/Contact'
@@ -30,7 +31,9 @@ function App() {
 
       {/* TODO: Uncomment these routes after creating their components */}
       {<Route path="/courses" element={<Courses />} />}
-      <Route path="/survey" element={<Survey />} />
+      <Route path="/survey" element={<SurveySelectionPage />} />
+      {/* Dynamic route for survey details */}
+      <Route path="/survey/:sid" element={<Survey />} />
       {/* <Route path="/news" element={<News />} /> */}
       {/* <Route path="/blogs" element={<Blogs />} /> */}
       <Route path="/contact" element={<Contact />} />

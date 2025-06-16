@@ -1,93 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, AlertTriangle, XCircle, Calendar, User, FileText } from 'lucide-react';
+import {useParams} from 'react-router-dom'
 const Survey = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showResult, setShowResult] = useState(false);
   const [totalScore, setTotalScore] = useState(0);
+  const [title, setTitle] = useState("");
+  const { sid } = useParams(); // Lấy sid từ URL
+    const [questions, setQues] = useState([]);
+  useEffect(() => {
+    
+    // Lấy dữ liệu câu hỏi từ API
+    async function fetchSurveyData() {
+      fetch(`http://localhost:3000/api/survey/surveyById/${sid}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log("Survey API response:", data);
+          // Giả sử dữ liệu trả về là một mảng các câu hỏi
+            setQues(typeof data.content === 'string' ? JSON.parse(data.content) : data.content);
+            setTitle(data?.survey_type || "ASSIST")
+        })
+        .catch(err => {
+          console.error("Survey API error:", err);
+          alert("Có lỗi xảy ra khi tải dữ liệu khảo sát.");
+        }
+      );
+    }
+    fetchSurveyData();
+  }, []);
 
   // Câu hỏi khảo sát ASSIST
-  const questions = [
-    {
-      id: 1,
-      question: "Trong suốt cuộc đời, bạn đã từng sử dụng bất kỳ chất nào sau đây không?",
-      type: "multiple_choice",
-      options: [
-        "Cần sa (Cannabis)",
-        "Heroin, thuốc phiện",
-        "Methamphetamine (ma túy đá)",
-        "Ecstasy (MDMA)",
-        "Thuốc an thần (benzodiazepines, diazepam, v.v.)",
-        "Chất hít (keo, sơn, khí gas)",
-        "Khác"
-      ]
-    },
-    {
-      id: 2,
-      question: "Trong 3 tháng qua, bạn có sử dụng bất kỳ chất nào trong số này không?",
-      type: "single_choice",
-      options: [
-        { text: "Không", score: 0 },
-        { text: "Có", score: 3 }
-      ]
-    },
-    {
-      id: 3,
-      question: "Nếu có, bạn sử dụng với tần suất như thế nào?",
-      type: "single_choice",
-      options: [
-        { text: "1–2 lần/tháng", score: 2 },
-        { text: "1–2 lần/tuần", score: 3 },
-        { text: "Gần như hàng ngày", score: 4 }
-      ]
-    },
-    {
-      id: 4,
-      question: "Bạn đã bao giờ cảm thấy thôi thúc mạnh mẽ hoặc khao khát sử dụng ma túy không?",
-      type: "single_choice",
-      options: [
-        { text: "Không bao giờ", score: 0 },
-        { text: "Thỉnh thoảng", score: 2 },
-        { text: "Thường xuyên", score: 4 }
-      ]
-    },
-    {
-      id: 5,
-      question: "Việc sử dụng ma túy đã bao giờ cản trở khả năng hoàn thành công việc hoặc trách nhiệm của bạn không?",
-      type: "single_choice",
-      options: [
-        { text: "Không", score: 0 },
-        { text: "Có", score: 3 }
-      ]
-    },
-    {
-      id: 6,
-      question: "Việc sử dụng ma túy có gây ra vấn đề với gia đình, bạn bè hoặc tại nơi làm việc không?",
-      type: "single_choice",
-      options: [
-        { text: "Không", score: 0 },
-        { text: "Có", score: 3 }
-      ]
-    },
-    {
-      id: 7,
-      question: "Bạn đã bao giờ cố gắng nhưng thất bại trong việc ngừng sử dụng ma túy không?",
-      type: "single_choice",
-      options: [
-        { text: "Không", score: 0 },
-        { text: "Có", score: 4 }
-      ]
-    },
-    {
-      id: 8,
-      question: "Đã bao giờ có ai bày tỏ sự lo lắng hoặc không đồng tình về việc sử dụng ma túy của bạn không?",
-      type: "single_choice",
-      options: [
-        { text: "Không", score: 0 },
-        { text: "Có", score: 3 }
-      ]
-    }
-  ];
+
+
+  // useEffect(() => {
+  //   fetch("http://localhost:3000/api/survey/viewSurvey")
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       console.log("Survey API response:", data);
+  //       setQues(data.content || []);
+  //     })
+  //     .catch(err => {
+  //       console.error("Survey API error:", err);
+  //     });
+  // }, []);
+
+
+
 
   const handleAnswer = (answer) => {
     setAnswers(prev => ({
@@ -198,7 +162,7 @@ const Survey = () => {
     const surveyData = {
       survey_id: 3, // ID của khảo sát ASSIST
       member_id: member_id, // ID của người dùng hiện tại
-      // score: totalScore,
+      score: totalScore,
       date: new Date(),
       answers: answers
     };
@@ -221,7 +185,9 @@ const Survey = () => {
       alert('Có lỗi xảy ra khi lưu kết quả khảo sát.');
     }
   };
-
+  // useEffect(() => {
+  //     window.location.reload();
+  // }, [questions]);
   const currentQuestionData = questions[currentQuestion];
   const riskLevel = getRiskLevel(totalScore);
 
@@ -242,7 +208,7 @@ const Survey = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Kết Quả Khảo Sát ASSIST</h1>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Kết Quả Khảo Sát {title}</h1>
               <p className="text-gray-600">Đánh giá mức độ nguy cơ sử dụng chất gây nghiện</p>
             </div>
 
@@ -315,13 +281,13 @@ const Survey = () => {
     );
   }
 
-  return (
+  return currentQuestionData ? (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-800">Khảo Sát ASSIST</h1>
+              <h1 className="text-3xl font-bold text-gray-800">Khảo Sát {title}</h1>
               <div className="text-sm text-gray-500">
                 Câu {currentQuestion + 1} / {questions.length}
               </div>
@@ -407,7 +373,7 @@ const Survey = () => {
         </div>
       </div>
     </div>
-  );
+  ):<div>404 Not Found</div>;
 };
 
 export default Survey;

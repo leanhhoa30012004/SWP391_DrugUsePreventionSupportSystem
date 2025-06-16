@@ -4,7 +4,7 @@ const survey = require("../app/controllers/survey.controller");
 
 router.get("/viewSurvey", survey.viewSurvey);
 router.get("/typeSurvey", survey.findSurveyByType);
-router.get("/surveyById", survey.findSurveyBySurveyId);
+router.get("/surveyById/:survey_id", survey.findSurveyBySurveyId);
 router.post("/submitSurvey", survey.submitSurvey);
 router.post("/surveyHistory", survey.getSurveyHistoryByMember);
 

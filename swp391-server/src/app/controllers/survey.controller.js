@@ -22,7 +22,8 @@ exports.findSurveyByType = async (req, res) => {
 }
 
 exports.findSurveyBySurveyId = async (req, res) => {
-    const { survey_id } = req.body;
+    const { survey_id } = req.params;
+    console.log('survey_id: ', survey_id)
     try {
         const survey = await surveyModel.findSurveyBySurveyID(survey_id)
         res.json(survey);
