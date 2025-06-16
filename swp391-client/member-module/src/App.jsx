@@ -8,7 +8,8 @@ import Homepage from './pages/Homepage/Homepage'
 import Aboutus from './pages/Homepage/Aboutus'
 import OnlineConsultation from './pages/Homepage/Onlineconsultant'
 import Contact from './pages/Contact/contact'
-import News from './pages/News/News';
+import News from './pages/News/news';
+
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -35,6 +36,8 @@ function App() {
       <Route path="/online-consultation" element={<OnlineConsultation />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
+
+
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
