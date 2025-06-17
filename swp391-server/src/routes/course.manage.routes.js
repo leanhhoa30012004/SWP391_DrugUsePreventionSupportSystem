@@ -15,7 +15,7 @@ router.post(
   restrictTo("manager", "admin"),
   courseController.updateCourse
 );
-router.post(
+router.delete(
   "/delete",
   protectManager,
   restrictTo("manager", "admin"),

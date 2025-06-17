@@ -16,8 +16,8 @@ router.post(
   restrictTo("manager", "admin"),
   managerController.updateRole
 );
-router.post(
-  "/delete",
+router.delete(
+  "/delete/:id",
   protectManager,
   restrictTo("manager", "admin"),
   managerController.deleteUser

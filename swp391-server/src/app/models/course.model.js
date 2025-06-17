@@ -175,11 +175,12 @@ const createCourse = async (course) => {
 };
 const updateCourse = async (course) => {
   const [rows] = await db.execute(
-    "UPDATE Course SET course_name = ?, age_group = ?, content = ?, version = version + 0.1 WHERE course_id = ?",
+    "UPDATE Course SET course_name = ?, age_group = ?, content = ?, version = version + 0.1, edited_at = NOW(), edited_by = ? WHERE course_id = ?",
     [
       course.course_name,
       course.age_group,
       JSON.stringify(course.content),
+      course.edited_by,
       course.course_id,
     ]
   );
