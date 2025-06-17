@@ -76,15 +76,14 @@ exports.submitCourse = async (req, res) => {
             return res.status(404).json({ error: "Course not found" });
         }
         const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
-        // console.log('submittedCourse: ', submittedCourse);
+        console.log('submittedCourse: ', submittedCourse);
         if (submittedCourse.totalScore < 8) {
             return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
         } else {
             const learning_process = await courseModel.getCourseEnrollmentByMemberIdAndCourseId(member_id, course_id);
-            learning_process.learning_process.push(submittedCourse.details);
+            learning_process.learning_process.push(submittedCourse.moocDetatails);
             await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
-            await courseModel.updateStatusLearningProcess(member_id, course_id);
-            res.json({ message: "You have successfully completed this course" });
+            res.json({ message: "You have successfully completed this mooc" });
         }
     } catch (error) {
         console.log('submitCourse error: ', error);

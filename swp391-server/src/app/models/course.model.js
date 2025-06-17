@@ -1,41 +1,40 @@
-
 const db = require("../../config/db.config");
 
 const listOfCourse = async () => {
-  const [rows] = await db.execute(
-    "SELECT c.course_id, c.course_name, c.created_at, u.fullname, c.video, c.quiz, c.version FROM Course c JOIN Users u ON c.created_by = u.user_id WHERE c.is_active = 1"
-  );
-  return rows;
+    const [rows] = await db.execute(
+        "SELECT c.course_id, c.course_name, c.created_at, u.fullname, c.video, c.quiz, c.version FROM Course c JOIN Users u ON c.created_by = u.user_id WHERE c.is_active = 1"
+    );
+    return rows;
 };
 
 const searchCourseByName = async (course_name) => {
-  const name = `%${course_name}%`;
-  const [rows] = await db.execute(
-    "SELECT c.course_id, c.course_name, c.created_at, c.created_by, c.video, c.quiz, c.version FROM Course c WHERE course_name LIKE ? AND is_active = 1",
-    [name]
-  );
-  return rows;
+    const name = `%${course_name}%`;
+    const [rows] = await db.execute(
+        "SELECT c.course_id, c.course_name, c.created_at, c.created_by, c.video, c.quiz, c.version FROM Course c WHERE course_name LIKE ? AND is_active = 1",
+        [name]
+    );
+    return rows;
 };
 
 const memberContinuesLearnCourseById = async (member_id, course_id) => {
-  const [rows] = await db.execute(
-    "SELECT c.course_id, u.fullname, c.course_name, ce.learning_process, c.content, c.version  FROM Users u  JOIN  Course_enrollment ce ON u.user_id = ce.member_id JOIN Course c ON ce.course_id = c.course_id WHERE u.user_id = ? AND ce.course_id = ? AND ce.is_active = 1 ",
-    [member_id, course_id]
-  );
-  return {
-    course_id: rows[0].course_id,
-    fullname: rows[0].fullname,
-    course_name: rows[0].course_name,
-    learning_process: JSON.parse(rows[0].learning_process),
-    content: JSON.parse(rows[0].content),
-    version: rows[0].version,
-  };
+    const [rows] = await db.execute(
+        "SELECT c.course_id, u.fullname, c.course_name, ce.learning_process, c.content, c.version  FROM Users u  JOIN  Course_enrollment ce ON u.user_id = ce.member_id JOIN Course c ON ce.course_id = c.course_id WHERE u.user_id = ? AND ce.course_id = ? AND ce.is_active = 1 ",
+        [member_id, course_id]
+    );
+    return {
+        course_id: rows[0].course_id,
+        fullname: rows[0].fullname,
+        course_name: rows[0].course_name,
+        learning_process: JSON.parse(rows[0].learning_process),
+        content: JSON.parse(rows[0].content),
+        version: rows[0].version,
+    };
 };
 
 const deleteCourse = async (course_id) => {
-  await db.execute("UPDATE Course SET is_active = 0 WHERE course_id = ?", [
-    course_id,
-  ]);
+    await db.execute("UPDATE Course SET is_active = 0 WHERE course_id = ?", [
+        course_id,
+    ]);
 };
 
 const createMemberEnrollmentCourse = async (member_id, course_id) => {
@@ -58,7 +57,7 @@ const updateLearningProcess = async (member_id, course_id, learning_process) => 
 }
 
 const updateStatusLearningProcess = async (member_id, course_id) => {
-    const [rows] = await db.execute('UPDATE Course_enrollment SET status = "complete" WHERE member_id  = ? AND course_id  = ? AND is_active = 1',
+    const [rows] = await db.execute('UPDATE Course_enrollment SET status = "completed" WHERE member_id  = ? AND course_id  = ? AND is_active = 1',
         [member_id, course_id]
     )
     return rows
@@ -71,8 +70,7 @@ const getCourseEnrollmentByMemberIdAndCourseId = async (member_id, course_id) =>
     return {
         course_id: rows[0].course_id,
         member_id: rows[0].member_id,
-        learning_process: JSON.parse(rows[0].learning_process),
-        // course_certificate: rows[0].course_certificate,
+        learning_process: rows[0].learning_process ? JSON.parse(rows[0].learning_process) : [],
         status: rows[0].status,
     }
 
@@ -93,64 +91,65 @@ const getCourseById = async (course_id) => {
 
 const calculateScoreMooc = async (questions, answers) => {
     const mooc = questions.find(item => item.id === answers.mooc_id);
-    console.log("mooc", mooc);
     if (!mooc) {
         return { error: "Mooc not found" };
     }
     let totalScore = 0;
     let details = {};
-    // console.log("mooc.quiz", mooc.quiz);
+    let moocDetatails = {};
     mooc.quiz.forEach((question, idx) => {
-        const userAnswer = answers.answers[(idx + 1)]
-
-        if (question.type === 'sigle_choice') {
-            question.options.forEach((option) => {
-                if (option.text === userAnswer) {
-                    totalScore += option.score;
-                    details[question.id] = {
-                        question: question.options,
-                        answer: userAnswer,
-                        score: option.score,
-                        isCorrect: true
-                    };
-                } else {
-                    details[question.id] = {
-                        question: option,
-                        answer: userAnswer,
-                        score: 0,
-                        isCorrect: false
-                    };
+        const userAnswer = answers.answers[(idx + 1)];
+        if (question.type === 'single_choice') {
+            const selectedOption = question.options.find(opt => opt.text === userAnswer);
+            if (selectedOption && selectedOption.score > 0) {
+                // Người dùng chọn đúng đáp án
+                totalScore += selectedOption.score;
+                details[idx + 1] = {
+                    question: question.question,
+                    options: question.options,
+                    answer: userAnswer,
+                    score: selectedOption.score,
+                    isCorrect: true
+                };
+            } else {
+                // Người dùng chọn sai hoặc không chọn
+                details[idx + 1] = {
+                    question: question.question,
+                    options: question.options,
+                    answer: userAnswer,
+                    score: 0,
+                    isCorrect: false
+                };
+            }
+        } else if (question.type === 'multiple_choice') {
+            let userAnswersArr = Array.isArray(userAnswer) ? userAnswer : [];
+            const correctOptions = question.options.filter(opt => opt.score > 0).map(opt => opt.text);
+            let score = 0;
+            userAnswersArr.forEach(ans => {
+                const option = question.options.find(opt => opt.text === ans);
+                if (option) {
+                    score += option.score || 0;
                 }
             });
-        } else if (question.type === 'multiple_choice') {
-            if (Array.isArray(userAnswer)) {
-                userAnswer.forEach((ans) => {
-                    const option = question.options.find(opt => opt.text === ans);
-                    if (option) {
-                        totalScore += option.score || 0;
-                        details[question.id] = {
-                            question: question.options,
-                            answer: ans,
-                            score: option.score || 0,
-                            isCorrect: true
-                        };
-                    } else {
-                        details[question.id] = {
-                            question: question.options,
-                            answer: ans,
-                            score: 0,
-                            isCorrect: false
-                        };
-                    }
-                });
-            }
+            totalScore += score;
+            const isCorrect = JSON.stringify(userAnswersArr.sort()) === JSON.stringify(correctOptions.sort());
+            details[idx + 1] = {
+                question: question.question,
+                options: question.options,
+                answer: userAnswersArr,
+                score: score,
+                isCorrect: isCorrect
+            };
         }
     });
-    console.log("details", details);
-    console.log("totalScore", totalScore);
+    moocDetatails = {
+        mooc_id: answers.mooc_id,
+        totalScore: totalScore,
+        details: details
+    };
     return {
         totalScore,
-        details
+        moocDetatails
     }
 }
 module.exports = {
