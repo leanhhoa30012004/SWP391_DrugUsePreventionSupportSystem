@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaSearch, FaCalendarAlt, FaEye, FaShareAlt, FaBookmark, FaFilter, FaExternalLinkAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 const News = () => {
     const navigate = useNavigate();
@@ -382,6 +383,7 @@ const News = () => {
                     </div>
                 )}
             </div>
+            < Footer />
         </>
     );
 };
