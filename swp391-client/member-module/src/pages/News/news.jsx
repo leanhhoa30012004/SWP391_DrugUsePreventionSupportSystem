@@ -220,11 +220,14 @@ const News = () => {
                                     className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300 relative"
                                     onClick={() => handleNewsClick(article)}
                                 >
-                                    <div className="relative">
+                                    <div className="relative bg-gray-50">
                                         <img
                                             src={article.image}
                                             alt={article.title}
-                                            className="w-full h-64 object-cover"
+                                            className="w-full h-64 object-contain"
+                                            onError={(e) => {
+                                                e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                                            }}
                                         />
                                         <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 m-3 rounded-full text-xs font-medium">
                                             Featured
@@ -280,11 +283,14 @@ const News = () => {
                                     className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300 relative"
                                     onClick={() => handleNewsClick(article)}
                                 >
-                                    <div className="relative">
+                                    <div className="relative bg-gray-50 flex items-center justify-center min-h-[200px]">
                                         <img
                                             src={article.image}
                                             alt={article.title}
-                                            className="w-full h-48 object-cover"
+                                            className="max-w-full max-h-[200px] object-contain"
+                                            onError={(e) => {
+                                                e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                                            }}
                                         />
                                         {/* External link indicator for grid items */}
                                         {article.isExternal && (
@@ -383,7 +389,7 @@ const News = () => {
                     </div>
                 )}
             </div>
-            < Footer />
+            <Footer />
         </>
     );
 };
