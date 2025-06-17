@@ -32,31 +32,31 @@ const memberContinuesLearnCourseById = async (member_id, course_id) => {
 };
 
 const createMemberEnrollmentCourse = async (member_id, course_id) => {
-  const [rows] = await db.execute(
-    "INSERT INTO Course_enrollment (member_id, course_id) VALUES (?, ?)",
-    [member_id, course_id]
-  );
-  return rows;
+    const [rows] = await db.execute(
+        "INSERT INTO Course_enrollment (member_id, course_id) VALUES (?, ?)",
+        [member_id, course_id]
+    );
+    return rows;
 };
 
 const checkEnrollemtCourse = async (member_id, course_id) => {
-  const [rows] = await db.execute(
-    "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND member_id = ? AND course_id = ? ",
-    [member_id, course_id]
-  );
-  return rows.length > 0;
+    const [rows] = await db.execute(
+        "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND member_id = ? AND course_id = ? ",
+        [member_id, course_id]
+    );
+    return rows.length > 0;
 };
 
 const updateLearningProcess = async (
-  member_id,
-  course_id,
-  learning_process
+    member_id,
+    course_id,
+    learning_process
 ) => {
-  const [rows] = await db.execute(
-    "UPDATE Course_enrollment SET learning_process = ? WHERE member_id  = ? AND course_id  = ? AND is_active = 1",
-    [JSON.stringify(learning_process), member_id, course_id]
-  );
-  return rows;
+    const [rows] = await db.execute(
+        "UPDATE Course_enrollment SET learning_process = ? WHERE member_id  = ? AND course_id  = ? AND is_active = 1",
+        [JSON.stringify(learning_process), member_id, course_id]
+    );
+    return rows;
 };
 
 const updateStatusLearningProcess = async (member_id, course_id) => {
@@ -77,38 +77,21 @@ const getCourseEnrollmentByMemberIdAndCourseId = async (member_id, course_id) =>
         learning_process: rows[0].learning_process ? JSON.parse(rows[0].learning_process) : [],
         status: rows[0].status,
     }
-
-
-const getCourseEnrollmentByMemberIdAndCourseId = async (
-  member_id,
-  course_id
-) => {
-  const [rows] = await db.execute(
-    "SELECT * FROM Course_enrollment WHERE member_id = ? AND course_id = ? AND is_active = 1",
-    [member_id, course_id]
-  );
-  return {
-    course_id: rows[0].course_id,
-    member_id: rows[0].member_id,
-    learning_process: JSON.parse(rows[0].learning_process),
-    // course_certificate: rows[0].course_certificate,
-    status: rows[0].status,
-  };
 };
 
 const getCourseById = async (course_id) => {
-  const [rows] = await db.execute(
-    "SELECT * FROM Course WHERE course_id = ? AND is_active = 1",
-    [course_id]
-  );
-  return {
-    course_id: rows[0].course_id,
-    course_name: rows[0].course_name,
-    created_at: rows[0].created_at,
-    created_by: rows[0].created_by,
-    content: JSON.parse(rows[0].content),
-    version: rows[0].version,
-  };
+    const [rows] = await db.execute(
+        "SELECT * FROM Course WHERE course_id = ? AND is_active = 1",
+        [course_id]
+    );
+    return {
+        course_id: rows[0].course_id,
+        course_name: rows[0].course_name,
+        created_at: rows[0].created_at,
+        created_by: rows[0].created_by,
+        content: JSON.parse(rows[0].content),
+        version: rows[0].version,
+    };
 };
 
 const calculateScoreMooc = async (questions, answers) => {
@@ -173,58 +156,50 @@ const calculateScoreMooc = async (questions, answers) => {
     return {
         totalScore,
         moocDetatails
-
-    }
-  });
-  console.log("details", details);
-  console.log("totalScore", totalScore);
-  return {
-    totalScore,
-    details,
-  };
+    };
 };
 const createCourse = async (course) => {
-  const [rows] = await db.execute(
-    "INSERT INTO Course (course_name, age_group, created_at, created_by, content, version) VALUES (?, ?, NOW(), ?, ?, 1.0)",
-    [
-      course.course_name,
-      course.age_group,
-      course.created_by,
-      JSON.stringify(course.content),
-    ]
-  );
-  return rows;
+    const [rows] = await db.execute(
+        "INSERT INTO Course (course_name, age_group, created_at, created_by, content, version) VALUES (?, ?, NOW(), ?, ?, 1.0)",
+        [
+            course.course_name,
+            course.age_group,
+            course.created_by,
+            JSON.stringify(course.content),
+        ]
+    );
+    return rows;
 };
 const updateCourse = async (course) => {
-  const [rows] = await db.execute(
-    "UPDATE Course SET course_name = ?, age_group = ?, content = ?, version = version + 0.1, edited_at = NOW(), edited_by = ? WHERE course_id = ?",
-    [
-      course.course_name,
-      course.age_group,
-      JSON.stringify(course.content),
-      course.edited_by,
-      course.course_id,
-    ]
-  );
-  return rows;
+    const [rows] = await db.execute(
+        "UPDATE Course SET course_name = ?, age_group = ?, content = ?, version = version + 0.1, edited_at = NOW(), edited_by = ? WHERE course_id = ?",
+        [
+            course.course_name,
+            course.age_group,
+            JSON.stringify(course.content),
+            course.edited_by,
+            course.course_id,
+        ]
+    );
+    return rows;
 };
 const deleteCourse = async (course_id) => {
-  await db.execute("UPDATE Course SET is_active = 0 WHERE course_id = ?", [
-    course_id,
-  ]);
+    await db.execute("UPDATE Course SET is_active = 0 WHERE course_id = ?", [
+        course_id,
+    ]);
 };
 module.exports = {
-  listOfCourse,
-  searchCourseByName,
-  memberContinuesLearnCourseById,
-  createMemberEnrollmentCourse,
-  checkEnrollemtCourse,
-  updateLearningProcess,
-  getCourseEnrollmentByMemberIdAndCourseId,
-  getCourseById,
-  calculateScoreMooc,
-  deleteCourse,
-  updateStatusLearningProcess,
-  createCourse,
-  updateCourse,
+    listOfCourse,
+    searchCourseByName,
+    memberContinuesLearnCourseById,
+    createMemberEnrollmentCourse,
+    checkEnrollemtCourse,
+    updateLearningProcess,
+    getCourseEnrollmentByMemberIdAndCourseId,
+    getCourseById,
+    calculateScoreMooc,
+    deleteCourse,
+    updateStatusLearningProcess,
+    createCourse,
+    updateCourse,
 };
