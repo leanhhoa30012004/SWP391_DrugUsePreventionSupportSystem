@@ -1,23 +1,55 @@
-import React, { useState } from "react";
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from 'react-router-dom'
 import Logo from "../../assets/logo-WeHope.png";
 import { NavbarMenu } from './Data';
 import { IoMdSearch } from "react-icons/io";
 import FaceIcon from '@mui/icons-material/Face';
 
-
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  // Check user login status
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
 
   // Add scroll event listener
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Implement search functionality here
+      console.log('Searching for:', searchQuery);
+      // navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   return (
     <>
@@ -31,8 +63,11 @@ const Navbar = () => {
               <Link to="/" className="block w-full h-full relative">
                 <img
                   src={Logo}
-                  alt="Logo"
+                  alt="WeHope Logo"
                   className="absolute inset-0 w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
                 />
               </Link>
             </div>
@@ -41,7 +76,7 @@ const Navbar = () => {
             <div className="flex items-center gap-6 grow justify-end">
               {/* Menu items */}
               <div className="hidden lg:flex items-center justify-center space-x-4 grow">
-                {NavbarMenu.map((item) => (
+                {NavbarMenu?.map((item) => (
                   <Link
                     key={item.id}
                     to={item.link}
@@ -54,52 +89,58 @@ const Navbar = () => {
 
               <div className="flex items-center gap-2">
                 {/* Search Bar */}
-                <div className="relative hidden sm:block">
+                <form onSubmit={handleSearch} className="relative hidden sm:block">
                   <input
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-32 sm:w-40 lg:w-48 h-9 border-2 border-gray-200 rounded-full 
-                             px-4 pr-6 text-sm focus:outline-none focus:border-red-500
+                             px-4 pr-10 text-sm focus:outline-none focus:border-red-500
                              transition-all duration-200 bg-white hover:bg-gray-50"
                   />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
                     <IoMdSearch className="w-4 h-4" />
-                  </div>
-                </div>
+                  </button>
+                </form>
 
                 {/* Auth Buttons */}
                 <div className="flex items-center gap-2">
-                  {/* Register Button */}
-                  
-                  {/* Login Button */}
-                  {localStorage.getItem('user') ? (
-                    <Link 
-                      to="/profile"
-                      className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap flex items-center gap-2"
-                    >
-                      <FaceIcon className="text-white" />
-                      Profile
-                    </Link>
+                  {user ? (
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to="/dashboard"
+                        className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap flex items-center gap-2"
+                      >
+                        <FaceIcon className="text-white" />
+                        {user.username || 'Profile'}
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="px-3 py-1.5 border-2 border-gray-400 text-gray-600 hover:bg-gray-50 rounded-md transition-colors duration-200 text-sm whitespace-nowrap"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   ) : (
                     <>
-                      <Link 
+                      <Link
                         to="/register"
                         className="px-3 py-1.5 border-2 border-red-500 text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200 text-sm whitespace-nowrap"
                       >
                         Register
                       </Link>
-                      <Link 
+                      <Link
                         to="/login"
                         className="px-3 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 text-sm whitespace-nowrap"
                       >
                         Log in
                       </Link>
                     </>
-
                   )}
-                  
                 </div>
               </div>
             </div>
@@ -111,4 +152,3 @@ const Navbar = () => {
 }
 
 export default Navbar;
-
