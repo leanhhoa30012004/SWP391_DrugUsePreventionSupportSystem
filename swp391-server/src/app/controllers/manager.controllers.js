@@ -60,9 +60,9 @@ exports.updateRole = async (req, res) => {
   }
 };
 exports.deleteUser = async (req, res) => {
-  const { user_id } = req.body;
+  const  id  = req.params.id; // Assuming user_id is passed as a URL parameter
   try {
-    await managerModels.deleteUser(user_id);
+    await managerModels.deleteUser(id);
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);

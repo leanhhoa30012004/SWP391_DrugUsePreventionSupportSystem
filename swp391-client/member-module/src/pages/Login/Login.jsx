@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axiosInstance from '../../config/axios/axiosInstance'
 import Swal from 'sweetalert2'
-import Logo from '../../assets/logo-WeHope.png'
+import axios from 'axios'
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
+    console.log("----Validating------")
     const newErrors = {};
     console.log("Username: ", username, ", Password: ", password)
     if (!username.trim()) {
@@ -30,14 +31,14 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+    console.log("----Pass 0 ------")
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axiosInstance.post('/api/auth/login', {
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
         username,
         password
       });
@@ -58,8 +59,8 @@ const Login = () => {
           timer: 2000,
           showConfirmButton: false
         });
-        // Navigate to dashboard after successful login
-        navigate('/admin/dashboard');
+        // Navigate to homepage after successful login
+        navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -95,12 +96,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 py-12 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center">
-        <Link to="/" className="block w-[400px] h-[180px] sm:w-[520px] sm:h-[220px] lg:w-[640px] lg:h-[280px] relative">
-          <img src={Logo} alt="Logo" className="absolute inset-0 w-full h-full object-contain" />
-        </Link>
-        <h2 className="mt-0 text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Log in to your account
         </h2>
       </div>

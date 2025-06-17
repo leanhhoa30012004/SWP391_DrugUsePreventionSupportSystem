@@ -32,7 +32,13 @@ exports.login = async (req, res) => {
     if (!user || user.password !== password) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
-    res.status(200).json({ message: "Login successful", user });
+    // Tạo JWT token
+    const token = jwt.sign(
+      { userId: user.member_id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7h" }
+    );
+    res.status(200).json({ message: "Login successful", user, token });
   } catch (err) {
     console.error("Login error:", err); // thêm dòng này
     res.status(500).json({ error: err.message || "Internal Server Error" });
@@ -88,7 +94,7 @@ exports.loginManager = async (req, res) => {
     const token = jwt.sign(
       { userId: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7h" }
     );
     res.status(200).json({ message: "Login successful", token, user });
   } catch (error) {

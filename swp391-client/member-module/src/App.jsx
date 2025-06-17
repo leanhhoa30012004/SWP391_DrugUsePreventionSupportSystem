@@ -3,12 +3,15 @@ import { Routes, Route } from 'react-router-dom'
 import './App.css'
 
 // Homepage components
-// import Dashboard from './pages/Homepage/Dashboard' // Comment out vì file không tồn tại
 import Homepage from './pages/Homepage/Homepage'
 import Aboutus from './pages/Homepage/Aboutus'
 import OnlineConsultation from './pages/Homepage/Onlineconsultant'
+import Dashboard from './pages/Homepage/Dashboard'
+import Courses from './pages/Homepage/Courses'
+
+// Contact & News
 import Contact from './pages/Contact/contact'
-import News from './pages/News/News';
+import News from './pages/News/news'
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -22,9 +25,13 @@ import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
 import AdminDashboard from './pages/Admin/dashboard/Dashboard'
 import Blogs from './pages/Admin/Blogs/Blogs/Blogs'
 import Course from './pages/Admin/Course/Course/Course'
-import Survey from './pages/Admin/Survey/Survey/Survey'
+// import AdminSurvey from './pages/Admin/Survey/Survey/Survey'
 import Staff from './pages/Admin/Staff/Staff/Staff'
 import Setting from './pages/Admin/Setting/Setting/Setting'
+
+// Survey components
+// import Survey from './pages/Survey/Survey'
+// import SurveySelectionPage from './pages/Survey/ViewSurvey'
 
 function App() {
   return (
@@ -35,6 +42,8 @@ function App() {
       <Route path="/online-consultation" element={<OnlineConsultation />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
+      <Route path="/courses" element={<Courses />} />
+      <Route path="/dashboard" element={<Dashboard />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
@@ -43,15 +52,16 @@ function App() {
       <Route path="/confirmation-code" element={<ConfirmationCode />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* User Dashboard - Comment out vì component không tồn tại */}
-      {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+      {/* Survey Routes */}
+      {/* <Route path="/survey" element={<SurveySelectionPage />} />
+      <Route path="/survey/:sid" element={<Survey />} /> */}
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="blogs" element={<Blogs />} />
         <Route path="course" element={<Course />} />
-        <Route path="survey" element={<Survey />} />
+        {/* <Route path="survey" element={<AdminSurvey />} /> */}
         <Route path="staff" element={<Staff />} />
         <Route path="setting" element={<Setting />} />
       </Route>
