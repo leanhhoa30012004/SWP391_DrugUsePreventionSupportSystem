@@ -160,7 +160,7 @@ const Survey = () => {
     }
     console.log('API Called')
     const surveyData = {
-      survey_id: 3, // ID của khảo sát ASSIST
+      survey_id: sid, // ID của khảo sát ASSIST
       member_id: member_id, // ID của người dùng hiện tại
       score: totalScore,
       date: new Date(),

@@ -24,7 +24,7 @@ exports.findSurveyByType = async (req, res) => {
 exports.findSurveyBySurveyId = async (req, res) => {
     const { survey_id } = req.params;
     console.log('survey_id: ', survey_id)
-    try {
+        try {
         const survey = await surveyModel.findSurveyBySurveyID(survey_id)
         res.json(survey);
     } catch (error) {
@@ -37,11 +37,11 @@ exports.submitSurvey = async (req, res) => {
 
     try {
         const { survey_id, answers, member_id, member_version } = req.body;
-
+        console.log("body: ", req.body)
 
         // Lấy survey từ DB theo loại
         const rows = await surveyModel.findSurveyBySurveyID(survey_id);
-
+        console.log("survey: ", rows)
         if (rows.length === 0) {
             return res.status(404).json({ error: "Survey not found" });
         }
@@ -50,7 +50,9 @@ exports.submitSurvey = async (req, res) => {
 
         // Tính điểm
         const totalScore = surveyModel.calculateScore(surveyContent, answers);
+        
         const addEnrollment = await surveyModel.addEnrollmentSurvey(survey_id, member_id, answers, member_version)
+        console.log("Total: ", totalScore, "\n",addEnrollment)
         if (!addEnrollment) {
             return res.status(500).json({ error: "Failed to add enrollment" });
         }

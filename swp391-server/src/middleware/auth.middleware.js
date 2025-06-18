@@ -21,7 +21,6 @@ exports.protectManager = async (req, res, next) => {
     try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
       // Get user from token
       const user = await managerModel.findByUsername(decoded.username);
       if (!user) {
@@ -30,9 +29,8 @@ exports.protectManager = async (req, res, next) => {
           message: "User not found",
         });
       }
-
       // Check if user is active
-      if (!user.isActive) {
+      if (user.is_active == 0 || user.is_active == false) {
         return res.status(401).json({
           success: false,
           message: "Your account has been deactivated",
@@ -40,6 +38,7 @@ exports.protectManager = async (req, res, next) => {
       }
 
       // Add user to request
+
       req.user = user;
       next();
     } catch (error) {
@@ -114,6 +113,7 @@ exports.protect = async (req, res, next) => {
 // Restrict to certain roles
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
+    // Kiểm tra xem vai trò của người dùng có nằm trong danh sách vai trò được phép không
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,

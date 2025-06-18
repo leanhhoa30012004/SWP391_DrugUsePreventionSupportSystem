@@ -25,13 +25,14 @@ exports.getCourseByName = async (req, res) => {
 }
 
 exports.memberCountinuesLearnCourseById = async (req, res) => {
-    const { user_id, course_id } = req.body;
+    const { member_id, course_id } = req.body;
     try {
-        const course_progress = await courseModel.memberContinuesLearnCourseById(user_id, course_id);
+        const course_progress = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
         const learning_progress_mooc = course_progress.learning_process;
         const course_content = course_progress.content;
 
-        const moocLength = learning_progress_mooc[0]?.moocs?.length || 0;
+
+        const moocLength = Array.isArray(learning_progress_mooc) ? learning_progress_mooc.length : 0;
 
         if (moocLength === 0) {
             res.json(course_content[0]);
@@ -47,3 +48,46 @@ exports.memberCountinuesLearnCourseById = async (req, res) => {
     }
 
 }
+
+exports.createMemberEnrollmentCourse = async (req, res) => {
+    const { member_id, course_id } = req.body;
+    try {
+        if (await courseModel.checkEnrollemtCourse(member_id, course_id)) {
+            return res.status(400).json({ error: "You have alreadey enrolled in this course" });
+        }
+        const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id)
+        if (!enrollment) {
+            res.status(500).json({ error: "Failed to join course" });
+        }
+        res.json({ message: "You have successfully enrolled in this course" });
+    } catch (error) {
+        console.log('createMemberEnrollmentCourse error: ', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
+exports.submitCourse = async (req, res) => {
+    const { member_id, course_id, member_answer } = req.body;
+
+    try {
+        const course = await courseModel.getCourseById(course_id);
+        // console.log('submitCourse course: ', course);
+        if (!course) {
+            return res.status(404).json({ error: "Course not found" });
+        }
+        const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
+        console.log('submittedCourse: ', submittedCourse);
+        if (submittedCourse.totalScore < 8) {
+            return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
+        } else {
+            const learning_process = await courseModel.getCourseEnrollmentByMemberIdAndCourseId(member_id, course_id);
+            learning_process.learning_process.push(submittedCourse.moocDetatails);
+            await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
+            res.json({ message: "You have successfully completed this mooc" });
+        }
+    } catch (error) {
+        console.log('submitCourse error: ', error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+}
+

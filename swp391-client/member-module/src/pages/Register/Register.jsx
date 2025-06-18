@@ -1,47 +1,49 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import Swal from 'sweetalert2'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import axios from 'axios'
 
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    email: '',
-    fullname: ''
-
+    username: "",
+    password: "",
+    email: "",
+    fullname: "",
+    age: "",
   });
   const [loading, setLoading] = useState(false);
 
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      console.log('Sending registration data:', {
+      console.log("Sending registration data:", {
         username: formData.username,
         password: formData.password,
         email: formData.email,
-        fullname: formData.fullname
+        fullname: formData.fullname,
+        age: formData.age,
       });
 
       const response = await axios.post('http://localhost:3000/api/auth/register', {
+
         username: formData.username,
         password: formData.password,
         email: formData.email,
-        fullname: formData.fullname
+        fullname: formData.fullname,
+        age: formData.age,
       });
-      
+
       if (response.status === 201) {
         console.log("Registration successful:", response.data);
         await Swal.fire({
@@ -50,25 +52,28 @@ const handleSubmit = async (e) => {
           icon: "success",
           confirmButtonColor: "#ef4444",
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
 
-        navigate('/login');
+        navigate("/login");
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      console.error('Error response:', error.response?.data);
-      
+      console.error("Registration error:", error);
+      console.error("Error response:", error.response?.data);
+
       Swal.fire({
-        icon: 'error',
-        title: 'Registration Failed',
-        text: error.response?.data?.message || 'There was an error creating your account. Please try again.',
-        confirmButtonColor: "#ef4444"
+        icon: "error",
+        title: "Registration Failed",
+        text:
+          error.response?.data?.message ||
+          "There was an error creating your account. Please try again.",
+        confirmButtonColor: "#ef4444",
+        timer: 2000,
       });
     } finally {
       setLoading(false);
     }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -82,7 +87,10 @@ const handleSubmit = async (e) => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="fullname" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="fullname"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Full Name
               </label>
               <div className="mt-1">
@@ -100,7 +108,10 @@ const handleSubmit = async (e) => {
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Username
               </label>
               <div className="mt-1">
@@ -118,7 +129,10 @@ const handleSubmit = async (e) => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <div className="mt-1">
@@ -135,9 +149,32 @@ const handleSubmit = async (e) => {
                 />
               </div>
             </div>
+            <div>
+              <label
+                htmlFor="age"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Age
+              </label>
+              <div className="mt-1">
+                <input
+                  id="age"
+                  name="age"
+                  type="number"
+                  required
+                  value={formData.age}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  placeholder="Enter your age"
+                />
+              </div>
+            </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="mt-1">
@@ -160,21 +197,38 @@ const handleSubmit = async (e) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-                  ${loading 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                  ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   }`}
               >
                 {loading ? (
                   <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Registering...
                   </span>
                 ) : (
-                  'Register'
+                  "Register"
                 )}
               </button>
             </div>
@@ -192,8 +246,11 @@ const handleSubmit = async (e) => {
 
             <div className="mt-6">
               <p className="text-center text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link to="/login" className="font-medium text-red-600 hover:text-red-500">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="font-medium text-red-600 hover:text-red-500"
+                >
                   Log in
                 </Link>
               </p>
@@ -202,7 +259,7 @@ const handleSubmit = async (e) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;
