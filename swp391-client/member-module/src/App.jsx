@@ -12,6 +12,7 @@ import Courses from './pages/Homepage/Courses'
 // Contact & News
 import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
+import Blogs from './pages/Blogs/blogs'
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -23,7 +24,7 @@ import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
 // Admin components
 import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
 import AdminDashboard from './pages/Admin/dashboard/Dashboard'
-import Blogs from './pages/Admin/Blogs/Blogs/Blogs'
+import AdminBlogs from './pages/Admin/Blogs/Blogs/Blogs'
 import Course from './pages/Admin/Course/Course/Course'
 // import AdminSurvey from './pages/Admin/Survey/Survey/Survey'
 import Staff from './pages/Admin/Staff/Staff/Staff'
@@ -42,6 +43,7 @@ function App() {
       <Route path="/online-consultation" element={<OnlineConsultation />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
+      <Route path="/blogs" element={<Blogs />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/dashboard" element={<Dashboard />} />
 
@@ -59,7 +61,7 @@ function App() {
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
         <Route index element={<AdminDashboard />} />
-        <Route path="blogs" element={<Blogs />} />
+        <Route path="blogs" element={<AdminBlogs />} />
         <Route path="course" element={<Course />} />
         {/* <Route path="survey" element={<AdminSurvey />} /> */}
         <Route path="staff" element={<Staff />} />
