@@ -3,6 +3,7 @@ import './Contact.css';
 import mapImage from '../../assets/map.svg';
 import logoWeHope from '../../assets/logo-wehope.png';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 import emaillogo from '../../assets/emaillogo.svg';
 import phonelogo from '../../assets/phonelogo.svg';
 
@@ -61,38 +62,7 @@ const Contact = () => {
                     <button type="submit" className="post-comment-btn">Posts Comment</button>
                 </form>
             </section>
-
-            <section className="footer-container">
-                <div className="footer-content">
-                    <div className="footer-logo">
-                        <img src={logoWeHope} alt="WeHope Logo" />
-                    </div>
-
-                    <div className="footer-contact-info">
-                        <div className="contact-details">
-                            <h3>Contact Information</h3>
-                            <p>WeHope, TP.Hồ Chí Minh</p>
-                            <p>Phone: +849337748231, +84912384773</p>
-                            <p>Email: WeHope.organization@fpt.net.vn</p>
-                            <p>Fax: 02518680375</p>
-                        </div>
-                        <div className="quick-links">
-                            <h3>Quick Links</h3>
-                            <ul>
-                                <li><a href="#">About Us</a></li>
-                                <li><a href="#">What We Do</a></li>
-                                <li><a href="#">Get Involved</a></li>
-                                <li><a href="#">News And Events</a></li>
-                                <li><a href="#">Contact Us</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <footer className="site-footer">
-                <p>Copyright 2025. All Rights Reserved by Tung Tung Tung Sahur</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
