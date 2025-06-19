@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import logoWeHope from '../../assets/logo-WeHope.png';
+import { authService } from '../../services/authService';
 
 const ResetPassword = () => {
     const [newPassword, setNewPassword] = useState('');
@@ -11,12 +12,21 @@ const ResetPassword = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const navigate = useNavigate();
-    const location = useLocation();
-    const userEmail = location.state?.email || '';
-    const resetToken = location.state?.token || '';
+    const { token } = useParams(); // Lấy token từ URL params
+
+    useEffect(() => {
+        if (!token) {
+            setMessage('Invalid reset link. Please request a new password reset.');
+        }
+    }, [token]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!token) {
+            setMessage('Invalid reset link. Please request a new password reset.');
+            return;
+        }
 
         if (newPassword !== confirmPassword) {
             setMessage('Passwords do not match');
@@ -29,32 +39,18 @@ const ResetPassword = () => {
         }
 
         setIsLoading(true);
+        setMessage('');
 
         try {
-            const response = await fetch('/api/reset-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: userEmail,
-                    token: resetToken,
-                    newPassword
-                }),
-            });
+            // Gọi API thông qua authService với token từ URL
+            await authService.resetPassword(token, newPassword);
+            setMessage('Password reset successfully! Redirecting to login...');
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setMessage('Password reset successfully! Redirecting to login...');
-                setTimeout(() => {
-                    navigate('/login');
-                }, 2000);
-            } else {
-                setMessage(data.message || 'Failed to reset password. Please try again.');
-            }
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            setMessage(error.message || 'Failed to reset password. The link may be expired.');
         } finally {
             setIsLoading(false);
         }
@@ -67,7 +63,7 @@ const ResetPassword = () => {
                 <div className="w-full h-full bg-white rounded-3xl shadow-lg flex items-center justify-center overflow-hidden">
                     <img
                         src="https://media.istockphoto.com/id/1500914761/vector/fitness-health-gym-trendy-icons-on-circles.jpg?s=612x612&w=0&k=20&c=MaSBJ-edgZ2Nm7utjZgYupCWAzhrcIek0Udz48L_JME="
-                        alt="Two hands fist bumping"
+                        alt="Reset password illustration"
                         className="w-3/4 h-3/4 object-contain"
                     />
                 </div>
@@ -89,8 +85,7 @@ const ResetPassword = () => {
                     <div className="text-center">
                         <h2 className="text-2xl font-semibold text-red-500 mb-4">Reset Password</h2>
                         <p className="text-sm text-gray-600">
-                            Enter your new password for:
-                            <span className="font-medium text-gray-800"> {userEmail}</span>
+                            Enter your new password below
                         </p>
                     </div>
 
@@ -174,7 +169,7 @@ const ResetPassword = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={isLoading || !newPassword || !confirmPassword}
+                            disabled={isLoading || !newPassword || !confirmPassword || !token}
                             className="w-full bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
                             {isLoading ? (
