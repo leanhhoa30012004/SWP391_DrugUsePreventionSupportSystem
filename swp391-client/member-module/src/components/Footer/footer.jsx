@@ -8,21 +8,19 @@ const Footer = () => {
             {/* Footer */}
             <footer className="bg-white py-16">
                 <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                         {/* Logo Section */}
-                        <div className="flex justify-center md:justify-start">
-                            <div className="text-center">
-                                <img
-                                    src={Logo}
-                                    alt="WeHope Logo"
-                                    className="h-60 w-auto mx-auto mb-4"
-                                />
-                            </div>
+                        <div className="flex justify-center">
+                            <img
+                                src={Logo}
+                                alt="WeHope Logo"
+                                className="h-60 w-auto"
+                            />
                         </div>
 
                         {/* Contact Information & Quick Links Container */}
-                        <div className="md:col-span-2 bg-gray-100 p-8 rounded-lg">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="sm:col-span-2 bg-gray-100 p-8 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
                                 {/* Contact Information */}
                                 <div>
                                     <h4 className="font-semibold text-lg mb-4 text-gray-800">Contact Information</h4>

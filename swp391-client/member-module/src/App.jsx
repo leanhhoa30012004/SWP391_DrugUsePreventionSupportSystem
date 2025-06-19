@@ -4,12 +4,12 @@ import './App.css'
 
 // Homepage components
 import Homepage from './pages/Homepage/Homepage'
-import Aboutus from './pages/Homepage/Aboutus'
+// import Aboutus from './pages/Homepage/Aboutus'
 import OnlineConsultation from './pages/Homepage/Onlineconsultant'
 import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
 import Dashboard from './pages/Homepage/Dashboard'
-import Courses from './pages/Homepage/Courses'
+import Courses from './pages/Courses/Courses'
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -30,13 +30,14 @@ import Setting from './pages/Admin/Setting/Setting/Setting'
 // Survey components
 import Survey from './pages/Survey/Survey'
 import SurveySelectionPage from './pages/Survey/ViewSurvey'
+import AboutUsPage from './pages/About/About'
 
 function App() {
   return (
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Homepage />} />
-      <Route path="/aboutus" element={<Aboutus />} />
+      {/* <Route path="/aboutus" element={<Aboutus />} /> */}
       <Route path="/online-consultation" element={<OnlineConsultation />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
@@ -55,6 +56,7 @@ function App() {
       {/* Survey Routes */}
       <Route path="/survey" element={<SurveySelectionPage />} />
       <Route path="/survey/:sid" element={<Survey />} />
+      <Route path="/about" element={<AboutUsPage/>} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>

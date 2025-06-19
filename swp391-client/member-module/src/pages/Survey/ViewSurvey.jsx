@@ -20,6 +20,7 @@ import {
   Timer
 } from 'lucide-react';
 import {useNavigate} from 'react-router-dom'
+import Navbar from '../../components/Navbar/Navbar';
 
 const SurveySelectionPage = () => {
   // Thông tin chi tiết về từng bài khảo sát
@@ -127,6 +128,8 @@ const SurveySelectionPage = () => {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header with Background Image */}
       <div className="relative overflow-hidden shadow-lg">
@@ -382,6 +385,7 @@ const SurveySelectionPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
