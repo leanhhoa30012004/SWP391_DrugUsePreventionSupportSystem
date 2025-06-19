@@ -55,7 +55,7 @@ const AboutUs = () => {
                       alt={image.alt}
                       className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0  bg-opacity-20 hover:bg-opacity-30 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0  bg-opacity-10 hover:bg-opacity-20 transition-opacity duration-300"></div>
                   </div>
                 ))}
               </div>
