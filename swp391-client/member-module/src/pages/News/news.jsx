@@ -225,7 +225,7 @@ const News = () => {
                     </div>
                     
                     <h3 class="text-lg font-semibold text-gray-800">Tác động đến xã hội</h3>
-                    <p>Usuario jóvenes adictos enfrentan mayores riesgos de:</p>
+                    <p>Người nghiện người dùng phải đối mặt với những rủi ro lớn hơn của:</p>
                     <ul class="list-disc list-inside space-y-1">
                         <li>Bỏ học, thất nghiệp</li>
                         <li>Tệ nạn xã hội khác</li>
