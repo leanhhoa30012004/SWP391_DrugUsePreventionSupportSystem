@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import logoWeHope from '../../assets/logo-WeHope.png';
+import { authService } from '../../services/authService';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -11,34 +12,20 @@ const ForgotPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setMessage('');
 
         try {
-            // Call API to send reset password email
-            const response = await fetch('/api/forgot-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email
-                }),
-            });
+            // SỬA LẠI: Sử dụng authService thay vì fetch trực tiếp
+            const response = await authService.forgotPassword(email);
 
-            const data = await response.json();
+            // Server sẽ gửi email với link reset password, không cần confirmation code
+            setMessage('Password reset email sent successfully! Please check your email and click the link to reset your password.');
 
-            if (response.ok) {
-                setMessage('Reset password email sent successfully! Please check your email.');
-                // Navigate to confirmation code page after 2 seconds
-                setTimeout(() => {
-                    navigate('/confirmation-code', {
-                        state: { email: email }
-                    });
-                }, 2000);
-            } else {
-                setMessage(data.message || 'Email not found. Please check your email address.');
-            }
+            // Xóa email sau khi gửi thành công
+            setEmail('');
+
         } catch (error) {
-            setMessage('An error occurred. Please try again.');
+            setMessage(error.message || 'Email not found. Please check your email address.');
         } finally {
             setIsLoading(false);
         }
@@ -113,24 +100,11 @@ const ForgotPassword = () => {
                                     Sending...
                                 </span>
                             ) : (
-                                'Send Confirmation Code'
+                                'Send Reset Link' // SỬA LẠI TEXT
                             )}
                         </button>
 
-                        {/* Test Button - Tạm thời để test */}
-                        <div className="text-center">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/confirmation-code', {
-                                    state: {
-                                        email: email || 'test@example.com'
-                                    }
-                                })}
-                                className="text-sm text-blue-500 hover:text-blue-700 underline"
-                            >
-                                Test Confirmation Code (Skip API)
-                            </button>
-                        </div>
+                        {/* XÓA TEST BUTTON */}
 
                         {/* Login Link */}
                         <div className="text-center pt-4">

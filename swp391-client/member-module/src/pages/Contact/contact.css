@@ -183,95 +183,6 @@
     background-color: #c0392b;
 }
 
-.footer-container {
-    background-color: white;
-    padding: 60px 0;
-}
-
-.footer-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 50px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.footer-logo {
-    flex: 0.35;
-    text-align: center;
-    padding: 20px 0;
-}
-
-.footer-logo img {
-    max-width: 350px;
-    width: 100%;
-    height: auto;
-}
-
-.footer-contact-info {
-    flex: 0.65;
-    background-color: #f4f4f4;
-    padding: 50px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 60px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.contact-details,
-.quick-links {
-    flex: 1;
-}
-
-.contact-details h3,
-.quick-links h3 {
-    color: #333;
-    margin-bottom: 20px;
-    font-weight: 700;
-    font-size: 18px;
-}
-
-.contact-details p,
-.quick-links ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.contact-details p {
-    margin-bottom: 10px;
-    color: #666;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.quick-links ul li {
-    margin-bottom: 10px;
-}
-
-.quick-links ul li a {
-    text-decoration: none;
-    color: #666;
-    font-size: 14px;
-    line-height: 1.6;
-    transition: color 0.3s ease;
-}
-
-.quick-links ul li a:hover {
-    color: #e74c3c;
-}
-
-.site-footer {
-    background-color: #e74c3c;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-    font-size: 14px;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .contact-header-content {
@@ -300,21 +211,5 @@
 
     .form-group {
         flex-direction: column;
-    }
-
-    .footer-content {
-        flex-direction: column;
-        gap: 40px;
-        text-align: center;
-    }
-
-    .footer-logo,
-    .footer-contact-info {
-        flex: none;
-    }
-
-    .footer-contact-info {
-        flex-direction: column;
-        gap: 30px;
     }
 }
