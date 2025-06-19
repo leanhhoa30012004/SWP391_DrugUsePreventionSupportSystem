@@ -2,14 +2,53 @@ const { response, json } = require("express");
 const db = require("../../config/db.config");
 
 const listOfSurvey = async () => {
-  const [rows] = await db.execute("SELECT * FROM Survey WHERE is_active = 1");
-  return rows;
+  const [rows] = await db.execute(`WITH Ranked AS (
+  SELECT 
+    s.survey_id,
+    s.survey_type,
+    s.created_by,
+    s.created_date,
+    sv.content,
+    sv.edited_at,
+    sv.version,
+    ROW_NUMBER() OVER (PARTITION BY s.survey_id ORDER BY sv.version DESC) AS rn
+  FROM Survey s
+  JOIN Survey_version sv ON s.survey_id = sv.survey_id
+  WHERE s.is_active = 1
+)
+SELECT * FROM Ranked WHERE rn = 1;`);
+  return rows.map(row => ({
+    survey_id: row.survey_id,
+    survey_type: row.survey_type,
+    content: JSON.parse(row.content),
+    created_by: row.created_by,
+    created_at: row.created_date,
+    version: row.version,
+  }));
 };
 
 const findSurveyByType = async (type) => {
   const searchType = `%${type}%`;
   const [rows] = await db.execute(
-    "SELECT * FROM Survey s WHERE s.survey_type LIKE ? AND s.is_active = 1 ORDER BY s.version DESC LIMIT 1",
+    `WITH Ranked AS (
+  SELECT 
+    s.survey_id,
+    s.survey_type,
+    s.created_by,
+    s.created_date,
+    sv.content,
+    sv.edited_at,
+    sv.version,
+    ROW_NUMBER() OVER (
+      PARTITION BY s.survey_id 
+      ORDER BY sv.version DESC
+    ) AS rn
+  FROM Survey s
+  JOIN Survey_version sv ON s.survey_id = sv.survey_id
+  WHERE s.survey_type LIKE ? AND s.is_active = 1
+)
+SELECT * FROM Ranked WHERE rn = 1;
+`,
     [searchType]
   );
   if (rows.length === 0) {
@@ -21,16 +60,32 @@ const findSurveyByType = async (type) => {
     survey_type: rows[0].survey_type,
     content: JSON.parse(rows[0].content),
     created_by: rows[0].created_by,
-    created_at: rows[0].created_at,
-    edit_by: rows[0].edit_by,
-    edit_at: rows[0].edit_at,
+    created_at: rows[0].created_date,
     version: rows[0].version,
   };
 };
 
 const findSurveyBySurveyID = async (survey_id) => {
   const [rows] = await db.execute(
-    "SELECT * FROM Survey s WHERE s.survey_id = ? AND s.is_active = 1",
+    `WITH Ranked AS (
+  SELECT 
+    s.survey_id,
+    s.survey_type,
+    s.created_by,
+    s.created_date,
+    sv.content,
+    sv.edited_at,
+    sv.version,
+    ROW_NUMBER() OVER (
+      PARTITION BY s.survey_id 
+      ORDER BY sv.version DESC
+    ) AS rn
+  FROM Survey s
+  JOIN Survey_version sv ON s.survey_id = sv.survey_id
+  WHERE s.survey_id = ? AND s.is_active = 1
+  )
+  SELECT * FROM Ranked WHERE rn = 1;
+  `,
     [survey_id]
   );
   if (rows.length === 0) {
@@ -42,9 +97,7 @@ const findSurveyBySurveyID = async (survey_id) => {
     survey_type: rows[0].survey_type,
     content: JSON.parse(rows[0].content),
     created_by: rows[0].created_by,
-    created_at: rows[0].created_at,
-    edit_by: rows[0].edit_by,
-    edit_at: rows[0].edit_at,
+    created_at: rows[0].created_date,
     version: rows[0].version,
   };
 };
@@ -52,7 +105,15 @@ const findSurveyBySurveyID = async (survey_id) => {
 const findSurveyByTypeAndVersion = async (type, version) => {
   const searchType = `%${type}%`;
   const [rows] = await db.execute(
-    "SELECT * FROM Survey s WHERE s.survey_type LIKE ? AND s.version = ? AND s.is_active = 1",
+    `SELECT s.survey_id,
+    s.survey_type,
+    s.created_by,
+    s.created_date,
+    sv.content,
+    sv.edited_at,
+    sv.version
+FROM Survey s JOIN Survey_version sv ON s.survey_id = sv.survey_id 
+WHERE s.survey_type  = ? AND sv.version = ? AND s.is_active = 1`,
     [searchType, version]
   );
   if (row.length === 0) {
@@ -63,9 +124,8 @@ const findSurveyByTypeAndVersion = async (type, version) => {
     survey_type: rows[0].survey_type,
     content: JSON.parse(rows[0].content),
     created_by: rows[0].created_by,
-    created_at: rows[0].created_at,
-    edit_by: rows[0].edit_by,
-    edit_at: rows[0].edit_at,
+    created_at: rows[0].created_date,
+    version: rows[0].version,
   };
 };
 
@@ -93,21 +153,18 @@ const calculateScore = (questions, answers) => {
 
 const getSurveyHistoryByMember = async (member_id) => {
   const [rows] = await db.execute(
-    "SELECT s.survey_id, u.fullname, se.response, se.`date`, se.member_version FROM Survey_enrollment se JOIN Survey s ON se.survey_id = s.survey_id JOIN Users u ON se.member_id = u.user_id WHERE u.user_id = ?",
+    `SELECT se.survey_id, u.fullname, se.response, se.date, se.enroll_version
+FROM Survey_enrollment se JOIN Users u ON se.member_id = u.user_id AND se.is_active = 1
+WHERE se.member_id = ?`,
     [member_id]
   );
   return rows;
 };
 
-const addEnrollmentSurvey = async (
-  survey_id,
-  member_id,
-  response,
-  member_version
-) => {
+const addEnrollmentSurvey = async (survey_id, member_id, response, enroll_version) => {
   const [rows] = await db.execute(
-    "INSERT INTO Survey_enrollment (survey_id, member_id, response, date, member_version) VALUES(?, ?, ?, NOW(), ?)",
-    [survey_id, member_id, response, member_version]
+    "INSERT INTO Survey_enrollment (survey_id, member_id, response, date, enroll_version) VALUES(?, ?, ?, NOW(), ?)",
+    [survey_id, member_id, response, enroll_version]
   );
   return rows;
 };
