@@ -41,6 +41,7 @@ function App() {
       <Route path="/" element={<Homepage />} />
       <Route path="/aboutus" element={<Aboutus />} />
       <Route path="/online-consultation" element={<OnlineConsultation />} />
+      <Route path="/consultant" element={<OnlineConsultation />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
       <Route path="/blogs" element={<Blogs />} />
@@ -53,6 +54,7 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       {/* <Route path="/confirmation-code" element={<ConfirmationCode />} /> */}
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* Survey Routes */}
       {/* <Route path="/survey" element={<SurveySelectionPage />} />
