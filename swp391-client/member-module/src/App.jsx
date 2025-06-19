@@ -19,7 +19,7 @@ import Register from './pages/Register/Register'
 import Login from './pages/Login/Login'
 import ForgotPassword from './pages/ForgotPassword/forgotPassword'
 import ResetPassword from './pages/ForgotPassword/resetPassword'
-import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
+// import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
 
 // Admin components
 import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
@@ -51,7 +51,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/confirmation-code" element={<ConfirmationCode />} />
+      {/* <Route path="/confirmation-code" element={<ConfirmationCode />} /> */}
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Survey Routes */}
