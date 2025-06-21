@@ -67,7 +67,7 @@ WHERE ce.enroll_version = cv.version AND cv.course_id = ? AND ce.member_id = ? A
 
 const createMemberEnrollmentCourse = async (member_id, course_id, enroll_version) => {
     const [rows] = await db.execute(
-        "INSERT INTO Course_enrollment (course_id, member_id, enroll_version) VALUES (?, ?)",
+        "INSERT INTO Course_enrollment (course_id, member_id, enroll_version) VALUES (?, ?, ?)",
         [course_id, member_id, enroll_version]
     );
     return rows;
@@ -137,7 +137,7 @@ const getCourseByIdAndVersion = async (course_id, version) => {
     const [rows] = await db.execute(
         `SELECT c.course_id, c.course_name, c.created_at, c.created_by, c.age_group, cv.content, cv.version
 FROM Course c JOIN Course_version cv  ON c.course_id  = cv.course_id
-WHERE c.course_id = ? AND cv.course_id = ? AND c.is_active = 1`,
+WHERE c.course_id = ? AND cv.version = ? AND c.is_active = 1`,
         [course_id, version])
     return {
         course_id: rows[0].course_id,
@@ -151,7 +151,6 @@ WHERE c.course_id = ? AND cv.course_id = ? AND c.is_active = 1`,
 }
 
 const calculateScoreMooc = async (questions, answers) => {
-
     const mooc = questions.find(item => item.id === answers.mooc_id);
     if (!mooc) {
         return { error: "Mooc not found" };
@@ -216,7 +215,7 @@ const calculateScoreMooc = async (questions, answers) => {
 };
 
 const finishCourse = async (member_id, course_id) => {
-    const [rows] = db.execute(`UPDATE Course_enrollment ce SET ce.status = 'completed'
+    const [rows] = await db.execute(`UPDATE Course_enrollment ce SET ce.status = 'completed'
 WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
         [course_id, member_id])
     return rows;
