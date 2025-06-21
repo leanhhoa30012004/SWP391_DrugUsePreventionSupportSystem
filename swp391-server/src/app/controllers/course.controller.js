@@ -51,11 +51,12 @@ exports.memberCountinuesLearnCourseById = async (req, res) => {
 
 exports.createMemberEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
+
     try {
         if (await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version)) {
-            return res.status(400).json({ error: "You have alreadey enrolled in this course" });
+            return res.status(400).json({ error: "You have already enrolled in this course" });
         }
-        const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id)
+        const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id, enroll_version)
         if (!enrollment) {
             res.status(500).json({ error: "Failed to join course" });
         }
@@ -71,28 +72,29 @@ exports.submitCourse = async (req, res) => {
 
     try {
         const course = await courseModel.getCourseByIdAndVersion(course_id, version);
-        // console.log('submitCourse course: ', course);
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
         const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
-        console.log('submittedCourse: ', submittedCourse);
         if (submittedCourse.totalScore < 8) {
             return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
-        } else {
-            const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
-            learning_process.learning_process.push(submittedCourse.moocDetatails);
-            await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
-            res.json({ message: "You have successfully completed this mooc" });
         }
+        const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
+        learning_process.learning_process.push(submittedCourse.moocDetatails);
+        await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
+
         const checkLearningProcess = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
-        if (checkLearningProcess.content.length === course.content.length) {
-            const finishCourse = courseModel.finishCourse(member_id, course_id);
-            if (!finishCourse) {
+
+        if (checkLearningProcess.learning_process.length === course.content.length) {
+            const finishCourse = await courseModel.finishCourse(member_id, course_id);
+
+            if (finishCourse) {
                 // add certificate
                 return res.json({ message: "You have successfully this course!" })
             }
         }
+        res.json({ message: "You have successfully completed this mooc" });
+
 
     } catch (error) {
         console.log('submitCourse error: ', error);
