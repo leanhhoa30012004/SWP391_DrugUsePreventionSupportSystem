@@ -170,23 +170,43 @@ const addEnrollmentSurvey = async (survey_id, member_id, response, enroll_versio
 };
 const addSurvey = async (survey) => {
   const { survey_type, content, created_by } = survey;
-  const [rows] = await db.execute(
-    "INSERT INTO Survey (survey_type, content, created_by, version, created_date) VALUES (?, ?, ?, 1.0, NOW())",
-    [survey_type, JSON.stringify(content), created_by]
-  );
-  return rows;
+  await db.beginTransaction();
+  try {
+    // Thêm vào bảng Survey
+    const [insertSurvey] = await db.execute(
+      'INSERT INTO Survey (survey_type, created_by, created_date) VALUES (?, ?, NOW());',
+      [survey_type, created_by]
+    );
+    const survey_id = insertSurvey.insertId;
+
+    // Thêm vào bảng Survey_version
+    const [insertSurveyVersion] = await db.execute(
+      'INSERT INTO Survey_version (survey_id, content, version) VALUES (?, ?, ?);',
+      [survey_id, JSON.stringify(content), 1.0]
+    );
+
+    await db.commit();
+    return {
+      success: true,
+      survey_id,
+      survey_version_id: insertSurveyVersion.insertId
+    };
+  } catch (error) {
+    await db.rollback();
+    return { success: false, error };
+  }
 };
 const updateSurvey = async (survey) => {
   try {
-    const { survey_id, survey_type, content, edited_by, created_by, version } =
+    const { survey_id, content, edited_by, version } =
       survey;
 
     // Kiểm tra và xử lý dữ liệu
     const contentString = JSON.stringify(content);
-    const newVersion = parseFloat(version || 0) + 0.1;
+    const newVersion = parseFloat(version || 1) + 0.1;
     const [rows] = await db.execute(
-      "INSERT INTO Survey (survey_type, content, edited_by, created_by, created_date, version) VALUES (?, ?, ?, ?, NOW(), ?)",
-      [survey_type, contentString, edited_by, created_by, newVersion]
+      'INSERT INTO Survey_version (content, edited_at, edited_by, survey_id, version) VALUES (?, NOW(), ?, ?, ?);',
+      [contentString, edited_by, survey_id, newVersion]
     );
     return rows;
   } catch (error) {
