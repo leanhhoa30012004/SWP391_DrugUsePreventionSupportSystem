@@ -19,7 +19,7 @@ exports.createSurvey = async (req, res) => {
 };
 exports.updateSurvey = async (req, res) => {
   const { survey_id, survey_type, content } = req.body;
-  const survey = await surveyModels.findSurveyBySurveyID(survey_id);
+
 
   const edited_by = req.user.user_id; // Assuming user_id is set in the request by authentication middleware
   try {
@@ -27,9 +27,7 @@ exports.updateSurvey = async (req, res) => {
       survey_id: survey_id,
       survey_type: survey_type,
       content: JSON.stringify(content),
-      edited_by: edited_by, // Assuming edited_by is the same as created_by for simplicity
-      created_by: survey.created_by, // Assuming created_by is the same as edited_by for simplicity
-      version: survey.version, // You can adjust this logic as needed
+      edited_by: edited_by,
     });
     res.json({ message: "Survey updated successfully", result });
   } catch (error) {
@@ -40,7 +38,7 @@ exports.updateSurvey = async (req, res) => {
   }
 };
 exports.deleteSurvey = async (req, res) => {
-  const { survey_id } = req.body;
+  const survey_id = req.params.id;
   try {
     await surveyModels.deleteSurvey(survey_id);
     res.json({ message: "Survey deleted successfully" });
