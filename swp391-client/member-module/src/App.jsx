@@ -10,6 +10,7 @@ import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
 import Dashboard from './pages/Homepage/Dashboard'
 import Courses from './pages/Courses/Courses'
+import CourseDetail from '.\\pages\\Courses\\CourseDetail.jsx'
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -42,6 +43,7 @@ function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
       <Route path="/courses" element={<Courses />} />
+      <Route path="/courses/:course_id" element={<CourseDetail />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
