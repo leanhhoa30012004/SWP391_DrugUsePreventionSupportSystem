@@ -10,13 +10,14 @@ import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
 import Dashboard from './pages/Homepage/Dashboard'
 import Courses from './pages/Courses/Courses'
+import CourseDetail from '.\\pages\\Courses\\CourseDetail.jsx'
 
 // Auth components
 import Register from './pages/Register/Register'
 import Login from './pages/Login/Login'
 import ForgotPassword from './pages/ForgotPassword/forgotPassword'
 import ResetPassword from './pages/ForgotPassword/resetPassword'
-import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
+// import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
 
 // Admin components
 import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
@@ -42,12 +43,13 @@ function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
       <Route path="/courses" element={<Courses />} />
+      <Route path="/courses/:course_id" element={<CourseDetail />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/confirmation-code" element={<ConfirmationCode />} />
+      {/* <Route path="/confirmation-code" element={<ConfirmationCode />} /> */}
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* User Dashboard */}

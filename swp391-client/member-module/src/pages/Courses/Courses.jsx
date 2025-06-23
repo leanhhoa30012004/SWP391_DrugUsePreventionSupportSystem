@@ -121,8 +121,10 @@ function Courses() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const handleViewCourse = (course_name)=> {
-        navigate(`/courses/${course_name}`);
+    const handleViewCourse = (course_id, course_name)=> {
+        console.log(course_id, course_name)
+        if (!course_id || !course_name) return
+        navigate(`/courses/${course_id}`,{course_name});
     };
 
     if (loading) {
@@ -277,8 +279,8 @@ function Courses() {
                                                             {course.price || 'Free'}
                                                         </span>
                                                         <button 
-                                                            onClick={() => handleViewCourse(course.course_name)}
-                                                            className="text-sm text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors duration-200 font-medium"
+                                                            onClick={() => handleViewCourse(course.course_id, course.course_name)}
+                                                            className="text-sm text-white bg-red-600 hover:bg-red-700 px-4 py-2     rounded-lg transition-colors duration-200 font-medium"
                                                         >
                                                             View Details
                                                         </button>

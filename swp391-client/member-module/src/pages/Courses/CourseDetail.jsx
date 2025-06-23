@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
 
 function CourseDetail() {
-    const { course_name } = useParams();
+    const location = useLocation();
+    const course_name = location.course_name;
+    const {course_id} = useParams()
+    console.log(location.course_name)
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [enrolling, setEnrolling] = useState(false);
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
+    const uid = JSON.parse(localStorage.getItem('user')).roleId
 
     // Fetch course details
     useEffect(() => {
@@ -43,9 +47,7 @@ function CourseDetail() {
             }
         };
 
-        if (course_name) {
             fetchCourseDetail();
-        }
     }, []);
 
     // Check enrollment status
@@ -54,7 +56,7 @@ function CourseDetail() {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await axios.get(`http://localhost:3000/api/enrollment/check/${course_name}`, {
+            const response = await axios.get(`http://localhost:3000/api/enrollment/check/${course_id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -67,31 +69,27 @@ function CourseDetail() {
 
     // Handle course enrollment
     const handleEnroll = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Login Required',
-                text: 'Please login to enroll in this course.',
-                confirmButtonText: 'Login',
-                confirmButtonColor: '#dc2626'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    navigate('/login');
-                }
-            });
-            return;
-        }
+        // const token = localStorage.getItem('token');
+        // if (!token) {
+        //     Swal.fire({
+        //         icon: 'warning',
+        //         title: 'Login Required',
+        //         text: 'Please login to enroll in this course.',
+        //         confirmButtonText: 'Login',
+        //         confirmButtonColor: '#dc2626'
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             navigate('/login');
+        //         }
+        //     });
+        //     return;
+        // }
 
         try {
             setEnrolling(true);
-            const response = await axios.post(`http://localhost:3000/api/enrollment/enroll`, {
+            console.log(`http://localhost:3000/api/course/enroll-course/${uid}/${course_id}/1`)
+            const response = await axios.get(`http://localhost:3000/api/course/enroll-course/${uid}/${course_id}/1`, {
                 course_id: course_id
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
             });
 
             if (response.status === 200 || response.status === 201) {
@@ -235,7 +233,7 @@ function CourseDetail() {
                                 {/* Course Card */}
                                 <div className="w-full lg:w-80 bg-white rounded-xl shadow-2xl overflow-hidden">
                                     <img 
-                                        src={course.image || `https://source.unsplash.com/400x250/?education,training,drug-prevention`} 
+                                        src={course.image} 
                                         alt={course.title || course.course_name}
                                         className="w-full h-48 object-cover"
                                         onError={(e) => {
