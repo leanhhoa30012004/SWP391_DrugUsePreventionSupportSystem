@@ -4,7 +4,7 @@ const listOfCourse = async () => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
   SELECT 
-   	c.course_id , c.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+   	c.course_id , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
     ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
   FROM Course c
   JOIN Course_version cv  ON c.course_id = cv.course_id
@@ -26,11 +26,11 @@ const searchCourseByName = async (course_name) => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
   SELECT 
-   	c.course_id , c.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+   	c.course_id , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
     ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
   FROM Course c
   JOIN Course_version cv  ON c.course_id = cv.course_id
-  WHERE c.is_active = 1 AND c.course_name LIKE ?
+  WHERE c.is_active = 1 AND cv.course_name LIKE ?
 )
 SELECT * FROM Ranked WHERE rn = 1;`,
         [name]
@@ -47,7 +47,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
 
 const memberContinuesLearnCourseById = async (member_id, course_id) => {
     const [rows] = await db.execute(
-        `SELECT c.course_id, c.course_name, u.fullname, ce.learning_process, cv.content, ce.enroll_version
+        `SELECT c.course_id, cv.course_name, u.fullname, ce.learning_process, cv.content, ce.enroll_version
 FROM Course_enrollment ce JOIN Course c ON ce.course_id = c.course_id
 JOIN Course_version cv ON c.course_id = cv.course_id
 JOIN Users u ON ce.member_id = u.user_id
@@ -97,23 +97,12 @@ const updateStatusLearningProcess = async (member_id, course_id) => {
     return rows
 }
 
-// const getCourseEnrollmentByMemberIdAndCourseId = async (member_id, course_id) => {
-//     const [rows] = await db.execute('SELECT * FROM Course_enrollment WHERE member_id = ? AND course_id = ? AND is_active = 1',
-//         [member_id, course_id]
-//     )
-//     return {
-//         course_id: rows[0].course_id,
-//         member_id: rows[0].member_id,
-//         learning_process: rows[0].learning_process ? JSON.parse(rows[0].learning_process) : [],
-//         status: rows[0].status,
-//     }
-// };
 
 const getCourseById = async (course_id) => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
   SELECT 
-   	c.course_id , c.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+   	c.course_id , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
     ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
   FROM Course c
   JOIN Course_version cv  ON c.course_id = cv.course_id
@@ -135,7 +124,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
 
 const getCourseByIdAndVersion = async (course_id, version) => {
     const [rows] = await db.execute(
-        `SELECT c.course_id, c.course_name, c.created_at, c.created_by, c.age_group, cv.content, cv.version
+        `SELECT c.course_id, cv.course_name, c.created_at, c.created_by, c.age_group, cv.content, cv.version
 FROM Course c JOIN Course_version cv  ON c.course_id  = cv.course_id
 WHERE c.course_id = ? AND cv.version = ? AND c.is_active = 1`,
         [course_id, version])
@@ -222,26 +211,39 @@ WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
 }
 
 const createCourse = async (course) => {
-    const [rows] = await db.execute(
-        "INSERT INTO Course (course_name, age_group, created_at, created_by, content, version) VALUES (?, ?, NOW(), ?, ?, 1.0)",
-        [
-            course.course_name,
-            course.age_group,
-            course.created_by,
-            JSON.stringify(course.content),
-        ]
-    );
-    return rows;
+    await db.beginTransaction();
+    try {
+        const [insertCourse] = await db.execute(
+            'INSERT INTO Course(created_at, created_by, age_group) VALUES (NOW(), ?, ?)',
+            [course.created_by, course.age_group]
+        );
+        const course_id = insertCourse.insertId;
+
+        const [insertCourseVersion] = await db.execute(
+            'INSERT INTO Course_version (course_id, course_name, content, version) VALUES (?,?,?,1.0)',
+            [course_id, course.course_name, JSON.stringify(course.content)]
+        );
+        await db.commit();
+
+        return {
+            success: true,
+            course_id,
+            course_version_id: insertCourseVersion.insertId
+        };
+    } catch (error) {
+        await db.rollback();
+        return { success: false, error };
+    }
 };
 const updateCourse = async (course) => {
     const [rows] = await db.execute(
-        "UPDATE Course SET course_name = ?, age_group = ?, content = ?, version = version + 0.1, edited_at = NOW(), edited_by = ? WHERE course_id = ?",
+        'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version) VALUES (?,?,?,NOW(),?,?)',
         [
+            course.course_id,
             course.course_name,
-            course.age_group,
             JSON.stringify(course.content),
             course.edited_by,
-            course.course_id,
+            course.version + 0.1,
         ]
     );
     return rows;
@@ -251,6 +253,8 @@ const deleteCourse = async (course_id) => {
         course_id,
     ]);
 };
+
+
 module.exports = {
     listOfCourse,
     searchCourseByName,
@@ -259,7 +263,6 @@ module.exports = {
     checkEnrollemtCourse,
     updateLearningProcess,
     finishCourse,
-    // getCourseEnrollmentByMemberIdAndCourseId,
     getCourseById,
     getCourseByIdAndVersion,
     calculateScoreMooc,

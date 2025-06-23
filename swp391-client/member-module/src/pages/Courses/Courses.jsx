@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import logoWehope from '../../assets/logo-Wehope.png';
 
@@ -8,41 +8,63 @@ function Courses() {
         category: ''
     });
 
-    const coursesData = [
-        {
-            id: 1,
-            title: "Drug Awareness for Teenagers",
-            image: "https://source.unsplash.com/400x300/?school,awareness",
-            rating: 4.7,
-            students: "12k",
-            level: "Beginner",
-            duration: "5 hours",
-            price: "Free",
-            category: "Teenager"
-        },
-        {
-            id: 2,
-            title: "Life Skills & Refusal Techniques",
-            image: "https://source.unsplash.com/400x300/?education,skills",
-            rating: 4.8,
-            students: "9k",
-            level: "All levels",
-            duration: "6 hours",
-            price: "Free",
-            category: "Young Adult"
-        },
-        {
-            id: 3,
-            title: "Parenting & Drug Prevention",
-            image: "https://source.unsplash.com/400x300/?parenting,training",
-            rating: 4.6,
-            students: "5k",
-            level: "Intermediate",
-            duration: "8 hours",
-            price: "Free",
-            category: "Adult"
-        },
-    ];
+    const [coursesData, setLst] = useState([])
+    useEffect(()=>{
+        async function fetchCourseData() {
+            fetch(`http://localhost:3000/api/course/get-all-course`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            })
+              .then(res => res.json())
+              .then(data => {
+                console.log("Course Data:", data);
+                setLst(data)
+              })
+              .catch(err => {
+                console.error("Course API error:", err);
+                alert("Có lỗi xảy ra khi tải dữ liệu course.");
+              }
+            );
+          }
+          fetchCourseData();
+    },[])
+    // const coursesData = [
+    //     {
+    //         id: 1,
+    //         title: "Drug Awareness for Teenagers",
+    //         image: "https://source.unsplash.com/400x300/?school,awareness",
+    //         rating: 4.7,
+    //         students: "12k",
+    //         level: "Beginner",
+    //         duration: "5 hours",
+    //         price: "Free",
+    //         category: "Teenager"
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Life Skills & Refusal Techniques",
+    //         image: "https://source.unsplash.com/400x300/?education,skills",
+    //         rating: 4.8,
+    //         students: "9k",
+    //         level: "All levels",
+    //         duration: "6 hours",
+    //         price: "Free",
+    //         category: "Young Adult"
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Parenting & Drug Prevention",
+    //         image: "https://source.unsplash.com/400x300/?parenting,training",
+    //         rating: 4.6,
+    //         students: "5k",
+    //         level: "Intermediate",
+    //         duration: "8 hours",
+    //         price: "Free",
+    //         category: "Adult"
+    //     },
+    // ];
 
     return (
         <>

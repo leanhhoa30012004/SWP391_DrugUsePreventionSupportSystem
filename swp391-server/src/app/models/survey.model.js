@@ -2,53 +2,14 @@ const { response, json } = require("express");
 const db = require("../../config/db.config");
 
 const listOfSurvey = async () => {
-  const [rows] = await db.execute(`WITH Ranked AS (
-  SELECT 
-    s.survey_id,
-    s.survey_type,
-    s.created_by,
-    s.created_date,
-    sv.content,
-    sv.edited_at,
-    sv.version,
-    ROW_NUMBER() OVER (PARTITION BY s.survey_id ORDER BY sv.version DESC) AS rn
-  FROM Survey s
-  JOIN Survey_version sv ON s.survey_id = sv.survey_id
-  WHERE s.is_active = 1
-)
-SELECT * FROM Ranked WHERE rn = 1;`);
-  return rows.map(row => ({
-    survey_id: row.survey_id,
-    survey_type: row.survey_type,
-    content: JSON.parse(row.content),
-    created_by: row.created_by,
-    created_at: row.created_date,
-    version: row.version,
-  }));
+  const [rows] = await db.execute("SELECT * FROM Survey WHERE is_active = 1");
+  return rows;
 };
 
 const findSurveyByType = async (type) => {
   const searchType = `%${type}%`;
   const [rows] = await db.execute(
-    `WITH Ranked AS (
-  SELECT 
-    s.survey_id,
-    s.survey_type,
-    s.created_by,
-    s.created_date,
-    sv.content,
-    sv.edited_at,
-    sv.version,
-    ROW_NUMBER() OVER (
-      PARTITION BY s.survey_id 
-      ORDER BY sv.version DESC
-    ) AS rn
-  FROM Survey s
-  JOIN Survey_version sv ON s.survey_id = sv.survey_id
-  WHERE s.survey_type LIKE ? AND s.is_active = 1
-)
-SELECT * FROM Ranked WHERE rn = 1;
-`,
+    "SELECT * FROM Survey s WHERE s.survey_type LIKE ? AND s.is_active = 1 ORDER BY s.version DESC LIMIT 1",
     [searchType]
   );
   if (rows.length === 0) {
@@ -60,32 +21,16 @@ SELECT * FROM Ranked WHERE rn = 1;
     survey_type: rows[0].survey_type,
     content: JSON.parse(rows[0].content),
     created_by: rows[0].created_by,
-    created_at: rows[0].created_date,
+    created_at: rows[0].created_at,
+    edit_by: rows[0].edit_by,
+    edit_at: rows[0].edit_at,
     version: rows[0].version,
   };
 };
 
 const findSurveyBySurveyID = async (survey_id) => {
   const [rows] = await db.execute(
-    `WITH Ranked AS (
-  SELECT 
-    s.survey_id,
-    s.survey_type,
-    s.created_by,
-    s.created_date,
-    sv.content,
-    sv.edited_at,
-    sv.version,
-    ROW_NUMBER() OVER (
-      PARTITION BY s.survey_id 
-      ORDER BY sv.version DESC
-    ) AS rn
-  FROM Survey s
-  JOIN Survey_version sv ON s.survey_id = sv.survey_id
-  WHERE s.survey_id = ? AND s.is_active = 1
-  )
-  SELECT * FROM Ranked WHERE rn = 1;
-  `,
+    "SELECT * FROM Survey s WHERE s.survey_id = ? AND s.is_active = 1",
     [survey_id]
   );
   if (rows.length === 0) {
@@ -97,7 +42,9 @@ const findSurveyBySurveyID = async (survey_id) => {
     survey_type: rows[0].survey_type,
     content: JSON.parse(rows[0].content),
     created_by: rows[0].created_by,
-    created_at: rows[0].created_date,
+    created_at: rows[0].created_at,
+    edit_by: rows[0].edit_by,
+    edit_at: rows[0].edit_at,
     version: rows[0].version,
   };
 };
@@ -105,15 +52,7 @@ const findSurveyBySurveyID = async (survey_id) => {
 const findSurveyByTypeAndVersion = async (type, version) => {
   const searchType = `%${type}%`;
   const [rows] = await db.execute(
-    `SELECT s.survey_id,
-    s.survey_type,
-    s.created_by,
-    s.created_date,
-    sv.content,
-    sv.edited_at,
-    sv.version
-FROM Survey s JOIN Survey_version sv ON s.survey_id = sv.survey_id 
-WHERE s.survey_type  = ? AND sv.version = ? AND s.is_active = 1`,
+    "SELECT * FROM Survey s WHERE s.survey_type LIKE ? AND s.version = ? AND s.is_active = 1",
     [searchType, version]
   );
   if (row.length === 0) {
@@ -124,8 +63,9 @@ WHERE s.survey_type  = ? AND sv.version = ? AND s.is_active = 1`,
     survey_type: rows[0].survey_type,
     content: JSON.parse(rows[0].content),
     created_by: rows[0].created_by,
-    created_at: rows[0].created_date,
-    version: rows[0].version,
+    created_at: rows[0].created_at,
+    edit_by: rows[0].edit_by,
+    edit_at: rows[0].edit_at,
   };
 };
 
@@ -153,40 +93,65 @@ const calculateScore = (questions, answers) => {
 
 const getSurveyHistoryByMember = async (member_id) => {
   const [rows] = await db.execute(
-    `SELECT se.survey_id, u.fullname, se.response, se.date, se.enroll_version
-FROM Survey_enrollment se JOIN Users u ON se.member_id = u.user_id AND se.is_active = 1
-WHERE se.member_id = ?`,
+    "SELECT s.survey_id, u.fullname, se.response, se.`date`, se.member_version FROM Survey_enrollment se JOIN Survey s ON se.survey_id = s.survey_id JOIN Users u ON se.member_id = u.user_id WHERE u.user_id = ?",
     [member_id]
   );
   return rows;
 };
 
-const addEnrollmentSurvey = async (survey_id, member_id, response, enroll_version) => {
+const addEnrollmentSurvey = async (
+  survey_id,
+  member_id,
+  response,
+  member_version = 1
+) => {
+  console.log({survey_id, member_id, response, member_version})
   const [rows] = await db.execute(
-    "INSERT INTO Survey_enrollment (survey_id, member_id, response, date, enroll_version) VALUES(?, ?, ?, NOW(), ?)",
-    [survey_id, member_id, response, enroll_version]
+    "INSERT INTO Survey_enrollment (survey_id, member_id, response, date, member_version, is_active) VALUES(?, ?, ?, NOW(),  ?, ?)",
+    [survey_id, member_id, response, member_version || 1, 1]
   );
   return rows;
 };
+
 const addSurvey = async (survey) => {
   const { survey_type, content, created_by } = survey;
-  const [rows] = await db.execute(
-    "INSERT INTO Survey (survey_type, content, created_by, version, created_date) VALUES (?, ?, ?, 1.0, NOW())",
-    [survey_type, JSON.stringify(content), created_by]
-  );
-  return rows;
+  await db.beginTransaction();
+  try {
+    // Thêm vào bảng Survey
+    const [insertSurvey] = await db.execute(
+      'INSERT INTO Survey (survey_type, created_by, created_date) VALUES (?, ?, NOW());',
+      [survey_type, created_by]
+    );
+    const survey_id = insertSurvey.insertId;
+
+    // Thêm vào bảng Survey_version
+    const [insertSurveyVersion] = await db.execute(
+      'INSERT INTO Survey_version (survey_id, content, version) VALUES (?, ?, ?);',
+      [survey_id, JSON.stringify(content), 1.0]
+    );
+
+    await db.commit();
+    return {
+      success: true,
+      survey_id,
+      survey_version_id: insertSurveyVersion.insertId
+    };
+  } catch (error) {
+    await db.rollback();
+    return { success: false, error };
+  }
 };
 const updateSurvey = async (survey) => {
   try {
-    const { survey_id, survey_type, content, edited_by, created_by, version } =
+    const { survey_id, content, edited_by, version } =
       survey;
 
     // Kiểm tra và xử lý dữ liệu
     const contentString = JSON.stringify(content);
-    const newVersion = parseFloat(version || 0) + 0.1;
+    const newVersion = parseFloat(version || 1) + 0.1;
     const [rows] = await db.execute(
-      "INSERT INTO Survey (survey_type, content, edited_by, created_by, created_date, version) VALUES (?, ?, ?, ?, NOW(), ?)",
-      [survey_type, contentString, edited_by, created_by, newVersion]
+      'INSERT INTO Survey_version (content, edited_at, edited_by, survey_id, version) VALUES (?, NOW(), ?, ?, ?);',
+      [contentString, edited_by, survey_id, newVersion]
     );
     return rows;
   } catch (error) {
