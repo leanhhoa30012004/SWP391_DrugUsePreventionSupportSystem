@@ -11,7 +11,7 @@ exports.getAllCourse = async (req, res) => {
 }
 
 exports.getCourseByName = async (req, res) => {
-    const { course_name } = req.body;
+    const course_name = req.params.course_name;
     try {
         const courses = await courseModel.searchCourseByName(course_name);
         if (courses.length === 0 || !courses) {
@@ -25,7 +25,7 @@ exports.getCourseByName = async (req, res) => {
 }
 
 exports.memberCountinuesLearnCourseById = async (req, res) => {
-    const { member_id, course_id } = req.body;
+    const { member_id, course_id } = req.params;
     try {
         const course_progress = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
         const learning_progress_mooc = course_progress.learning_process;
@@ -50,12 +50,13 @@ exports.memberCountinuesLearnCourseById = async (req, res) => {
 }
 
 exports.createMemberEnrollmentCourse = async (req, res) => {
-    const { member_id, course_id } = req.body;
+    const { member_id, course_id, enroll_version } = req.params;
+
     try {
-        if (await courseModel.checkEnrollemtCourse(member_id, course_id)) {
-            return res.status(400).json({ error: "You have alreadey enrolled in this course" });
+        if (await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version)) {
+            return res.status(400).json({ error: "You have already enrolled in this course" });
         }
-        const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id)
+        const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id, enroll_version)
         if (!enrollment) {
             res.status(500).json({ error: "Failed to join course" });
         }
@@ -67,24 +68,34 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
 }
 
 exports.submitCourse = async (req, res) => {
-    const { member_id, course_id, member_answer } = req.body;
+    const { member_id, course_id, member_answer, version } = req.body;
 
     try {
-        const course = await courseModel.getCourseById(course_id);
-        // console.log('submitCourse course: ', course);
+        const course = await courseModel.getCourseByIdAndVersion(course_id, version);
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
         const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
-        console.log('submittedCourse: ', submittedCourse);
         if (submittedCourse.totalScore < 8) {
             return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
-        } else {
-            const learning_process = await courseModel.getCourseEnrollmentByMemberIdAndCourseId(member_id, course_id);
-            learning_process.learning_process.push(submittedCourse.moocDetatails);
-            await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
-            res.json({ message: "You have successfully completed this mooc" });
         }
+        const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
+        learning_process.learning_process.push(submittedCourse.moocDetatails);
+        await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
+
+        const checkLearningProcess = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
+
+        if (checkLearningProcess.learning_process.length === course.content.length) {
+            const finishCourse = await courseModel.finishCourse(member_id, course_id);
+
+            if (finishCourse) {
+                // add certificate
+                return res.json({ message: "You have successfully this course!" })
+            }
+        }
+        res.json({ message: "You have successfully completed this mooc" });
+
+
     } catch (error) {
         console.log('submitCourse error: ', error);
         res.status(500).json({ error: error.message || "Internal Server Error" });

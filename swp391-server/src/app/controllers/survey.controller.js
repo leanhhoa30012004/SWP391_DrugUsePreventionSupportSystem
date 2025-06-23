@@ -34,8 +34,7 @@ exports.findSurveyBySurveyId = async (req, res) => {
 
 exports.submitSurvey = async (req, res) => {
     try {
-        const { survey_id, answers, member_id, member_version } = req.body;
-
+        const { survey_id, answers, member_id, enroll_version } = req.body;
         // Lấy survey từ DB theo loại
         const rows = await surveyModel.findSurveyBySurveyID(survey_id);
 
@@ -51,7 +50,7 @@ exports.submitSurvey = async (req, res) => {
             survey_id,
             member_id,
             answers,
-            member_version
+            enroll_version
         );
         if (!addEnrollment) {
             return res.status(500).json({ error: "Failed to add enrollment" });
