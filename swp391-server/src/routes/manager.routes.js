@@ -1,36 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const managerController = require("../app/controllers/manager.controllers");
-const { protectManager, restrictTo } = require("../middleware/auth.middleware");
+const { protect, restrictTo } = require("../middleware/auth.middleware");
 const authController = require("../app/controllers/auth.controllers");
 // Chỉ cho phép manager hoặc admin truy cập
 router.post(
   "/create",
-  protectManager,
+  protect,
   restrictTo("manager", "admin"),
   managerController.createUser
 );
-router.post(
-  "/update-role",
-  protectManager,
-  restrictTo("manager", "admin"),
-  managerController.updateRole
-);
-router.delete(
-  "/delete/:id",
-  protectManager,
-  restrictTo("manager", "admin"),
-  managerController.deleteUser
-);
+
 // Chỉ cho phép manager truy cập
 router.post(
   "/profile",
-  protectManager,
+  protect,
   restrictTo("manager"),
   managerController.changeProfile
 );
 
 // Cho phép tất cả user đã đăng nhập truy cập
-router.get("/users", protectManager, managerController.getAllUsers);
+router.post("/users", protect, managerController.getAllUsers);
 router.post("/login-manager", authController.loginManager);
 module.exports = router;

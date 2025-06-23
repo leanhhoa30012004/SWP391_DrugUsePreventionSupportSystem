@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
+import Footer from "../../components/Footer/footer";
 import Hero from "./Hero";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaShieldAlt, FaCheckCircle } from "react-icons/fa";
-import CoursesList from "../Courses/CourseList";
+import CoursesList from "./CourseList";
 import AboutUs from "./Aboutus";
 // Import AOS nếu bạn muốn dùng animations
 import AOS from 'aos';
-import Footer from "../../components/Footer/Footer";
 // import 'aos/dist/aos.css';
 
 const SurveyPopup = ({ onClose }) => {
@@ -21,7 +21,6 @@ const SurveyPopup = ({ onClose }) => {
     }
     onClose();
   };
-
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
@@ -60,19 +59,19 @@ const SurveyPopup = ({ onClose }) => {
         {/* Lợi ích */}
         <ul className="text-left text-gray-700 mb-6 space-y-1 text-base">
           <li className="flex items-center gap-2">
-            <FaCheckCircle className="text-green-500 flex-shrink-0" />
+            <FaCheckCircle className="text-green-500 flex-shrink-0" /> 
             Assess personal risk level
           </li>
           <li className="flex items-center gap-2">
-            <FaCheckCircle className="text-green-500 flex-shrink-0" />
+            <FaCheckCircle className="text-green-500 flex-shrink-0" /> 
             Get expert advice
           </li>
           <li className="flex items-center gap-2">
-            <FaCheckCircle className="text-green-500 flex-shrink-0" />
+            <FaCheckCircle className="text-green-500 flex-shrink-0" /> 
             Connect with suitable training courses
           </li>
           <li className="flex items-center gap-2">
-            <FaCheckCircle className="text-green-500 flex-shrink-0" />
+            <FaCheckCircle className="text-green-500 flex-shrink-0" /> 
             Completely confidential and free
           </li>
         </ul>
@@ -135,20 +134,17 @@ const Homepage = () => {
   }, []);
 
   return (
-    <>
-      <div className="min-h-screen">
-        {showSurveyPopup && <SurveyPopup onClose={closeSurveyPopup} />}
-
-        <Navbar handleOrderPopup={handleOrderPopup} />
-        <Hero handleOrderPopup={handleOrderPopup} />
-        <AboutUs />
-
-        {/* Uncomment if you want to use CoursesList */}
-        <CoursesList />
-      </div>
-
-      <Footer />
-    </>
+    <div className="min-h-screen">
+      {showSurveyPopup && <SurveyPopup onClose={closeSurveyPopup} />}
+      
+      <Navbar handleOrderPopup={handleOrderPopup} />
+      <Hero handleOrderPopup={handleOrderPopup} />
+      <AboutUs />
+      
+      {/* Uncomment if you want to use CoursesList */}
+       <CoursesList />
+       <Footer/>
+    </div>
   );
 };
 

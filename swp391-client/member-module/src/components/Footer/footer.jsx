@@ -6,107 +6,41 @@ const Footer = () => {
     return (
         <>
             {/* Footer */}
-            <footer className="bg-gray-50 py-16 border-t border-gray-200">
+            <footer className="bg-white py-16">
                 <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-                        {/* Logo Section - Takes 4 columns */}
-                        <div className="lg:col-span-4 flex justify-center lg:justify-start">
-                            <div className="text-center lg:text-left">
-                                <img
-                                    src={Logo}
-                                    alt="WeHope Logo"
-                                    className="h-80 w-auto mx-auto lg:mx-0 mb-1"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                    }}
-                                />
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                        {/* Logo Section */}
+                        <div className="flex justify-center">
+                            <img
+                                src={Logo}
+                                alt="WeHope Logo"
+                                className="h-60 w-auto"
+                            />
                         </div>
 
-                        {/* Contact Information & Quick Links Container - Takes 8 columns */}
-                        <div className="lg:col-span-8">
-                            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* Contact Information */}
-                                    <div>
-                                        <h4 className="font-bold text-xl mb-6 text-gray-900 border-b border-gray-200 pb-2">
-                                            Contact Information
-                                        </h4>
-                                        <div className="space-y-3">
-                                            <div className="flex items-start gap-3">
-                                                <span className="text-red-500 mt-1">📍</span>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">Address</p>
-                                                    <p className="text-sm text-gray-600">WeHope, TP Hồ Chí Minh</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-3">
-                                                <span className="text-green-500 mt-1">📞</span>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">Phone</p>
-                                                    <p className="text-sm text-gray-600">+84937748231</p>
-                                                    <p className="text-sm text-gray-600">+84912384773</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-3">
-                                                <span className="text-blue-500 mt-1">✉️</span>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">Email</p>
-                                                    <p className="text-sm text-gray-600">WeHope.organization@fpt.net.vn</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-3">
-                                                <span className="text-purple-500 mt-1">📠</span>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">Fax</p>
-                                                    <p className="text-sm text-gray-600">02518680375</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                        {/* Contact Information & Quick Links Container */}
+                        <div className="sm:col-span-2 bg-gray-100 p-8 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
+                                {/* Contact Information */}
+                                <div>
+                                    <h4 className="font-semibold text-lg mb-4 text-gray-800">Contact Information</h4>
+                                    <div className="text-sm space-y-2 text-gray-600">
+                                        <p>WeHope, TP HỒ Chí Minh</p>
+                                        <p>Phone: +84937748231, +84912384773</p>
+                                        <p>Email: WeHope.organization@fpt.net.vn</p>
+                                        <p>Fax: 02518680375</p>
                                     </div>
+                                </div>
 
-                                    {/* Quick Links */}
-                                    <div>
-                                        <h4 className="font-bold text-xl mb-6 text-gray-900 border-b border-gray-200 pb-2">
-                                            Quick Links
-                                        </h4>
-                                        <div className="space-y-3">
-                                            <Link
-                                                to="/aboutus"
-                                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 hover:translate-x-1 transition-all duration-200"
-                                            >
-                                                <span className="text-red-500">→</span>
-                                                About Us
-                                            </Link>
-                                            <Link
-                                                to="/courses"
-                                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 hover:translate-x-1 transition-all duration-200"
-                                            >
-                                                <span className="text-red-500">→</span>
-                                                What We Do
-                                            </Link>
-                                            <Link
-                                                to="/contact"
-                                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 hover:translate-x-1 transition-all duration-200"
-                                            >
-                                                <span className="text-red-500">→</span>
-                                                Get Involved
-                                            </Link>
-                                            <Link
-                                                to="/news"
-                                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 hover:translate-x-1 transition-all duration-200"
-                                            >
-                                                <span className="text-red-500">→</span>
-                                                News And Events
-                                            </Link>
-                                            <Link
-                                                to="/contact"
-                                                className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 hover:translate-x-1 transition-all duration-200"
-                                            >
-                                                <span className="text-red-500">→</span>
-                                                Contact Us
-                                            </Link>
-                                        </div>
+                                {/* Quick Links */}
+                                <div>
+                                    <h4 className="font-semibold text-lg mb-4 text-gray-800">Quick Links</h4>
+                                    <div className="text-sm space-y-2 text-gray-600">
+                                        <Link to="/aboutus" className="block hover:text-gray-800 cursor-pointer">About Us</Link>
+                                        <Link to="/courses" className="block hover:text-gray-800 cursor-pointer">What We Do</Link>
+                                        <Link to="/contact" className="block hover:text-gray-800 cursor-pointer">Get Involved</Link>
+                                        <Link to="/news" className="block hover:text-gray-800 cursor-pointer">News And Events</Link>
+                                        <Link to="/contact" className="block hover:text-gray-800 cursor-pointer">Contact Us</Link>
                                     </div>
                                 </div>
                             </div>
@@ -116,10 +50,10 @@ const Footer = () => {
             </footer>
 
             {/* Copyright */}
-            <div className="bg-red-600 text-white py-4">
+            <div className="bg-red-500 text-white py-4">
                 <div className="container mx-auto px-4 text-center">
-                    <p className="text-sm font-medium">
-                        Copyright © 2025. All Rights Reserved by Tung Tung Tung Sahur!
+                    <p className="text-sm">
+                        Copyright 2025. All Rights Reserved by Tung Tung Tung Sahur!
                     </p>
                 </div>
             </div>
