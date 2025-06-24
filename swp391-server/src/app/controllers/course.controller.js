@@ -23,7 +23,16 @@ exports.getCourseByName = async (req, res) => {
         res.status(500).json({ error: error.message || 'Internal Server Error' })
     }
 }
-
+exports.checkEnrollemtCourse = async (req, res) => {
+    const { member_id, course_id, enroll_version } = req.params;
+    try {
+        const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
+        res.json({ isEnrolled: check });
+    } catch (error) {
+        console.log('checkEnrollmentCOurse error: ', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
 exports.memberCountinuesLearnCourseById = async (req, res) => {
     const { member_id, course_id } = req.params;
     try {

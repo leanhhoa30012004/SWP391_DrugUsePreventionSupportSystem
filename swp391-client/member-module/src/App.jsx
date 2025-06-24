@@ -27,6 +27,8 @@ import Course from './pages/Admin/Course/Course/Course'
 import AdminSurvey from './pages/Admin/Survey/Survey/Survey'
 import Staff from './pages/Admin/Staff/Staff/Staff'
 import Setting from './pages/Admin/Setting/Setting/Setting'
+import CourseLearning from './pages/Courses/CourseLearning.jsx'
+import SurveyHistoryPage from './pages/Survey/SurveyHistoryPage.jsx'
 
 // Survey components
 import Survey from './pages/Survey/Survey'
@@ -44,6 +46,7 @@ function App() {
       <Route path="/news" element={<News />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/:course_id" element={<CourseDetail />} />
+      <Route path="/learning/:course_id" element={<CourseLearning />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
@@ -58,6 +61,7 @@ function App() {
       {/* Survey Routes */}
       <Route path="/survey" element={<SurveySelectionPage />} />
       <Route path="/survey/:sid" element={<Survey />} />
+      <Route path="/survey/history/:memberId/:id" element={<SurveyHistoryPage />} />
       <Route path="/about" element={<AboutUsPage />} />
 
       {/* Admin Routes */}
