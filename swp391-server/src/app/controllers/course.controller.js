@@ -49,6 +49,17 @@ exports.memberCountinuesLearnCourseById = async (req, res) => {
 
 }
 
+exports.checkEnrollemtCourse = async (req, res) => {
+    const { member_id, course_id, enroll_version } = req.params;
+    try {
+        const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
+        res.json({ isEnrolled: check });
+    } catch (error) {
+        console.log('checkEnrollmentCOurse error: ', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
 exports.createMemberEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
 
@@ -90,10 +101,10 @@ exports.submitCourse = async (req, res) => {
 
             if (finishCourse) {
                 // add certificate
-                return res.json({ message: "You have successfully this course!" })
+                return res.json({ moocResult: submittedCourse, message: "You have successfully this course!" })
             }
         }
-        res.json({ message: "You have successfully completed this mooc" });
+        res.json({ moocResult: submittedCourse, message: "You have successfully completed this mooc" });
 
 
     } catch (error) {

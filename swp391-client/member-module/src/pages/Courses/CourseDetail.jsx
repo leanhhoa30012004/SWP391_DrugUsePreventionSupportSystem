@@ -5,17 +5,20 @@ import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
 
 function CourseDetail() {
+    // const userId = localStorage.getItem('user');
+    // console.log('du lieu id:', JSON.parse(userId).user_id)
     const location = useLocation();
     const course_name = location.course_name;
-    const {course_id} = useParams()
-    console.log(location.course_name)
+    const course_version = location.state.course_version;
+    const { course_id } = useParams()
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [enrolling, setEnrolling] = useState(false);
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const uid = JSON.parse(localStorage.getItem('user')).roleId
+    const uid = JSON.parse(localStorage.getItem('user')).user_id;
+    // console.log('du lieu id:', uid)
 
     // Fetch course details
     useEffect(() => {
@@ -29,9 +32,9 @@ function CourseDetail() {
                     }
                 });
                 setCourse(response.data);
-                
+
                 // Check if user is already enrolled
-                await checkEnrollmentStatus();
+                await checkEnrollmentStatus(course_id, course_version);
             } catch (err) {
                 console.error("Course detail API error:", err);
                 Swal.fire({
@@ -47,50 +50,34 @@ function CourseDetail() {
             }
         };
 
-            fetchCourseDetail();
+        fetchCourseDetail();
     }, []);
 
     // Check enrollment status
-    const checkEnrollmentStatus = async () => {
+    const checkEnrollmentStatus = async (course_id, course_version) => {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
+            // const token = localStorage.getItem('token');
+            // if (!token) return;
 
-            const response = await axios.get(`http://localhost:3000/api/enrollment/check/${course_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await axios.get(`http://localhost:3000/api/course/check-enrollment-course/${uid}/${course_id}/${course_version}`
+            );
+            console.log('du lieu response:', response)
             setIsEnrolled(response.data.isEnrolled || false);
+
         } catch (err) {
             console.error("Enrollment check error:", err);
         }
     };
 
     // Handle course enrollment
-    const handleEnroll = async () => {
-        // const token = localStorage.getItem('token');
-        // if (!token) {
-        //     Swal.fire({
-        //         icon: 'warning',
-        //         title: 'Login Required',
-        //         text: 'Please login to enroll in this course.',
-        //         confirmButtonText: 'Login',
-        //         confirmButtonColor: '#dc2626'
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             navigate('/login');
-        //         }
-        //     });
-        //     return;
-        // }
+    const handleEnroll = async (course_id, course_version) => {
 
         try {
             setEnrolling(true);
-            console.log(`http://localhost:3000/api/course/enroll-course/${uid}/${course_id}/1`)
-            const response = await axios.get(`http://localhost:3000/api/course/enroll-course/${uid}/${course_id}/1`, {
-                course_id: course_id
-            });
+            // console.log(`http://localhost:3000/api/course/enroll-course/${userId}/${course_id}/${course_version}`)
+            const response = await axios.get(
+                `http://localhost:3000/api/course/enroll-course/${uid}/${course_id}/${course_version}`
+            );
 
             if (response.status === 200 || response.status === 201) {
                 setIsEnrolled(true);
@@ -117,7 +104,7 @@ function CourseDetail() {
     // Parse course content into curriculum
     const parseCurriculum = (content) => {
         if (!content) return [];
-        
+
         // Try to parse JSON if it's a string
         if (typeof content === 'string') {
             try {
@@ -133,10 +120,10 @@ function CourseDetail() {
                 }));
             }
         }
-        
+
         // If already an array
         if (Array.isArray(content)) return content;
-        
+
         // Default curriculum structure
         return [
             { id: 1, title: 'Introduction to Anti-Drug Awareness', duration: '45 min', type: 'video' },
@@ -229,11 +216,11 @@ function CourseDetail() {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Course Card */}
                                 <div className="w-full lg:w-80 bg-white rounded-xl shadow-2xl overflow-hidden">
-                                    <img 
-                                        src={course.image} 
+                                    <img
+                                        src={course.image}
                                         alt={course.title || course.course_name}
                                         className="w-full h-48 object-cover"
                                         onError={(e) => {
@@ -251,7 +238,7 @@ function CourseDetail() {
                                                 </span>
                                             )}
                                         </div>
-                                        
+
                                         {isEnrolled ? (
                                             <button
                                                 onClick={() => navigate(`/learning/${course_id}`)}
@@ -261,7 +248,7 @@ function CourseDetail() {
                                             </button>
                                         ) : (
                                             <button
-                                                onClick={handleEnroll}
+                                                onClick={() => handleEnroll(course_id, course_version)}
                                                 disabled={enrolling}
                                                 className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 disabled:bg-red-400 transition-colors duration-200 flex items-center justify-center"
                                             >
@@ -275,7 +262,7 @@ function CourseDetail() {
                                                 )}
                                             </button>
                                         )}
-                                        
+
                                         <div className="mt-4 text-sm text-gray-600 space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <span>✅ Lifetime access</span>
@@ -311,11 +298,10 @@ function CourseDetail() {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center px-6 py-3 font-medium transition-colors duration-200 ${
-                                        activeTab === tab.id
-                                            ? 'text-red-600 border-b-2 border-red-600'
-                                            : 'text-gray-600 hover:text-red-600'
-                                    }`}
+                                    className={`flex items-center px-6 py-3 font-medium transition-colors duration-200 ${activeTab === tab.id
+                                        ? 'text-red-600 border-b-2 border-red-600'
+                                        : 'text-gray-600 hover:text-red-600'
+                                        }`}
                                 >
                                     <span className="mr-2">{tab.icon}</span>
                                     {tab.label}
@@ -395,7 +381,7 @@ function CourseDetail() {
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Meet Your Instructor</h2>
                                     <div className="flex items-start space-x-6">
-                                        <img 
+                                        <img
                                             src={course.instructor_image || `https://source.unsplash.com/150x150/?professional,teacher`}
                                             alt="Instructor"
                                             className="w-24 h-24 rounded-full object-cover"
@@ -437,7 +423,7 @@ function CourseDetail() {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-6">
                                         {/* Sample reviews */}
                                         {[
@@ -463,7 +449,7 @@ function CourseDetail() {
                                             <div key={index} className="border-b border-gray-200 pb-6">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className="flex items-center">
-                                                        <img 
+                                                        <img
                                                             src={`https://source.unsplash.com/40x40/?person,portrait&${index}`}
                                                             alt={review.name}
                                                             className="w-10 h-10 rounded-full object-cover mr-3"

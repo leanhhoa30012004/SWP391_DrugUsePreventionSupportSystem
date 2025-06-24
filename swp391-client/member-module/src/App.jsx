@@ -32,6 +32,7 @@ import Setting from './pages/Admin/Setting/Setting/Setting'
 import Survey from './pages/Survey/Survey'
 import SurveySelectionPage from './pages/Survey/ViewSurvey'
 import AboutUsPage from './pages/About/About'
+import CourseLearning from './pages/Courses/CourseLearning.jsx'
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
       <Route path="/news" element={<News />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/:course_id" element={<CourseDetail />} />
+      <Route path="/learning/:course_id" element={<CourseLearning />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
