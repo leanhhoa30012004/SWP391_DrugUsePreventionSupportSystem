@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
 
 function Courses() {
+    const userId = localStorage.getItem('user_id');
     const navigate = useNavigate();
     const [filters, setFilters] = useState({
         ageGroup: '',
@@ -79,8 +80,8 @@ function Courses() {
 
         // Filter by age group
         if (filters.ageGroup) {
-            filtered = filtered.filter(course => 
-                course.age_group === filters.ageGroup || 
+            filtered = filtered.filter(course =>
+                course.age_group === filters.ageGroup ||
                 course.category === filters.ageGroup
             );
         }
@@ -121,10 +122,16 @@ function Courses() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const handleViewCourse = (course_id, course_name)=> {
-        console.log(course_id, course_name)
-        if (!course_id || !course_name) return
-        navigate(`/courses/${course_id}`,{course_name});
+    const handleViewCourse = (course_id, course_version) => {
+        console.log(course_id, course_version)
+        if (!course_id || !course_version) return;
+        navigate(`/courses/${course_id}`,
+            {
+                state: {
+                    course_version: course_version
+                }
+            }
+        );
     };
 
     if (loading) {
@@ -242,9 +249,9 @@ function Courses() {
                                         {currentCourses.map(course => (
                                             <div key={course.id || course._id} className="bg-white border border-red-100 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                                                 <div className="relative">
-                                                    <img 
-                                                        src={course.image } 
-                                                        alt={course.title || course.course_name} 
+                                                    <img
+                                                        src={course.image}
+                                                        alt={course.title || course.course_name}
                                                         className="h-48 w-full object-cover"
                                                         onError={(e) => {
                                                             e.target.src = `https://source.unsplash.com/400x300/?education,training`;
@@ -278,8 +285,8 @@ function Courses() {
                                                         <span className="text-red-600 font-bold text-lg">
                                                             {course.price || 'Free'}
                                                         </span>
-                                                        <button 
-                                                            onClick={() => handleViewCourse(course.course_id, course.course_name)}
+                                                        <button
+                                                            onClick={() => handleViewCourse(course.course_id, course.version)}
                                                             className="text-sm text-white bg-red-600 hover:bg-red-700 px-4 py-2     rounded-lg transition-colors duration-200 font-medium"
                                                         >
                                                             View Details
@@ -298,11 +305,10 @@ function Courses() {
                                                 <button
                                                     onClick={() => paginate(currentPage - 1)}
                                                     disabled={currentPage === 1}
-                                                    className={`px-3 py-2 rounded-lg ${
-                                                        currentPage === 1
-                                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                            : 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                    }`}
+                                                    className={`px-3 py-2 rounded-lg ${currentPage === 1
+                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                        }`}
                                                 >
                                                     ← Previous
                                                 </button>
@@ -319,11 +325,10 @@ function Courses() {
                                                             <button
                                                                 key={pageNumber}
                                                                 onClick={() => paginate(pageNumber)}
-                                                                className={`w-10 h-10 rounded-lg ${
-                                                                    currentPage === pageNumber
-                                                                        ? 'bg-red-600 text-white'
-                                                                        : 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                                }`}
+                                                                className={`w-10 h-10 rounded-lg ${currentPage === pageNumber
+                                                                    ? 'bg-red-600 text-white'
+                                                                    : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                                    }`}
                                                             >
                                                                 {pageNumber}
                                                             </button>
@@ -341,11 +346,10 @@ function Courses() {
                                                 <button
                                                     onClick={() => paginate(currentPage + 1)}
                                                     disabled={currentPage === totalPages}
-                                                    className={`px-3 py-2 rounded-lg ${
-                                                        currentPage === totalPages
-                                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                            : 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                    }`}
+                                                    className={`px-3 py-2 rounded-lg ${currentPage === totalPages
+                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                        }`}
                                                 >
                                                     Next →
                                                 </button>

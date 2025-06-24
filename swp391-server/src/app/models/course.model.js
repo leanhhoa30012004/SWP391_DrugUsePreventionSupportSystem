@@ -20,7 +20,16 @@ SELECT * FROM Ranked WHERE rn = 1;`);
         version: row.version,
     }));
 };
-
+exports.checkEnrollemtCourse = async (req, res) => {
+    const { member_id, course_id, enroll_version } = req.params;
+    try {
+        const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
+        res.json({ isEnrolled: check });
+    } catch (error) {
+        console.log('checkEnrollmentCOurse error: ', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
 const searchCourseByName = async (course_name) => {
     const name = `%${course_name}%`;
     const [rows] = await db.execute(
