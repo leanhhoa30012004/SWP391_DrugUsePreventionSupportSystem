@@ -4,12 +4,13 @@ import Swal from "sweetalert2";
 import axios from 'axios'
 
 const Register = () => {
-  const navigate = useNavigate();  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
     username: "",
     password: "",
     email: "",
     fullname: "",
-    birthday: "",
+    age: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -25,12 +26,13 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {      console.log("Sending registration data:", {
+    try {
+      console.log("Sending registration data:", {
         username: formData.username,
         password: formData.password,
         email: formData.email,
         fullname: formData.fullname,
-        birthday: formData.birthday,
+        age: formData.age,
       });
 
       const response = await axios.post('http://localhost:3000/api/auth/register', {
@@ -39,7 +41,7 @@ const Register = () => {
         password: formData.password,
         email: formData.email,
         fullname: formData.fullname,
-        birthday: formData.birthday,
+        age: formData.age,
       });
 
       if (response.status === 201) {
@@ -144,25 +146,26 @@ const Register = () => {
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter your email"
-                />              </div>
+                />
+              </div>
             </div>
-
             <div>
               <label
-                htmlFor="birthday"
+                htmlFor="age"
                 className="block text-sm font-medium text-gray-700"
               >
-                Birthday
+                Age
               </label>
               <div className="mt-1">
                 <input
-                  id="birthday"
-                  name="birthday"
-                  type="date"
+                  id="age"
+                  name="age"
+                  type="number"
                   required
-                  value={formData.birthday}
+                  value={formData.age}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  placeholder="Enter your age"
                 />
               </div>
             </div>
