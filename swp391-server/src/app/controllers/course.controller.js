@@ -15,22 +15,22 @@ exports.getCourseByName = async (req, res) => {
     try {
         const courses = await courseModel.searchCourseByName(course_name);
         if (courses.length === 0 || !courses) {
-            res.json(`Cannot found with keyword '${course_name}'`)
+           return res.json(`Cannot found with keyword '${course_name}'`)
         }
-        res.json(courses)
+        return res.json(courses)
     } catch (error) {
         console.log('getCourseByName error: ', error)
-        res.status(500).json({ error: error.message || 'Internal Server Error' })
+        return res.status(500).json({ error: error.message || 'Internal Server Error' })
     }
 }
 exports.checkEnrollemtCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
     try {
         const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
-        res.json({ isEnrolled: check });
+        return res.json({ isEnrolled: check });
     } catch (error) {
         console.log('checkEnrollmentCOurse error: ', error)
-        res.status(500).json({ error: error.message || "Internal Server Error" })
+        return res.status(500).json({ error: error.message || "Internal Server Error" })
     }
 }
 exports.memberCountinuesLearnCourseById = async (req, res) => {
@@ -77,8 +77,9 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
 }
 
 exports.submitCourse = async (req, res) => {
+    console.log(req.body)
     const { member_id, course_id, member_answer, version } = req.body;
-
+    console.log(typeof member_answer)
     try {
         const course = await courseModel.getCourseByIdAndVersion(course_id, version);
         if (!course) {

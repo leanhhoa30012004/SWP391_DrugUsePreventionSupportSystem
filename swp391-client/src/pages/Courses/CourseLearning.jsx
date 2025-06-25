@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
+import Swal from 'sweetalert2';
 
 const CourseLearning = () => {
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
@@ -88,6 +89,16 @@ const CourseLearning = () => {
 
     // Navigate to next question
     const handleNextQuestion = () => {
+        if (selectedAnswers[currentQuestionIndex] === undefined) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No answer selected!',
+                text: 'Please select an answer before proceeding to the next question.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
         if (currentQuestionIndex < courseData.quiz.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
@@ -105,33 +116,46 @@ const CourseLearning = () => {
         try {
             // Build the answer payload
             const payload = buildAnswerPayload();
-
-            // Call API to submit course and calculate score automatically
-            const response = await fetch('http://localhost:3000/api/submit-mooc-course', {
+            console.log("Submitting payload (raw):", payload);
+            console.log("JSON payload:", JSON.stringify(payload));
+                
+            const response = await fetch('http://localhost:3000/api/course/submit-mooc-course', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: payload
+                body: JSON.stringify(payload),
             });
-
+    
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                const errorText = await response.text();
+                console.warn(`❌ Quiz submission failed: ${errorText}`);
+                navigate('/course-completed', { notice: errorText });
             }
-
-            // Get the score from API response
+            
+    
             const result = await response.json();
-            setQuizScore(result.score || 10); // Use returned score or default to 10
-            setQuizSubmitted(true);
-
+            const score = result.score || 0;
+            setQuizScore(score);
+            if (score >= 8) {
+                // Navigate to completed page or show completed UI
+                navigate('/course-completed', { state: { score, courseId: course_id } });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Not enough points to pass!',
+                    text: 'You did not achieve the minimum score to pass this quiz. Please review the lesson and try again.',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
         } catch (error) {
-            console.error("Error submitting quiz:", error);
-            alert("An error occurred while submitting your quiz.");
+            navigate('/course-completed',{notice: error.message})
         }
     };
+    
 
     const buildAnswerPayload = () => {
-        // Convert selectedAnswers to object { "1": "Answer text", ... }
         const answers = {};
         Object.keys(selectedAnswers).forEach((questionIndex) => {
             // Get selected answer text
@@ -143,7 +167,7 @@ const CourseLearning = () => {
         // Create object in correct format
         const payload = {
             member_id: uid,
-            course_id: course_id,
+            course_id: parseInt(course_id),
             member_answer: {
                 mooc_id: courseData.mooc_id || 1, // or get appropriate id
                 answers: answers
@@ -152,7 +176,8 @@ const CourseLearning = () => {
         };
 
         // Convert to JSON string
-        return JSON.stringify(payload);
+        return payload;
+        
     };
 
     // Retry quiz
@@ -225,7 +250,8 @@ const CourseLearning = () => {
                                     </div>
                                     <div className="flex items-center">
                                         <FileText className="w-6 h-6 mr-2" />
-                                        <span className="text-lg">{courseData.quiz.length} questions</span>
+                                        <span className="text-lg">{courseData.quiz?.length ?? 0} questions</span>
+
                                     </div>
                                     <div className="flex items-center">
                                         <Target className="w-6 h-6 mr-2" />
