@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/footer';
 
 function Courses() {
     const userId = localStorage.getItem('user_id');
@@ -362,6 +363,7 @@ function Courses() {
                     </div>
                 </div>
             </div>
+            <Footer/>
         </>
     );
 }

@@ -8,9 +8,11 @@ import FaceIcon from '@mui/icons-material/Face';
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const menuRef = useRef(null);
+  const userMenuRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   // Add scroll event listener
   useEffect(() => {
@@ -35,20 +37,35 @@ const Navbar = () => {
     }
   }, []);
 
-  // Close menu when clicking outside
+  // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
       }
     };
-    if (isMenuOpen) {
+    if (isUserMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
+  }, [isUserMenuOpen]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobileMenuOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -120,11 +137,11 @@ const Navbar = () => {
                     src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || user.userName || 'default'}`}
                     alt={user.fullName || "User"}
                     className="w-8 h-8 mx-2 lg:w-10 lg:h-10 rounded-full object-cover border cursor-pointer"
-                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    onClick={() => setIsUserMenuOpen((prev) => !prev)}
                   />
                   {/* Popover menu */}
-                  {isMenuOpen && (
-                    <div ref={menuRef} className="absolute right-0 mt-2 z-50">
+                  {isUserMenuOpen && (
+                    <div ref={userMenuRef} className="absolute right-0 mt-2 z-50">
                       {menu}
                     </div>
                   )}
@@ -149,24 +166,24 @@ const Navbar = () => {
               {/* Hamburger for mobile/tablet */}
               <button
                 className="lg:hidden flex flex-col justify-center items-center w-10 h-10 ml-2"
-                onClick={() => setIsMenuOpen((prev) => !prev)}
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 aria-label="Open menu"
               >
-                <span className={`block w-6 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-[#E53935] transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-[#E53935] transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
               </button>
             </div>
 
             {/* Mobile/Tablet Menu Dropdown */}
             <div
-              ref={menuRef}
+              ref={mobileMenuRef}
               className={`
                 absolute top-full left-0 right-0 
                 bg-white shadow-lg border-t border-[#E53935]/20
                 transition-all duration-300 transform
                 lg:hidden
-                ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'}
+                ${isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'}
               `}
             >
               <div className="container mx-auto px-4 py-2">
@@ -195,7 +212,7 @@ const Navbar = () => {
                       to={item.link}
                       className="flex items-center px-4 py-3 text-[#E53935] hover:bg-[#E53935]/10 
                                rounded-lg transition-colors duration-200"
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.icon && (
                         <span className="mr-3 text-[#E53935]">{item.icon}</span>
@@ -232,7 +249,7 @@ const Navbar = () => {
                         to="/login"
                         className="w-full py-2 text-center bg-[#E53935] text-white rounded-lg 
                                  hover:bg-white hover:text-[#E53935] transition-colors duration-200 border-2 border-[#E53935]"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Log in
                       </Link>
@@ -241,7 +258,7 @@ const Navbar = () => {
                         className="w-full py-2 text-center border-2 border-[#E53935] text-[#E53935] 
                                  rounded-lg hover:bg-[#E53935] hover:text-white 
                                  transition-colors duration-200"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Register
                       </Link>
