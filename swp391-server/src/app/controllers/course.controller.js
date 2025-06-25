@@ -99,10 +99,10 @@ exports.submitCourse = async (req, res) => {
 
             if (finishCourse) {
                 // add certificate
-                return res.json({ message: "You have successfully this course!" })
+                return res.json({ courseResult: submittedCourse.moocDetatails, message: "You have successfully this course!" })
             }
         }
-        res.json({ message: "You have successfully completed this mooc" });
+        res.json({ courseResult: submittedCourse.moocDetatails, message: "You have successfully completed this mooc" });
 
 
     } catch (error) {
