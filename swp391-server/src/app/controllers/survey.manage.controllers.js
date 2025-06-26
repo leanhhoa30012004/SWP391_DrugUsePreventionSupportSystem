@@ -18,7 +18,7 @@ exports.createSurvey = async (req, res) => {
   }
 };
 exports.updateSurvey = async (req, res) => {
-  const { survey_id, survey_type, content } = req.body;
+  const { survey_id, content } = req.body;
 
 
   const edited_by = req.user.user_id; // Assuming user_id is set in the request by authentication middleware
