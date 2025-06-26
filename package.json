@@ -5,8 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "frontend": "npm run dev --prefix swp391-client",
-    "backend": "npm --prefix swp391-server start",
-    "project": "concurrently \"npm run frontend\" \"npm run backend\""
+    "backend": "npm start --prefix swp391-server",
+    "project": "concurrently --names \"FE\" \"BE\" --prefix-colors \"cyan\" \"magenta\" \"npm run frontend\" \"npm run backend\"",
+    "postinstall": "npm install --prefix swp391-client && npm install --prefix swp391-server"
   },
   "repository": {
     "type": "git",
