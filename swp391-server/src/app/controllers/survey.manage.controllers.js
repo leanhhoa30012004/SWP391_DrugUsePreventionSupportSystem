@@ -19,13 +19,13 @@ exports.createSurvey = async (req, res) => {
 };
 exports.updateSurvey = async (req, res) => {
   const { survey_id, content } = req.body;
-
+  const version = (await surveyModels.findSurveyBySurveyID(survey_id)).version;
 
   const edited_by = req.user.user_id; // Assuming user_id is set in the request by authentication middleware
   try {
     const result = await surveyModels.updateSurvey({
       survey_id: survey_id,
-      survey_type: survey_type,
+      version: version,
       content: JSON.stringify(content),
       edited_by: edited_by,
     });

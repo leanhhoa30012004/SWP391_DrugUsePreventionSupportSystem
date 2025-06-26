@@ -18,14 +18,15 @@ exports.createCourse = async (req, res) => {
   }
 }
 exports.updateCourse = async (req, res) => {
-  const { course_id, course_name, content, age_group } = req.body;
+  const { course_id, course_name, content } = req.body;
+  const version = (await courseModels.getCourseById(course_id)).version;
   const edited_by = req.user.user_id; // Assuming user_id is set in the request by authentication middleware
   try {
     const result = await courseModels.updateCourse({
       course_id: course_id,
       course_name: course_name,
       content: content,
-      age_group: age_group,
+      version: version,
       edited_by: edited_by, // Assuming edited_by is the same as created_by for simplicity
     });
     res.json({ message: "Course updated successfully", result });
