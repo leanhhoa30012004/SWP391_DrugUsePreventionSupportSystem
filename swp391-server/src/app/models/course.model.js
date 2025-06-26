@@ -20,16 +20,16 @@ SELECT * FROM Ranked WHERE rn = 1;`);
         version: row.version,
     }));
 };
-exports.checkEnrollemtCourse = async (req, res) => {
-    const { member_id, course_id, enroll_version } = req.params;
-    try {
-        const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
-        res.json({ isEnrolled: check });
-    } catch (error) {
-        console.log('checkEnrollmentCOurse error: ', error)
-        res.status(500).json({ error: error.message || "Internal Server Error" })
-    }
-}
+// exports.checkEnrollemtCourse = async (req, res) => {
+//     const { member_id, course_id, enroll_version } = req.params;
+//     try {
+//         const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
+//         res.json({ isEnrolled: check });
+//     } catch (error) {
+//         console.log('checkEnrollmentCOurse error: ', error)
+//         res.status(500).json({ error: error.message || "Internal Server Error" })
+//     }
+// }
 const searchCourseByName = async (course_name) => {
     const name = `%${course_name}%`;
     const [rows] = await db.execute(
@@ -82,10 +82,10 @@ const createMemberEnrollmentCourse = async (member_id, course_id, enroll_version
     return rows;
 };
 
-const checkEnrollemtCourse = async (member_id, course_id) => {
+const checkEnrollmemtCourse = async (member_id, course_id, enroll_version) => {
     const [rows] = await db.execute(
-        "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND course_id = ? AND member_id = ? ",
-        [course_id, member_id]
+        "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND course_id = ? AND member_id = ? AND enroll_version = ?",
+        [course_id, member_id, enroll_version]
     );
     return rows.length > 0;
 };
@@ -269,7 +269,7 @@ module.exports = {
     searchCourseByName,
     memberContinuesLearnCourseById,
     createMemberEnrollmentCourse,
-    checkEnrollemtCourse,
+    checkEnrollmemtCourse,
     updateLearningProcess,
     finishCourse,
     getCourseById,
