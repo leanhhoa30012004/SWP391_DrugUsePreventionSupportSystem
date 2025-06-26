@@ -23,7 +23,7 @@ const changeProfile = async (id, { fullname, email, password, birthday }) => {
 };
 const findByUsername = async (username) => {
   const [rows] = await db.execute(
-    "SELECT * FROM Users WHERE username = ? AND is_active = 1 AND (role = 'manager' OR role = 'admin')",
+    "SELECT user_id, username, password, email, fullname, role, birthday, is_active FROM Users WHERE username = ? AND is_active = 1 AND (role = 'manager' OR role = 'admin')",
     [username]
   );
   return rows[0];
@@ -41,6 +41,9 @@ const deleteUser = async (id) => {
 const activeUser = async (id) => {
   await db.execute("UPDATE Users SET is_active = 1 WHERE user_id = ?", [id]);
 };
+const toggleUserActive = async (id, is_active) => {
+  await db.execute("UPDATE Users SET is_active = ? WHERE user_id = ?", [is_active ? 1 : 0, id]);
+};
 
 module.exports = {
   changeProfile,
@@ -49,5 +52,6 @@ module.exports = {
   updateRole,
   getAllUsers,
   deleteUser,
-  activeUser
+  activeUser,
+  toggleUserActive
 };

@@ -18,6 +18,7 @@ import Login from './pages/Login/Login'
 import ForgotPassword from './pages/ForgotPassword/forgotPassword'
 import ResetPassword from './pages/ForgotPassword/resetPassword'
 // import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
+import ManagerLogin from './pages/Login/ManagerLogin'
 
 // Admin components
 import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
@@ -34,6 +35,9 @@ import SurveyHistoryPage from './pages/Survey/SurveyHistoryPage.jsx'
 import Survey from './pages/Survey/Survey'
 import SurveySelectionPage from './pages/Survey/ViewSurvey'
 import AboutUsPage from './pages/About/About'
+
+// Manager components
+import UserManagementLayout from './pages/Manager/dashboard/UserManagementLayout'
 
 function App() {
   return (
@@ -54,6 +58,7 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       {/* <Route path="/confirmation-code" element={<ConfirmationCode />} /> */}
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/manager-login" element={<ManagerLogin />} />
 
       {/* User Dashboard */}
       <Route path="/dashboard" element={<Dashboard />} />
@@ -73,6 +78,9 @@ function App() {
         <Route path="staff" element={<Staff />} />
         <Route path="setting" element={<Setting />} />
       </Route>
+
+      {/* Manager Routes - Simplified User Management Only */}
+      <Route path="/manager/dashboard" element={<UserManagementLayout />} />
     </Routes>
   )
 }

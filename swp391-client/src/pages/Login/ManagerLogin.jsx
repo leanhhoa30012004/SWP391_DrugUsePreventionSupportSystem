@@ -1,22 +1,44 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 import Logo from '../../assets/logo-WeHope.png'
-import LoginBg from '../../assets/Login.jpg'
+import LoginBg from '../../assets/Login3.png'
 
-
-const Login = () => {
+const ManagerLogin = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [fadeIn, setFadeIn] = useState(false);
-  const [shake, setShake] = useState(false);
 
   React.useEffect(() => {
     setTimeout(() => setFadeIn(true), 100);
+  }, []);
+
+  // Check if manager is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (token && ['manager', 'admin'].includes(user.role)) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  // Prevent browser back navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      window.history.pushState(null, null, window.location.pathname);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.history.pushState(null, null, window.location.pathname);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   const validateForm = () => {
@@ -33,58 +55,39 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-
-
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
       return;
     }
     setLoading(true);
-    setShake(false);
+    console.log("Attempting manager login with:", { username, password });
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('http://localhost:3000/api/auth/login-manager', {
         username,
         password
       });
+      console.log("Login response:", response.data);
       if (response.data.token && response.data.user) {
+        console.log("Login successful, redirecting...");
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Dispatch custom event to notify Navbar about user login
-        window.dispatchEvent(new CustomEvent('userStateChanged'));
-        
-        const user = response.data.user;
-        let redirectPath = '/';
-        let welcomeMessage = 'Welcome back!';
-        
-        // Redirect based on user role
-        if (user.role === 'manager' || user.role === 'admin') {
-          redirectPath = '/admin/dashboard';
-          welcomeMessage = `Welcome back, ${user.role}! Redirecting to admin dashboard...`;
-        } else {
-          redirectPath = '/';
-          welcomeMessage = `Welcome back ${user.fullname || user.username}!`;
-        }
-        
         await Swal.fire({
           title: "Login Successful!",
-          text: welcomeMessage,
+          text: "Welcome back, Manager!",
           icon: "success",
           confirmButtonColor: "#ef4444",
           timer: 2000,
           showConfirmButton: false
         });
-        
-        navigate(redirectPath, { replace: true });
+        // Clear browser history to prevent back navigation
+        window.history.replaceState(null, null, '/manager/dashboard');
+        navigate('/manager/dashboard', { replace: true });
       }
     } catch (error) {
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-      
-      let errorMessage = 'Invalid username or password.';
+      console.error("Login error:", error);
+      console.error("Error response:", error.response?.data);
+      let errorMessage = 'Invalid username or password. Please try again.';
       if (error.response) {
         switch (error.response.status) {
           case 401:
@@ -100,7 +103,7 @@ const Login = () => {
             errorMessage = error.response.data?.message || errorMessage;
         }
       } else if (error.request) {
-        errorMessage = 'Unable to connect to server. Please check your internet connection.';
+        errorMessage = 'Unable to connect to the server. Please check your internet connection.';
       }
       Swal.fire({
         icon: 'error',
@@ -115,26 +118,28 @@ const Login = () => {
 
   return (
     <div className={`min-h-screen flex bg-gray-100 transition-opacity duration-700 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Left: Background image */}
-      <div className="w-1/2 hidden md:block relative animate-fadeIn">
-        <img
-          src={LoginBg}
-          alt="Background"
-          className="absolute inset-0 w-full h-full object-cover scale-100 transition-transform duration-1000" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent opacity-80"></div>
-      </div>
-      {/* Right: Login form */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white">
-        <div className={`w-full max-w-md p-8 rounded-2xl shadow-2xl bg-white animate-fadeInRight transition-transform duration-700 hover:scale-105 focus-within:shadow-2xl ${shake ? 'animate-shake' : ''}`}>
-          <Link to="/" className="flex justify-center mb-6">
+      {/* Left: Login form */}
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white order-1 md:order-none animate-fadeInLeft">
+        <div className="w-full max-w-md p-10 rounded-3xl shadow-2xl bg-white transition-transform duration-300 hover:scale-[1.02]">
+          <Link to="/" className="flex justify-center mb-8">
             <img src={Logo} alt="Logo" className="w-40 drop-shadow-lg hover:scale-105 transition-transform duration-200" />
           </Link>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-4">
-            Sign in to your account
+          <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-6 tracking-wide">
+            Manager Login
           </h2>
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-7" onSubmit={handleLogin}>
+            {errors.username && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                ⚠️ {errors.username}
+              </div>
+            )}
+            {errors.password && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                ⚠️ {errors.password}
+              </div>
+            )}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="username" className="block text-base font-semibold text-gray-700 mb-1">
                 Username
               </label>
               <div className="mt-1">
@@ -150,16 +155,13 @@ const Login = () => {
                       setErrors(prev => ({ ...prev, username: '' }));
                     }
                   }}
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-gray-50 focus:bg-white`}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-gray-50 focus:bg-white text-base`}
                   placeholder="Enter your username"
                 />
-                {errors.username && (
-                  <p className="mt-1 text-sm text-red-600">{errors.username}</p>
-                )}
               </div>
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-base font-semibold text-gray-700 mb-1">
                 Password
               </label>
               <div className="mt-1">
@@ -176,12 +178,9 @@ const Login = () => {
                       setErrors(prev => ({ ...prev, password: '' }));
                     }
                   }}
-                  className={`appearance-none block w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-gray-50 focus:bg-white`}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-gray-50 focus:bg-white text-base`}
                   placeholder="Enter your password"
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                )}
               </div>
             </div>
             <div className="flex items-center justify-between">
@@ -205,8 +204,8 @@ const Login = () => {
             <div>
               <button
                 type="submit"
-                disabled={loading}
-                className={`w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-base font-semibold transition-all duration-200
+                disabled={loading || !username || !password}
+                className={`w-full flex justify-center py-3 px-4 rounded-xl shadow-lg text-base font-bold transition-all duration-200
                   ${loading
                     ? 'bg-gray-400 cursor-not-allowed text-white'
                     : 'bg-red-600 text-white hover:bg-red-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-red-200'}
@@ -218,33 +217,37 @@ const Login = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Signing in...
+                    Logging in...
                   </span>
                 ) : (
-                  'Sign in'
+                  'Log in'
                 )}
               </button>
             </div>
-            <div className="mt-3">
-              <Link to="/manager-login">
-                <button type="button" className="w-full flex justify-center py-3 px-4 rounded-xl border-2 border-red-600 text-red-600 bg-white text-base font-semibold shadow-md hover:bg-red-50 hover:border-red-700 hover:text-red-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200">
-                  Manager Login
-                </button>
-              </Link>
-            </div>
           </form>
-            <div className="mt-6">
-              <p className="text-center text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-red-600 hover:text-red-500 transition-colors duration-200">
-                  Sign up here
-                </Link>
-              </p>
-            </div>
+          {/* Back to User Login Button */}
+          <div className="w-full max-w-md mt-4 flex justify-center">
+            <Link to="/login" className="w-full">
+              <button
+                type="button"
+                className="w-full flex justify-center py-2 px-4 rounded-xl border border-gray-300 text-gray-800 text-sm font-medium bg-white shadow-none hover:bg-gray-100 active:scale-95 focus:outline-none transition-all duration-200"
+              >
+                Back to User Login
+              </button>
+            </Link>
+          </div>
         </div>
+      </div>
+      {/* Right: Background image */}
+      <div className="w-1/2 hidden md:block relative order-2 animate-fadeIn">
+        <img
+          src={LoginBg}
+          alt="Background"
+          className="absolute inset-0 w-full h-full object-cover scale-100 transition-transform duration-1000" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent opacity-80"></div>
       </div>
     </div>
   )
 }
 
-export default Login
+export default ManagerLogin 
