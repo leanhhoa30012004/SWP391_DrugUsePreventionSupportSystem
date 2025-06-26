@@ -11,16 +11,17 @@ exports.register = async (req, res) => {
     if (existing) {
       return res.status(400).json({ message: "Username already exists" });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
     const id = await memberModel.createMember({
       username,
-      password,
+      password: hashedPassword,
       email,
       fullname,
       birthday,
     });
     res.status(201).json({ message: "User registered successfully", id });
   } catch (err) {
-    console.error("Register error:", err); // log lỗi cụ thể
+    console.error("Register error:", err);
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
@@ -29,10 +30,11 @@ exports.login = async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await memberModel.findByUsername(username);
-    if (!user || user.password !== password) {
+
+    const isMatch = user && await bcrypt.compare(password, user.password);
+    if (!user || !isMatch) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
-    // Tạo JWT token
     const token = jwt.sign(
       { userId: user.member_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
@@ -40,7 +42,7 @@ exports.login = async (req, res) => {
     );
     res.status(200).json({ message: "Login successful", user, token });
   } catch (err) {
-    console.error("Login error:", err); // thêm dòng này
+    console.error("Login error:", err);
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
@@ -66,7 +68,7 @@ exports.forgotPassword = async (req, res) => {
     from: process.env.EMAIL_USER,
     to: email,
     subject: "Reset Password Drug Use Prevention System",
-    html: `Click link to reset password <a href="http://localhost:3000/reset-password/${token}">Click here to reset your password</a>`,
+    html: `Click link to reset password <a href="http://localhost:5173/reset-password/${token}">Click here to reset your password</a>`,
   });
 
   res.json({ message: "Password reset email sent" });
