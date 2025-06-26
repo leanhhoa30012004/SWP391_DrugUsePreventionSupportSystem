@@ -6,18 +6,18 @@ const createUser = async ({
   email,
   fullname,
   role,
-  age,
+  birthday,
 }) => {
   const [rows] = await db.execute(
-    "INSERT INTO Users (username, password, email, fullname, role, age) VALUES (?, ?, ?, ?, ?, ?)",
-    [username, password, email, fullname, role, age]
+    "INSERT INTO Users (username, password, email, fullname, role, birthday) VALUES (?, ?, ?, ?, ?, ?)",
+    [username, password, email, fullname, role, birthday]
   );
   return { userId: rows.insertId, message: "User created successfully" };
 };
-const changeProfile = async (id, { fullname, email, password }) => {
+const changeProfile = async (id, { fullname, email, password, birthday }) => {
   await db.execute(
-    "UPDATE Users SET fullname = ?, email = ?, password = ? WHERE user_id = ?",
-    [fullname, email, password, id]
+    "UPDATE Users SET fullname = ?, email = ?, password = ?, birthday = ? WHERE user_id = ?",
+    [fullname, email, password, id, birthday]
   );
   return { message: "Profile updated successfully" };
 };
@@ -38,6 +38,9 @@ const updateRole = async (id, role) => {
 const deleteUser = async (id) => {
   await db.execute("UPDATE Users SET is_active = 0 WHERE user_id = ?", [id]);
 };
+const activeUser = async (id) => {
+  await db.execute("UPDATE Users SET is_active = 1 WHERE user_id = ?", [id]);
+};
 
 module.exports = {
   changeProfile,
@@ -46,4 +49,5 @@ module.exports = {
   updateRole,
   getAllUsers,
   deleteUser,
+  activeUser
 };
