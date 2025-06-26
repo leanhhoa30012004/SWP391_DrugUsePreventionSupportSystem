@@ -26,7 +26,7 @@ exports.getCourseByName = async (req, res) => {
 exports.checkEnrollemtCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
     try {
-        const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
+        const check = await courseModel.checkEnrollmemtCourse(member_id, course_id, enroll_version);
         res.json({ isEnrolled: check });
     } catch (error) {
         console.log('checkEnrollmentCOurse error: ', error)
@@ -62,7 +62,7 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
 
     try {
-        if (await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version)) {
+        if (await courseModel.checkEnrollmemtCourse(member_id, course_id, enroll_version)) {
             return res.status(400).json({ error: "You have already enrolled in this course" });
         }
         const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id, enroll_version)

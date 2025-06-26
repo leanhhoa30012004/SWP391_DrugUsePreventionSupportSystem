@@ -18,6 +18,7 @@ exports.register = async (req, res) => {
       email,
       fullname,
       birthday,
+
     });
     res.status(201).json({ message: "User registered successfully", id });
   } catch (err) {
