@@ -1,0 +1,26 @@
+{
+  "name": "swp391_drugusepreventionsupportsystem",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "frontend": "npm run dev --prefix swp391-client",
+    "backend": "npm --prefix swp391-server start",
+    "project": "concurrently \"npm run frontend\" \"npm run backend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leanhhoa30012004/SWP391_DrugUsePreventionSupportSystem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/leanhhoa30012004/SWP391_DrugUsePreventionSupportSystem/issues"
+  },
+  "homepage": "https://github.com/leanhhoa30012004/SWP391_DrugUsePreventionSupportSystem#readme",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
