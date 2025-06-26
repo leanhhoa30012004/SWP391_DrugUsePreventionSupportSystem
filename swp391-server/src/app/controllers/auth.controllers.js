@@ -12,11 +12,11 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
     }
     const id = await memberModel.createMember({
-      username,
-      password,
-      email,
-      fullname,
-      birthday,
+      username: username,
+      email: email,
+      fullname: fullname,
+      birthday: birthday,
+      password: password
     });
     res.status(201).json({ message: "User registered successfully", id });
   } catch (err) {
