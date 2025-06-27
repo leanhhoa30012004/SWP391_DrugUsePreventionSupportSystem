@@ -4,7 +4,6 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/footer';
-import CourseCompleted from './CourseCompleted';
 
 function Courses() {
     const userId = localStorage.getItem('user_id');

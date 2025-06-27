@@ -10,7 +10,7 @@ const Register = () => {
     password: "",
     email: "",
     fullname: "",
-    age: "",
+    birthday: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +32,7 @@ const Register = () => {
         password: formData.password,
         email: formData.email,
         fullname: formData.fullname,
-        age: formData.age,
+        birthday: formData.birthday,
       });
 
       const response = await axios.post('http://localhost:3000/api/auth/register', {
@@ -41,7 +41,7 @@ const Register = () => {
         password: formData.password,
         email: formData.email,
         fullname: formData.fullname,
-        age: formData.age,
+        birthday: formData.birthday,
       });
 
       if (response.status === 201) {
@@ -151,21 +151,21 @@ const Register = () => {
             </div>
             <div>
               <label
-                htmlFor="age"
+                htmlFor="birthday"
                 className="block text-sm font-medium text-gray-700"
               >
-                Age
+                Birthday
               </label>
               <div className="mt-1">
                 <input
-                  id="age"
-                  name="age"
-                  type="number"
+                  id="birthday"
+                  name="birthday"
+                  type="date"
                   required
-                  value={formData.age}
+                  value={formData.birthday}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
-                  placeholder="Enter your age"
+                  placeholder="Enter your Birthday"
                 />
               </div>
             </div>
@@ -197,10 +197,9 @@ const Register = () => {
                 type="submit"
                 disabled={loading}
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-                  ${
-                    loading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  ${loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   }`}
               >
                 {loading ? (

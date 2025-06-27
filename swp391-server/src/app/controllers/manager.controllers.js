@@ -1,23 +1,54 @@
 const managerModels = require("../models/manager.model");
+const bcrypt = require("bcryptjs");
+
 exports.createUser = async (req, res) => {
-  const { username, password, email, fullname, role, age } = req.body;
+  const { username, password, email, fullname, role, birthday } = req.body;
+  
   try {
-    const user = await managerModels.createUser({
+    // Validate required fields
+    if (!username || !password || !email || !fullname || !birthday) {
+      return res.status(400).json({ 
+        message: "All fields are required: username, password, email, fullname, birthday" 
+      });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await managerModels.createUser({
       username,
-      password,
+      password: hashedPassword,
       email,
       fullname,
-      role,
-      age,
+      role: role || 'member',
+      birthday,
     });
-    res.status(201).json(user);
+
+    if (result.error) {
+      return res.status(400).json({ message: result.message });
+    }
+
+    res.status(201).json({ 
+      message: "User created successfully", 
+      userId: result.userId 
+    });
   } catch (error) {
     console.error("Error creating User:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.sqlMessage });
+    
+    // Xử lý lỗi trùng unique từ DB (phòng trường hợp model không bắt được)
+    if (error.sqlMessage && error.sqlMessage.includes('Duplicate entry')) {
+      if (error.sqlMessage.includes('username')) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      if (error.sqlMessage.includes('email')) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+    }
+    
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error.sqlMessage || error.message 
+    });
   }
 };
+
 exports.changeProfile = async (req, res) => {
   const { fullname, email, password } = req.body;
   const user_id = req.user.user_id; // Assuming userId is set in the request by authentication middleware
@@ -36,6 +67,7 @@ exports.changeProfile = async (req, res) => {
       .json({ message: "Internal server error", error: error.sqlMessage });
   }
 };
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await managerModels.getAllUsers();
@@ -47,10 +79,11 @@ exports.getAllUsers = async (req, res) => {
       .json({ message: "Internal server error", error: error.sqlMessage });
   }
 };
+
 exports.updateRole = async (req, res) => {
-  const { user_id, role } = req.body;
+  const { id, role } = req.params;
   try {
-    await managerModels.updateRole(user_id, role);
+    await managerModels.updateRole(id, role);
     res.json({ message: "User role updated successfully" });
   } catch (error) {
     console.error("Error updating user role:", error);
@@ -59,6 +92,7 @@ exports.updateRole = async (req, res) => {
       .json({ message: "Internal server error", error: error.sqlMessage });
   }
 };
+
 exports.deleteUser = async (req, res) => {
   const  id  = req.params.id; // Assuming user_id is passed as a URL parameter
   try {
@@ -69,5 +103,20 @@ exports.deleteUser = async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: error.sqlMessage });
+  }
+};
+
+exports.toggleUserActive = async (req, res) => {
+  const id = req.params.id;
+  const { is_active } = req.body;
+  if (typeof is_active !== 'boolean' && is_active !== 0 && is_active !== 1) {
+    return res.status(400).json({ message: 'is_active must be boolean' });
+  }
+  try {
+    await managerModels.toggleUserActive(id, is_active);
+    res.json({ message: `User is now ${is_active ? 'active' : 'inactive'}` });
+  } catch (error) {
+    console.error('Error toggling user active:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.sqlMessage });
   }
 };
