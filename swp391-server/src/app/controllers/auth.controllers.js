@@ -89,16 +89,32 @@ exports.resetPassword = async (req, res) => {
 exports.loginManager = async (req, res) => {
   const { username, password } = req.body;
   try {
+    console.log("Manager login attempt for username:", username);
+    
     const user = await managerModels.findByUsername(username);
-    if (!user || user.password !== password) {
+    console.log("Found user:", user ? "Yes" : "No");
+    
+    if (!user) {
+      console.log("User not found or not a manager/admin");
       return res.status(401).json({ message: "Invalid username or password" });
     }
+    
+    console.log("User role:", user.role);
+    console.log("Password comparison:", password === user.password);
+    
+    if (user.password !== password) {
+      console.log("Password mismatch");
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+    
     // Tạo JWT token
     const token = jwt.sign(
       { userId: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7h" }
     );
+    
+    console.log("Manager login successful for:", username);
     res.status(200).json({ message: "Login successful", token, user });
   } catch (error) {
     console.error("Error logging in manager:", error);
