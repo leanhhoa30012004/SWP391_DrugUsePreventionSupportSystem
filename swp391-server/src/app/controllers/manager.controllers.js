@@ -11,11 +11,8 @@ exports.createUser = async (req, res) => {
         message: "All fields are required: username, password, email, fullname, birthday" 
       });
     }
-
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await managerModels.createUser({
+    const result = await managerModels.createUser({
       username,
       password: hashedPassword,
       email,
@@ -23,15 +20,19 @@ exports.createUser = async (req, res) => {
       role: role || 'member',
       birthday,
     });
-    
+
+    if (result.error) {
+      return res.status(400).json({ message: result.message });
+    }
+
     res.status(201).json({ 
       message: "User created successfully", 
-      userId: user.userId 
+      userId: result.userId 
     });
   } catch (error) {
     console.error("Error creating User:", error);
     
-    // Handle duplicate username/email error
+    // Xử lý lỗi trùng unique từ DB (phòng trường hợp model không bắt được)
     if (error.sqlMessage && error.sqlMessage.includes('Duplicate entry')) {
       if (error.sqlMessage.includes('username')) {
         return res.status(400).json({ message: "Username already exists" });
@@ -80,9 +81,9 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.updateRole = async (req, res) => {
-  const { user_id, role } = req.body;
+  const { id, role } = req.params;
   try {
-    await managerModels.updateRole(user_id, role);
+    await managerModels.updateRole(id, role);
     res.json({ message: "User role updated successfully" });
   } catch (error) {
     console.error("Error updating user role:", error);
