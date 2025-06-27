@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import Logo from "../../assets/logo-WeHope.png";
 import { NavbarMenu } from './Data';
 import { IoMdSearch } from "react-icons/io";
@@ -89,12 +89,12 @@ const Navbar = () => {
           ${isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md' : 'bg-white shadow-md'}`}>
           <div className="h-full w-full max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-10 lg:px-4 relative">
             {/* Logo container */}
-            <div className="w-[120px] h-[50px] sm:w-[140px] sm:h-[60px] lg:w-[200px] lg:h-[90px] flex items-center">
-              <Link to="/" className="block w-full h-full relative">
+            <div className="h-[90px] px-4 flex items-center">
+              <Link to="/" className="p-2 w-[100px]">
                 <img
                   src={Logo}
                   alt="Logo"
-                  className="absolute inset-0 w-full h-full object-contain"
+                  className="h-full w-auto object-contain"
                 />
               </Link>
             </div>
@@ -102,13 +102,20 @@ const Navbar = () => {
             {/* Desktop Menu */}
             <div className="hidden lg:flex items-center justify-center space-x-4 grow">
               {NavbarMenu.map((item) => (
-                <Link
+                <NavLink
                   key={item.id}
                   to={item.link}
-                  className="text-gray-700 font-medium hover:text-red-600 px-1 py-2 text-center transition-colors duration-200 whitespace-nowrap"
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-center whitespace-nowrap transition-all duration-200 font-medium rounded-lg ${
+                      isActive
+                        ? 'bg-red-50 text-red-600 font-bold shadow'
+                        : 'text-gray-700 hover:text-red-600'
+                    }`
+                  }
+                  end
                 >
                   {item.title}
-                </Link>
+                </NavLink>
               ))}
             </div>
 
