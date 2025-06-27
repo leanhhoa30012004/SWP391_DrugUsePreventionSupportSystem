@@ -43,7 +43,7 @@ const UserManagement = () => {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      await axiosInstance.post('/manager/users', formData);
+      const res = await axiosInstance.post('/manager/create-user', formData);
       setShowCreateModal(false);
       setFormData({
         username: '',
@@ -55,16 +55,21 @@ const UserManagement = () => {
         role: 'member'
       });
       fetchUsers();
-      setError('');
+      setError(''); // Xóa lỗi cũ nếu có
+      // Hiển thị thông báo thành công từ BE
+      console.log(res.data.message)
+      alert(res.data.message || 'User created successfully FE');
     } catch (error) {
       console.error('Error creating user:', error);
+      // Hiển thị thông báo lỗi từ BE
       setError(error.response?.data?.message || 'Failed to create user');
+      alert(error.response?.data?.message || 'Failed to create user');
     }
   };
 
   const handleUpdateRole = async (userId, newRole) => {
     try {
-      await axiosInstance.put(`/manager/users/${userId}/role`, { role: newRole });
+      await axiosInstance.put(`/manager/update-role/${userId}/${newRole}`);
       fetchUsers();
       setError('');
     } catch (error) {
@@ -88,8 +93,8 @@ const UserManagement = () => {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });
@@ -98,7 +103,7 @@ const UserManagement = () => {
     switch (role) {
       case 'admin': return 'bg-purple-100 text-purple-800';
       case 'manager': return 'bg-blue-100 text-blue-800';
-      case 'staff': return 'bg-green-100 text-green-800';
+      case 'consultant': return 'bg-green-100 text-green-800';
       case 'member': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -144,7 +149,7 @@ const UserManagement = () => {
               <option value="all">All Roles</option>
               <option value="admin">Admin</option>
               <option value="manager">Manager</option>
-              <option value="staff">Staff</option>
+              <option value="consultant">Consultant</option>
               <option value="member">Member</option>
             </select>
           </div>
@@ -215,7 +220,7 @@ const UserManagement = () => {
                       >
                         <option value="admin">Admin</option>
                         <option value="manager">Manager</option>
-                        <option value="staff">Staff</option>
+                        <option value="consultant">Consultant</option>
                         <option value="member">Member</option>
                       </select>
                     </td>
@@ -260,8 +265,8 @@ const UserManagement = () => {
             <span className="text-4xl">👥</span>
             <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm || selectedRole !== 'all' 
-                ? 'Try adjusting your search or filter criteria.' 
+              {searchTerm || selectedRole !== 'all'
+                ? 'Try adjusting your search or filter criteria.'
                 : 'Get started by creating a new user.'}
             </p>
           </div>
@@ -289,7 +294,7 @@ const UserManagement = () => {
                   type="text"
                   required
                   value={formData.username}
-                  onChange={(e) => setFormData({...formData, username: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
                   placeholder="Enter username"
                 />
@@ -300,7 +305,7 @@ const UserManagement = () => {
                   type="password"
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
                   placeholder="Enter password"
                 />
@@ -311,7 +316,7 @@ const UserManagement = () => {
                   type="text"
                   required
                   value={formData.fullname}
-                  onChange={(e) => setFormData({...formData, fullname: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
                   placeholder="Enter full name"
                 />
@@ -322,7 +327,7 @@ const UserManagement = () => {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
                   placeholder="Enter email"
                 />
@@ -333,7 +338,7 @@ const UserManagement = () => {
                   type="date"
                   required
                   value={formData.birthday}
-                  onChange={(e) => setFormData({...formData, birthday: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
                 />
               </div>
@@ -341,11 +346,11 @@ const UserManagement = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Role</label>
                 <select
                   value={formData.role}
-                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
                 >
                   <option value="member">Member</option>
-                  <option value="staff">Staff</option>
+                  <option value="consultant">Consultant</option>
                   <option value="manager">Manager</option>
                   <option value="admin">Admin</option>
                 </select>

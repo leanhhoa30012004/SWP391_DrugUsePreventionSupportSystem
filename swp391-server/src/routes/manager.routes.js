@@ -10,24 +10,14 @@ router.get("/test", (req, res) => {
 });
 
 // Chỉ cho phép manager hoặc admin truy cập
-router.post(
-  "/create-user",
-  protectManager,
-  restrictTo("manager", "admin"),
-  managerController.createUser
-);
+
 router.put(
-  "/update-role",
+  "/update-role/:id/:role",
   protectManager,
   restrictTo("manager", "admin"),
   managerController.updateRole
 );
-router.delete(
-  "/users/:id",
-  protectManager,
-  restrictTo("manager", "admin"),
-  managerController.deleteUser
-);
+
 // Chỉ cho phép manager truy cập
 router.post(
   "/profile",
@@ -46,6 +36,6 @@ router.patch('/users/:id/active', managerController.toggleUserActive);
 // Thêm route tạo user mới chuẩn RESTful
 // Route này cho phép manager hoặc admin tạo user mới qua endpoint POST /api/manager/users
 // Được sử dụng bởi frontend khi manager tạo user trong trang quản lý user
-router.post('/users', protectManager, restrictTo('manager', 'admin'), managerController.createUser);
+router.post('/create-user', protectManager, restrictTo('manager', 'admin'), managerController.createUser);
 
 module.exports = router;

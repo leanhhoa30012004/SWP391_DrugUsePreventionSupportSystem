@@ -8,6 +8,14 @@ const createUser = async ({
   role,
   birthday,
 }) => {
+  const [existRows] = await db.execute(
+    "SELECT user_id FROM Users WHERE email = ?",
+    [email]
+  );
+  if (existRows.length > 0) {
+    return { error: true, message: "Email was used. You must change another Email!" };
+  }
+
   const [rows] = await db.execute(
     "INSERT INTO Users (username, password, email, fullname, role, birthday) VALUES (?, ?, ?, ?, ?, ?)",
     [username, password, email, fullname, role, birthday]
@@ -35,12 +43,7 @@ const getAllUsers = async () => {
 const updateRole = async (id, role) => {
   await db.execute("UPDATE Users SET role = ? WHERE user_id = ?", [role, id]);
 };
-const deleteUser = async (id) => {
-  await db.execute("UPDATE Users SET is_active = 0 WHERE user_id = ?", [id]);
-};
-const activeUser = async (id) => {
-  await db.execute("UPDATE Users SET is_active = 1 WHERE user_id = ?", [id]);
-};
+
 const toggleUserActive = async (id, is_active) => {
   await db.execute("UPDATE Users SET is_active = ? WHERE user_id = ?", [is_active ? 1 : 0, id]);
 };
@@ -51,7 +54,5 @@ module.exports = {
   findByUsername,
   updateRole,
   getAllUsers,
-  deleteUser,
-  activeUser,
   toggleUserActive
 };
