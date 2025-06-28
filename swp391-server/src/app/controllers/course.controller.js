@@ -23,17 +23,17 @@ exports.getCourseByName = async (req, res) => {
         res.status(500).json({ error: error.message || 'Internal Server Error' })
     }
 }
-exports.checkEnrollemtCourse = async (req, res) => {
+exports.checkEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
     try {
-        const check = await courseModel.checkEnrollmemtCourse(member_id, course_id, enroll_version);
+        const check = await courseModel.checkEnrollmentCourse(member_id, course_id, enroll_version);
         res.json({ isEnrolled: check });
     } catch (error) {
         console.log('checkEnrollmentCOurse error: ', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
     }
 }
-exports.memberCountinuesLearnCourseById = async (req, res) => {
+exports.memberContinuesLearnCourseById = async (req, res) => {
     const { member_id, course_id } = req.params;
     try {
         const course_progress = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
@@ -52,7 +52,7 @@ exports.memberCountinuesLearnCourseById = async (req, res) => {
             res.json({ message: "You have completed all the content of this course" });
         }
     } catch (error) {
-        console.log('countiuesLearnCourseById error: ', error)
+        console.log('memberContinuesLearnCourseById error: ', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
     }
 
@@ -62,7 +62,7 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
 
     try {
-        if (await courseModel.checkEnrollmemtCourse(member_id, course_id, enroll_version)) {
+        if (await courseModel.checkEnrollmentCourse(member_id, course_id, enroll_version)) {
             return res.status(400).json({ error: "You have already enrolled in this course" });
         }
         const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id, enroll_version)
@@ -89,7 +89,7 @@ exports.submitCourse = async (req, res) => {
             return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
         }
         const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
-        learning_process.learning_process.push(submittedCourse.moocDetatails);
+        learning_process.learning_process.push(submittedCourse.MoocDetails);
         await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
 
         const checkLearningProcess = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
@@ -99,10 +99,10 @@ exports.submitCourse = async (req, res) => {
 
             if (finishCourse) {
                 // add certificate
-                return res.json({ courseResult: submittedCourse.moocDetatails, message: "You have successfully this course!" })
+                return res.json({ courseResult: submittedCourse.MoocDetails, message: "You have successfully this course!" })
             }
         }
-        res.json({ courseResult: submittedCourse.moocDetatails, message: "You have successfully completed this mooc" });
+        res.json({ courseResult: submittedCourse.MoocDetails, message: "You have successfully completed this mooc" });
 
 
     } catch (error) {

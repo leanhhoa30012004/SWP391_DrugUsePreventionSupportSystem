@@ -82,7 +82,7 @@ const createMemberEnrollmentCourse = async (member_id, course_id, enroll_version
     return rows;
 };
 
-const checkEnrollmemtCourse = async (member_id, course_id, enroll_version) => {
+const checkEnrollmentCourse = async (member_id, course_id, enroll_version) => {
     const [rows] = await db.execute(
         "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND course_id = ? AND member_id = ? AND enroll_version = ?",
         [course_id, member_id, enroll_version]
@@ -155,7 +155,7 @@ const calculateScoreMooc = async (questions, answers) => {
     }
     let totalScore = 0;
     let details = {};
-    let moocDetatails = {};
+    let MoocDetails = {};
     mooc.quiz.forEach((question, idx) => {
         const userAnswer = answers.answers[(idx + 1)];
         if (question.type === 'single_choice') {
@@ -201,14 +201,14 @@ const calculateScoreMooc = async (questions, answers) => {
             };
         }
     });
-    moocDetatails = {
+    MoocDetails = {
         mooc_id: answers.mooc_id,
         totalScore: totalScore,
         details: details
     };
     return {
         totalScore,
-        moocDetatails
+        MoocDetails
     };
 };
 
@@ -269,7 +269,7 @@ module.exports = {
     searchCourseByName,
     memberContinuesLearnCourseById,
     createMemberEnrollmentCourse,
-    checkEnrollmemtCourse,
+    checkEnrollmentCourse,
     updateLearningProcess,
     finishCourse,
     getCourseById,
