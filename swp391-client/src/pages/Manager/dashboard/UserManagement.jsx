@@ -70,7 +70,14 @@ const UserManagement = () => {
   const handleUpdateRole = async (userId, newRole) => {
     try {
       await axiosInstance.put(`/manager/update-role/${userId}/${newRole}`);
-      fetchUsers();
+      // Cập nhật role ngay trên state users, không fetch lại toàn bộ
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          (u.user_id || u.id || u.username) === userId
+            ? { ...u, role: newRole }
+            : u
+        )
+      );
       setError('');
     } catch (error) {
       console.error('Error updating role:', error);
