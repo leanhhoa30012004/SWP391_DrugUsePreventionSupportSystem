@@ -89,7 +89,7 @@ exports.submitCourse = async (req, res) => {
             return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
         }
         const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
-        learning_process.learning_process.push(submittedCourse.moocDetatails);
+        learning_process.learning_process.push(submittedCourse.MoocDetails);
         await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);
 
         const checkLearningProcess = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
@@ -99,10 +99,10 @@ exports.submitCourse = async (req, res) => {
 
             if (finishCourse) {
                 // add certificate
-                return res.json({ courseResult: submittedCourse.moocDetatails, message: "You have successfully this course!" })
+                return res.json({ courseResult: submittedCourse.MoocDetails, message: "You have successfully this course!" })
             }
         }
-        res.json({ courseResult: submittedCourse.moocDetatails, message: "You have successfully completed this mooc" });
+        res.json({ courseResult: submittedCourse.MoocDetails, message: "You have successfully completed this mooc" });
 
 
     } catch (error) {
