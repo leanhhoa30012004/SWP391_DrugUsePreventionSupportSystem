@@ -9,8 +9,7 @@ router.get("/test", (req, res) => {
   res.json({ message: "Manager routes are working!" });
 });
 
-// Chỉ cho phép manager hoặc admin truy cập
-
+// Protected manager routes
 router.put(
   "/update-role/:id/:role",
   protectManager,
