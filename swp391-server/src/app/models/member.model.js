@@ -45,6 +45,7 @@ const updatePassword = async (id, newPassword) => {
   );
 };
 
+
 const findById = async (id) => {
   const [rows] = await db.execute(
     "SELECT * FROM Users WHERE user_id = ? AND role = 'member' AND is_active = 1",
@@ -123,6 +124,16 @@ const getUserSurveys = async (userId) => {
   );
   return rows;
 };
+=======
+const updateTokenUser = async (user_id, tokens) => {
+  const rows = await db.execute(
+    `UPDATE Users
+SET google_token = ?
+WHERE user_id = ? AND is_active = 1`, [tokens, user_id]
+  );
+  return rows;
+}
+
 
 module.exports = {
   createMember,
@@ -133,7 +144,11 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
+
   getUserCourses,
   getUserCertificates,
   getUserSurveys,
+=======
+  updateTokenUser
+
 };

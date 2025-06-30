@@ -30,6 +30,21 @@ WHERE ra.is_active = 1 AND ra.member_id = ?`, [member_id])
 const getAllRequestAppointmentForConsultant = async () => {
     const [rows] = await db.execute(`SELECT ra.request_id, ra.member_id, ra.date_sent_request, ra.request_date, ra.request_time, ra.is_confirm FROM Request_appointment ra WHERE ra.is_confirm = 'pending' AND ra.is_active = 1`)
     return rows;
+
+}
+
+const createMeetLink = async (consultant_id, appointment_id, meetLink) => {
+    const [rows] = await db.execute('UPDATE Appointment SET meeting_link = ? WHERE consultant_id = ? AND appointment_id = ?',
+        [meetLink, consultant_id, appointment_id]
+    )
+    return rows;
+}
+
+const acceptAppointment = async (request_id, consultant_id, assign_by) => {
+    const [rows] = await db.execute('INSERT INTO Appointment (request_id, consultant_id, confirm_at, assign_by) VALUES(?, ?, NOW(), ?)',
+        [request_id, consultant_id, assign_by]
+    )
+    return rows;
 }
 
 module.exports = {
@@ -37,5 +52,7 @@ module.exports = {
     numberOfConsultant,
     numberOfRequestAppointment,
     getAllAppointmentByMemberId,
-    getAllRequestAppointmentForConsultant
+    getAllRequestAppointmentForConsultant,
+    createMeetLink,
+    acceptAppointment
 }
