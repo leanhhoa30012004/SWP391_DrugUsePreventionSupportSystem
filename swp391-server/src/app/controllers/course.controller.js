@@ -1,3 +1,4 @@
+
 const courseModel = require('../models/course.model')
 
 exports.getAllCourse = async (req, res) => {
@@ -78,7 +79,6 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
 
 exports.submitCourse = async (req, res) => {
     const { member_id, course_id, member_answer, version } = req.body;
-
     try {
         const course = await courseModel.getCourseByIdAndVersion(course_id, version);
         if (!course) {
@@ -86,7 +86,7 @@ exports.submitCourse = async (req, res) => {
         }
         const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
         if (submittedCourse.totalScore < 8) {
-            return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
+            return res.status(400).json({ score: submittedCourse.totalScore, error: "You need to score at least 8 to complete this course" });
         }
         const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
         learning_process.learning_process.push(submittedCourse.MoocDetails);

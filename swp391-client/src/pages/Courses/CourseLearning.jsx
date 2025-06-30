@@ -103,27 +103,23 @@ const CourseLearning = () => {
     // Submit quiz
     const handleSubmitQuiz = async () => {
         try {
-            // Build the answer payload
+            // Tạo payload dữ liệu
             const payload = buildAnswerPayload();
 
-            // Call API to submit course and calculate score automatically
-            const response = await fetch('http://localhost:3000/api/submit-mooc-course', {
+            // Gọi API để nộp bài và tính điểm
+            const response = await fetch('http://localhost:3000/api/course/submit-mooc-course', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: payload
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            // Get the score from API response
+            console.log('response:', JSON.stringify(response));
+            // Xử lý kết quả
             const result = await response.json();
-            setQuizScore(result.score || 10); // Use returned score or default to 10
+            console.log('Quiz submission result:', JSON.stringify(result));
+            setQuizScore(result.score || 10);
             setQuizSubmitted(true);
-
         } catch (error) {
             console.error("Error submitting quiz:", error);
             alert("An error occurred while submitting your quiz.");
@@ -145,7 +141,7 @@ const CourseLearning = () => {
             member_id: uid,
             course_id: course_id,
             member_answer: {
-                mooc_id: courseData.mooc_id || 1, // or get appropriate id
+                mooc_id: courseData.id || 1, // or get appropriate id
                 answers: answers
             },
             version: courseData.version || 1.0
