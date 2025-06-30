@@ -20,6 +20,13 @@ import ResetPassword from './pages/ForgotPassword/resetPassword'
 // import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
 import ManagerLogin from './pages/Login/ManagerLogin'
 
+// Profile components
+import Profile from './pages/Profile/Profile'
+import ChangePassword from './pages/Profile/ChangePassword'
+
+// Protected Route component
+import ProtectedRoute from './components/ProtectedRoute'
+
 // Admin components
 import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
 import AdminDashboard from './pages/Admin/dashboard/Dashboard'
@@ -66,6 +73,18 @@ function App() {
       {/* <Route path="/confirmation-code" element={<ConfirmationCode />} /> */}
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/manager-login" element={<ManagerLogin />} />
+
+      {/* Profile Routes */}
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/change-password" element={
+        <ProtectedRoute>
+          <ChangePassword />
+        </ProtectedRoute>
+      } />
 
       {/* Survey Routes */}
       <Route path="/survey" element={<SurveySelectionPage />} />

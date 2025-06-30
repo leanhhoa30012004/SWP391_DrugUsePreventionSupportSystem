@@ -7,7 +7,7 @@
     "frontend": "npm run dev --prefix swp391-client",
     "backend": "npm start --prefix swp391-server",
     "project": "concurrently --names \"FE\" \"BE\" --prefix-colors \"cyan\" \"magenta\" \"npm run frontend\" \"npm run backend\"",
-    "postinstall": "npm install --prefix swp391-client && npm install --prefix swp391-server"
+    "install-deps": "npm install --prefix swp391-client && npm install --prefix swp391-server"
   },
   "repository": {
     "type": "git",

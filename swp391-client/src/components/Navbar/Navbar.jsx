@@ -232,8 +232,8 @@ const Navbar = () => {
                 {/* Mobile User Section */}
                 <div className="py-4 border-t border-[#E53935]/20">
                   {user ? (
-                    <div className="flex items-center justify-between px-4">
-                      <div className="flex items-center">
+                    <div className="px-4">
+                      <div className="flex items-center mb-3">
                         <img
                           src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || 'default'}`}
                           alt={user.fullName}
@@ -243,12 +243,24 @@ const Navbar = () => {
                           {user.fullName}
                         </span>
                       </div>
-                      <button
-                        onClick={handleLogout}
-                        className="text-[#E53935] hover:text-white hover:bg-[#E53935] font-medium px-3 py-1 rounded-md"
-                      >
-                        Log out
-                      </button>
+                      <div className="flex flex-col gap-2">
+                        <Link
+                          to="/profile"
+                          className="w-full py-2 text-center border-2 border-[#E53935] text-[#E53935] 
+                                   rounded-lg hover:bg-[#E53935] hover:text-white 
+                                   transition-colors duration-200"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full py-2 text-center bg-[#E53935] text-white rounded-lg 
+                                   hover:bg-white hover:text-[#E53935] transition-colors duration-200 border-2 border-[#E53935]"
+                        >
+                          Log out
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2 px-4">
