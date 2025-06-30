@@ -45,6 +45,15 @@ const updatePassword = async (id, newPassword) => {
   );
 };
 
+const updateTokenUser = async (user_id, tokens) => {
+  const rows = await db.execute(
+    `UPDATE Users
+SET google_token = ?
+WHERE user_id = ? AND is_active = 1`, [tokens, user_id]
+  );
+  return rows;
+}
+
 module.exports = {
   createMember,
   findByUsername,
@@ -52,4 +61,5 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
+  updateTokenUser
 };
