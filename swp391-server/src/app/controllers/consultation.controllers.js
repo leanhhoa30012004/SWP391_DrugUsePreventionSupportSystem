@@ -1,4 +1,8 @@
 const consultationModel = require('../models/consultation.model');
+const { getAuthUrl, getOAuth2Client } = require('../../config/googleAuth.config');
+const memberModel = require('../models/member.model');
+const createMeetConfig = require('../../config/createMeet.config');
+
 
 exports.checkAppointment = async (req, res) => {
     const { request_date, request_time } = req.params;
@@ -47,5 +51,48 @@ exports.getAllRequestAppointmentForConsultant = async (req, res) => {
     } catch (error) {
         console.log('getAllRequestAppointmentForConsultant error:', error);
         res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+}
+
+exports.getAuthUrl = async (req, res) => {
+    try {
+        const consultant_id = req.params.consultant_id;
+        const url = getAuthUrl(consultant_id);
+        res.json({ url })
+    } catch (error) {
+        console.log('getAuthUrl error:', error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+}
+
+exports.oAuth2CallBack = async (req, res) => {
+    const code = req.query.code;
+    const consultant_id = req.query.state;
+    const oAuth2Client = getOAuth2Client();
+    try {
+        const { tokens } = await oAuth2Client.getToken(code);
+        console.log('token>>>', tokens)
+        const row = await memberModel.updateTokenUser(consultant_id, JSON.stringify(tokens))
+        if (!row) throw error
+        return res.send('Google Calender connected successfully!')
+
+    } catch (error) {
+        console.error('OAuth2 callback error:', error);
+        res.status(500).send('Error authenticating with Google')
+    }
+}
+
+exports.acceptAppointmentRequest = async (req, res) => {
+    const { consultant_id, assign_by } = req.params;
+    const { request_id, appointment_id, date, time } = req.body;
+    try {
+        await consultationModel.acceptAppointment(request_id, consultant_id, assign_by)
+        const meetLink = await createMeetConfig.createMeetEvent(consultant_id, date, time);
+        const row = await consultationModel.createMeetLink(consultant_id, appointment_id, meetLink);
+        if (!row) return res.json('Fail to create meet link!')
+        return res.json('Create meet link successfully!')
+    } catch (error) {
+        console.error('AcceptAppointmentRequest:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
     }
 }

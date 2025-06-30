@@ -86,7 +86,9 @@ exports.submitCourse = async (req, res) => {
         }
         const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
         if (submittedCourse.totalScore < 8) {
+
             return res.status(400).json({ score: submittedCourse.totalScore, error: "You need to score at least 8 to complete this course" });
+
         }
         const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
         learning_process.learning_process.push(submittedCourse.MoocDetails);
@@ -111,3 +113,16 @@ exports.submitCourse = async (req, res) => {
     }
 }
 
+exports.getCourseByCourseIdAndVersion = async (req, res) => {
+    const { course_id, version } = req.params;
+    try {
+        const row = await courseModel.getCourseByIdAndVersion(course_id, version);
+        if (!row) return res.json('course is not exist')
+        return res.json(row);
+
+    } catch (error) {
+        console.log('getCourseByCourseIdAndVersion error: ', error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+
+}
