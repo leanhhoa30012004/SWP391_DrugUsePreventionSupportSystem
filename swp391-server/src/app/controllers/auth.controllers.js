@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password" });
     }
     const token = jwt.sign(
-      { userId: user.member_id, username: user.username, role: user.role },
+      { userId: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7h" }
     );
@@ -117,5 +117,212 @@ exports.loginManager = async (req, res) => {
   } catch (error) {
     console.error("Error logging in manager:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await memberModel.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    // Remove password from response
+    const { password, reset_token, reset_token_expiry, ...userInfo } = user;
+    
+    res.status(200).json({
+      success: true,
+      user: userInfo
+    });
+  } catch (error) {
+    console.error("Get profile error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error" 
+    });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { fullname, email, birthday } = req.body;
+
+    // Check if email is already used by another user
+    const existingUser = await memberModel.findByEmail(email);
+    if (existingUser && existingUser.user_id !== userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already in use"
+      });
+    }
+
+    await memberModel.updateProfile(userId, { fullname, email, birthday });
+    
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully"
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    // Get current user
+    const user = await memberModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect"
+      });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update password
+    await memberModel.updatePassword(userId, hashedNewPassword);
+    
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully"
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+exports.getUserCourses = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Mock data - thay thế bằng query database thực tế
+    const courses = [
+      {
+        course_id: 1,
+        title: "Drug Prevention Basics",
+        description: "Learn the fundamentals of drug prevention and awareness",
+        status: "completed",
+        progress: 100,
+        enrolled_date: "2024-01-15",
+        completed_date: "2024-02-15"
+      },
+      {
+        course_id: 2,
+        title: "Understanding Addiction",
+        description: "Deep dive into addiction psychology and recovery",
+        status: "in_progress",
+        progress: 65,
+        enrolled_date: "2024-02-20",
+        completed_date: null
+      }
+    ];
+    
+    res.status(200).json({
+      success: true,
+      courses: courses
+    });
+  } catch (error) {
+    console.error("Get user courses error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+exports.getUserCertificates = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Mock data - thay thế bằng query database thực tế
+    const certificates = [
+      {
+        certificate_id: "CERT001",
+        title: "Drug Prevention Specialist",
+        description: "Certified in basic drug prevention knowledge",
+        type: "Course Completion",
+        earned_date: "2024-02-15",
+        course_id: 1
+      }
+    ];
+    
+    res.status(200).json({
+      success: true,
+      certificates: certificates
+    });
+  } catch (error) {
+    console.error("Get user certificates error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+exports.getUserSurveys = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Mock data - thay thế bằng query database thực tế
+    const surveys = [
+      {
+        survey_id: 1,
+        title: "Drug Risk Assessment",
+        completed_date: "2024-03-01",
+        score: 8,
+        total_questions: 10,
+        risk_level: "low",
+        recommendations: "Continue maintaining healthy lifestyle choices",
+        certificate_eligible: true
+      },
+      {
+        survey_id: 2,
+        title: "Knowledge Assessment",
+        completed_date: "2024-03-15",
+        score: 15,
+        total_questions: 20,
+        risk_level: "medium",
+        recommendations: "Consider enrolling in advanced prevention courses",
+        certificate_eligible: false
+      }
+    ];
+    
+    res.status(200).json({
+      success: true,
+      surveys: surveys
+    });
+  } catch (error) {
+    console.error("Get user surveys error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 };
