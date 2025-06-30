@@ -8,6 +8,7 @@ const surveyManageRoutes = require("./src/routes/survey.manage.routes");
 const courseRoutes = require("./src/routes/course.routes");
 const courseManageRoutes = require("./src/routes/course.manage.routes");
 const consultationRoutes = require("./src/routes/consultation.routes");
+const reportRoutes = require("./src/routes/report.routes");
 const cors = require("cors");
 app.use(express.json());
 app.use(cors());
@@ -29,6 +30,7 @@ app.use("/api/consultation", consultationRoutes);
 app.use("/api/manager", managerRoutes);
 app.use("/api/manager/survey", surveyManageRoutes);
 app.use("/api/manager/course", courseManageRoutes);
+app.use("/api/manager/report", reportRoutes);
 // Chạy server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
