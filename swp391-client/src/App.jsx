@@ -10,7 +10,10 @@ import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
 import Blogs from './pages/Blogs/blogs'
 import Courses from './pages/Courses/Courses'
-import CourseDetail from './pages/Courses/CourseDetail.jsx'
+
+import CourseDetail from '.\\pages\\Courses\\CourseDetail.jsx'
+import CourseCompleted from './pages/Courses/CourseCompleted'
+
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -65,6 +68,7 @@ function App() {
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/:course_id" element={<CourseDetail />} />
       <Route path="/learning/:course_id" element={<CourseLearning />} />
+      <Route path="/course-completed" element={<CourseCompleted />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />

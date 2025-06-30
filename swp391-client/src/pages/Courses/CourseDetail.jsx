@@ -18,6 +18,7 @@ function CourseDetail() {
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
+    const [isCompleted, setIsCompleted] = useState(false);
     // console.log('du lieu id:', uid)
 
     // Fetch course details
@@ -35,6 +36,13 @@ function CourseDetail() {
 
                 // Check if user is already enrolled
                 await checkEnrollmentStatus(course_id, course_version);
+
+                // Kiểm tra trạng thái hoàn thành từ API (giả sử response.data.message)
+                if (response.data && response.data.message && response.data.message.includes('completed all the content')) {
+                    setIsCompleted(true);
+                } else {
+                    setIsCompleted(false);
+                }
             } catch (err) {
                 console.error("Course detail API error:", err);
                 Swal.fire({
@@ -239,7 +247,14 @@ function CourseDetail() {
                                             )}
                                         </div>
 
-                                        {isEnrolled ? (
+                                        {isCompleted ? (
+                                            <button
+                                                className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
+                                                disabled
+                                            >
+                                                Course Completed
+                                            </button>
+                                        ) : isEnrolled ? (
                                             <button
                                                 onClick={() => navigate(`/learning/${course_id}`)}
                                                 className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"

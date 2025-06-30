@@ -21,6 +21,137 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
+import Swal from 'sweetalert2';
+
+// ================================
+// 2. UI COMPONENT - MOOC PROGRESS BAR
+// ================================
+
+const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransitioning }) => {
+    // Lấy mooc_id hiện tại từ API
+    const currentMoocId = currentMoocData?.mooc_id || currentMoocData?.id || 1;
+    
+    return (
+        <div className="bg-white rounded-xl shadow-lg border border-blue-100 mb-6 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-white p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-gray-800">Course Progress</h3>
+                    <div className="text-sm text-gray-600">
+                        MOOC ID: {currentMoocId} | Progress: {completedMoocs.length}/{totalMoocs}
+                    </div>
+                </div>
+                
+                {/* Progress Bar với MOOC ID */}
+                <div className="relative">
+                    <div className="flex items-center justify-between mb-2">
+                        {Array.from({ length: totalMoocs }, (_, index) => {
+                            const moocNumber = index + 1;
+                            const isCompleted = completedMoocs.includes(moocNumber);
+                            const isCurrent = currentMoocId === moocNumber;
+                            
+                            return (
+                                <div key={index} className="flex items-center">
+                                    {/* MOOC Circle */}
+                                    <div className={`
+                                        relative w-12 h-12 rounded-full border-4 flex items-center justify-center font-bold text-sm
+                                        transition-all duration-500 ease-in-out
+                                        ${isCompleted 
+                                            ? 'bg-green-500 border-green-500 text-white shadow-lg' 
+                                            : isCurrent 
+                                                ? `bg-blue-500 border-blue-500 text-white shadow-lg ${isTransitioning ? 'animate-pulse' : ''}` 
+                                                : 'bg-gray-100 border-gray-300 text-gray-500'
+                                        }
+                                    `}>
+                                        {isCompleted ? (
+                                            <CheckCircle className="w-6 h-6" />
+                                        ) : (
+                                            moocNumber
+                                        )}
+                                        
+                                        {/* Transition Animation */}
+                                        {isTransitioning && isCurrent && (
+                                            <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Connection Line */}
+                                    {index < totalMoocs - 1 && (
+                                        <div className={`
+                                            h-1 w-20 mx-2 transition-all duration-700 ease-in-out
+                                            ${isCompleted 
+                                                ? 'bg-green-500' 
+                                                : 'bg-gray-300'
+                                            }
+                                        `}></div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    
+                    {/* MOOC Labels với ID */}
+                    <div className="flex justify-between mt-3">
+                        {Array.from({ length: totalMoocs }, (_, index) => {
+                            const moocNumber = index + 1;
+                            const isCompleted = completedMoocs.includes(moocNumber);
+                            const isCurrent = currentMoocId === moocNumber;
+                            
+                            return (
+                                <div key={index} className="text-center" style={{ width: '80px' }}>
+                                    <div className={`
+                                        text-xs font-medium transition-colors duration-300
+                                        ${isCompleted 
+                                            ? 'text-green-600' 
+                                            : isCurrent 
+                                                ? 'text-blue-600' 
+                                                : 'text-gray-500'
+                                        }
+                                    `}>
+                                        MOOC {moocNumber}
+                                    </div>
+                                    <div className={`
+                                        text-xs mt-1 transition-colors duration-300
+                                        ${isCompleted 
+                                            ? 'text-green-500' 
+                                            : isCurrent 
+                                                ? 'text-blue-500' 
+                                                : 'text-gray-400'
+                                        }
+                                    `}>
+                                        {isCompleted 
+                                            ? 'Completed' 
+                                            : isCurrent 
+                                                ? 'In Progress' 
+                                                : 'Pending'
+                                        }
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Current MOOC Info với MOOC ID */}
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center">
+                        <div className="bg-blue-500 text-white p-2 rounded-lg mr-3">
+                            <BookOpen className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <div className="font-semibold text-gray-800">
+                                Currently Learning: MOOC ID {currentMoocId}
+                                {currentMoocData?.title && ` - ${currentMoocData.title}`}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                                {isTransitioning ? 'Processing completion...' : 'Watch video and complete quiz to advance'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const CourseLearning = () => {
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
@@ -35,46 +166,108 @@ const CourseLearning = () => {
     const [quizScore, setQuizScore] = useState(0);
     const videoRef = useRef(null);
     const navigate = useNavigate();
+    const [num_moocs  , setNumMoocs] = useState(0)
+    // ================================
+    // 1. LOGIC XỬ LÝ TIẾN TRÌNH MOOC
+    // ================================
+    const [currentMoocData, setCurrentMoocData] = useState(null);
+    const [completedMoocs, setCompletedMoocs] = useState([]);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
-    // Fetch course data
+    // Fetch course data và current MOOC
     useEffect(() => {
         async function fetchCourseData() {
             setLoading(true);
             try {
-                // Call API to get course information that the member is learning
+                console.log(`🔄 Fetching course data for member ${uid}, course ${course_id}`);
+                
+                // Call API to get current MOOC that the member is learning
                 const response = await fetch(`http://localhost:3000/api/course/continues-learn-course-by-id/${uid}/${course_id}`);
-                console.log('response:', response)
-                // Check if response is not successful
+                console.log('📡 API Response:', response);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
+                const parseData = await response.json()
+                console.log("Parse Data: ", parseData)
+                const data = parseData.data;
+                setNumMoocs(parseData.quantity)
+                console.log('📋 Course Data from API:', data);
 
-                // Parse JSON data from response
-                const data = await response.json();
-
-                // Update state with received data
+                // Cập nhật courseData
                 setCourseData(data);
+
+                // ✅ Xử lý MOOC hiện tại từ API response
+                if (data && (data.mooc_id || data.id)) {
+                    const currentMoocId = data.mooc_id || data.id;
+                    console.log(`📚 Current MOOC ID from API: ${currentMoocId}`);
+                    const completed = [];
+                    for (let i = 1; i < currentMoocId; i++) completed.push(i);
+                    setCompletedMoocs(completed)
+                    // Set current MOOC data
+                    setCurrentMoocData({
+                        ...data,
+                        mooc_id: currentMoocId
+                    });
+                    
+                    // Log thông tin chi tiết về MOOC hiện tại
+                    console.log('📖 Current MOOC Details:', {
+                        mooc_id: currentMoocId,
+                        title: data.title,
+                        description: data.description,
+                        video: data.video,
+                        quiz_count: data.quiz?.length || 0
+                    });
+                    
+                } else {
+                    console.warn('⚠️ No MOOC ID found in API response');
+                    // Fallback nếu không có mooc_id
+                    setCurrentMoocData(data);
+                }
+
+                // Xử lý trường hợp hoàn thành toàn bộ khóa học
+                if (data && data.message && data.message.includes('completed all the content')) {
+                    console.log('🎉 Course completed!');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Course Completed!',
+                        text: 'Congratulations! You have completed all the content of this course.',
+                        timer:3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        navigate('/courses');
+                    });
+                    return;
+                }
+
             } catch (err) {
-                console.error("Error fetching course data:", err);
-                alert("An error occurred while loading course data.");
+                console.error("❌ Error fetching course data:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Loading Course',
+                    text: 'An error occurred while loading course data. Please try again.',
+                    confirmButtonColor: '#3085d6',
+                });
             } finally {
                 setLoading(false);
             }
         }
 
-        // Only call API when both memberId and courseId are available
         if (uid && course_id) {
             fetchCourseData();
         }
-    }, [uid, course_id]);
+    }, [uid, course_id, navigate]);
 
     // Handle video completion
     const handleVideoEnd = () => {
+        console.log('📹 Video completed');
         setVideoCompleted(true);
     };
 
     // Start quiz
     const handleStartQuiz = () => {
+        console.log(`🎯 Starting quiz for MOOC ID: ${currentMoocData?.mooc_id}`);
         setShowQuiz(true);
     };
 
@@ -84,11 +277,22 @@ const CourseLearning = () => {
             ...selectedAnswers,
             [questionIndex]: optionIndex
         });
+        console.log(`📝 Answer selected for question ${questionIndex + 1}: option ${optionIndex + 1}`);
     };
 
     // Navigate to next question
     const handleNextQuestion = () => {
-        if (currentQuestionIndex < courseData.quiz.length - 1) {
+        if (selectedAnswers[currentQuestionIndex] === undefined) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No answer selected!',
+                text: 'Please select an answer before proceeding to the next question.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        if (currentQuestionIndex < (currentMoocData?.quiz || []).length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
     };
@@ -103,52 +307,146 @@ const CourseLearning = () => {
     // Submit quiz
     const handleSubmitQuiz = async () => {
         try {
-            // Tạo payload dữ liệu
-            const payload = buildAnswerPayload();
 
-            // Gọi API để nộp bài và tính điểm
+            const payload = buildAnswerPayload();
+            console.log("📦 FINAL PAYLOAD TO SERVER:", JSON.stringify(payload, null, 2));
             const response = await fetch('http://localhost:3000/api/course/submit-mooc-course', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: payload
+                body: JSON.stringify(payload),
             });
-            console.log('response:', JSON.stringify(response));
-            // Xử lý kết quả
+
             const result = await response.json();
-            console.log('Quiz submission result:', JSON.stringify(result));
-            setQuizScore(result.score || 10);
-            setQuizSubmitted(true);
+            console.log('🔄 SERVER RESPONSE:', JSON.stringify(result, null, 2));
+
+            // Tính tổng điểm
+            const calculateTotalScore = (moocResults) => {
+                let total = 0;
+                console.log("📊 CALCULATING SCORE FROM RESPONSE:");
+                
+                if (Array.isArray(moocResults)) {
+                    moocResults.forEach((mooc, moocIndex) => {
+                        console.log(`MOOC ${moocIndex + 1} (ID: ${mooc.mooc_id}):`);
+                        console.log(`- Total Score: ${mooc.totalScore}`);
+                        
+                        Object.entries(mooc.details).forEach(([questionNum, questionData]) => {
+                            console.log(`  Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
+                            total += questionData.score || 0;
+                        });
+                    });
+                } else if (moocResults && typeof moocResults === 'object') {
+                    console.log("Single MOOC result:", moocResults);
+                    if (moocResults.details) {
+                        Object.entries(moocResults.details).forEach(([questionNum, questionData]) => {
+                            console.log(`Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
+                            total += questionData.score || 0;
+                        });
+                    }
+                }
+                
+                console.log(`🎯 TOTAL CALCULATED SCORE: ${total}`);
+                return total;
+            };
+
+            const totalScore = calculateTotalScore(result.courseResult || result);
+            setQuizScore(totalScore);
+
+            // Kiểm tra kết quả
+            if (totalScore < 8) {
+                console.log(`❌ FAILED: Score ${totalScore} < 8`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Quiz Failed',
+                    text: `You scored ${totalScore} points. You need at least 8 to pass. Please try again!`,
+                    confirmButtonColor: '#3085d6',
+                });
+                setQuizSubmitted(true);
+                return;
+            }
+
+            // Nếu pass - Xử lý tiến trình
+            console.log(`✅ PASSED: Score ${totalScore} >= 8 for MOOC ID ${currentMoocData?.mooc_id}`);
+            setIsTransitioning(true);
+            
+            // Cập nhật MOOC đã hoàn thành
+            const currentMoocId = currentMoocData?.mooc_id || currentMoocData?.id;
+            const newCompletedMoocs = completedMoocs && completedMoocs.length > 0 ? [...completedMoocs, currentMoocId] : [currentMoocId];
+            setCompletedMoocs(newCompletedMoocs);
+            console.log(`📈 COMPLETED MOOCs: [${newCompletedMoocs.join(', ')}]`);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'MOOC Completed!',
+                html: `
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600 mb-2">MOOC ID: ${currentMoocId}</div>
+                        <div class="text-lg">Score: ${totalScore} points</div>
+                        <div class="text-sm text-gray-600 mt-2">Great job! Moving to next MOOC...</div>
+                    </div>
+                `,
+                timer:3000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+            }).then(() => {
+                // Reload trang để lấy MOOC tiếp theo từ API
+                window.location.reload();
+            });
+
         } catch (error) {
-            console.error("Error submitting quiz:", error);
-            alert("An error occurred while submitting your quiz.");
+            console.error('❌ QUIZ SUBMISSION ERROR:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: error.message || 'Unable to connect to the server. Please try again later.',
+                confirmButtonColor: '#3085d6',
+            });
+            setIsTransitioning(false);
         }
     };
 
     const buildAnswerPayload = () => {
-        // Convert selectedAnswers to object { "1": "Answer text", ... }
         const answers = {};
+        const answerDetails = {};
+
+        const currentQuiz = currentMoocData?.quiz || [];
+
         Object.keys(selectedAnswers).forEach((questionIndex) => {
-            // Get selected answer text
-            const answerText = courseData.quiz[questionIndex].options[selectedAnswers[questionIndex]].text;
-            // Key is question number (starting from 1)
-            answers[(parseInt(questionIndex) + 1).toString()] = answerText;
+            const questionNum = (parseInt(questionIndex) + 1).toString();
+            const selectedOptionIndex = selectedAnswers[questionIndex];
+            const selectedOption = currentQuiz[questionIndex].options[selectedOptionIndex];
+            const answerText = selectedOption.text;
+            
+            answers[questionNum] = answerText;
+            
+            answerDetails[questionNum] = {
+                question: currentQuiz[questionIndex].question,
+                selectedAnswer: answerText,
+                selectedScore: selectedOption.score || 0,
+                isCorrect: (selectedOption.score || 0) > 0,
+            };
         });
 
-        // Create object in correct format
+        const realMoocId = currentMoocData?.mooc_id || currentMoocData?.id || 1;
+        
         const payload = {
             member_id: uid,
-            course_id: course_id,
+            course_id: parseInt(course_id),
             member_answer: {
-                mooc_id: courseData.id || 1, // or get appropriate id
+                mooc_id: realMoocId,
                 answers: answers
             },
-            version: courseData.version || 1.0
+            version: courseData?.version || 1.0,
         };
 
-        // Convert to JSON string
-        return JSON.stringify(payload);
+        // Log chi tiết
+        console.log("📋 DETAILED ANSWER BREAKDOWN:");
+        console.log("Real MOOC ID from API:", realMoocId);
+        console.log("MOOC Title:", currentMoocData?.title);
+        console.log("Selected Answers:", answerDetails);
+        
+        return payload;
     };
 
     // Retry quiz
@@ -156,6 +454,7 @@ const CourseLearning = () => {
         setSelectedAnswers({});
         setCurrentQuestionIndex(0);
         setQuizSubmitted(false);
+        setQuizScore(0);
     };
 
     // Return to course list
@@ -178,7 +477,31 @@ const CourseLearning = () => {
             <>
                 <Navbar />
                 <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <div className="text-gray-600">Loading course content...</div>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    if (!currentMoocData) {
+        return (
+            <>
+                <Navbar />
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex justify-center items-center">
+                    <div className="text-center">
+                        <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">No MOOC Data Found</h2>
+                        <p className="text-gray-600">Unable to load MOOC content. Please try again.</p>
+                        <button 
+                            onClick={() => window.location.reload()}
+                            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"
+                        >
+                            Reload Page
+                        </button>
+                    </div>
                 </div>
             </>
         );
@@ -188,7 +511,7 @@ const CourseLearning = () => {
         <>
             <Navbar />
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-                {/* Course Header */}
+                {/* Course Header với MOOC ID */}
                 <div className="relative overflow-hidden shadow-lg">
                     <img
                         src="https://i.pinimg.com/736x/e9/14/89/e91489c136aabd067406f1c55bce389b.jpg"
@@ -197,7 +520,6 @@ const CourseLearning = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50"></div>
 
-                    {/* Header Content */}
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="max-w-7xl mx-auto px-4 py-8">
                             <div className="text-center">
@@ -207,25 +529,38 @@ const CourseLearning = () => {
                                     <Video className="w-10 h-10 text-blue-300 mr-3" />
                                 </div>
 
+                                {/* Hiển thị MOOC ID prominently */}
+                                <div className="bg-blue-600/20 backdrop-blur-sm rounded-lg px-6 py-2 mb-4 inline-block">
+                                    <div className="text-blue-200 text-lg font-semibold">
+                                        MOOC ID: {currentMoocData?.mooc_id || currentMoocData?.id || 'Unknown'}
+                                    </div>
+                                </div>
+
                                 <h1 className="text-6xl font-bold text-white mb-6 drop-shadow-lg">
-                                    {courseData.title}
+                                    {courseData?.course_name || 'Course Title'}
+                                    {currentMoocData?.title && (
+                                        <div className="text-3xl text-blue-200 mt-2 font-normal">
+                                            {currentMoocData.title}
+                                        </div>
+                                    )}
                                 </h1>
+                                
                                 <p className="text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
-                                    {courseData.description}
+                                    {courseData?.description || currentMoocData?.description || 'Course description'}
                                 </p>
 
                                 <div className="mt-8 flex items-center justify-center space-x-8 text-white/80">
                                     <div className="flex items-center">
                                         <Clock className="w-6 h-6 mr-2" />
-                                        <span className="text-lg">{courseData.duration}</span>
+                                        <span className="text-lg">{courseData?.duration || 'Duration not specified'}</span>
                                     </div>
                                     <div className="flex items-center">
                                         <FileText className="w-6 h-6 mr-2" />
-                                        <span className="text-lg">{courseData.quiz.length} questions</span>
+                                        <span className="text-lg">{currentMoocData?.quiz?.length || 0} questions</span>
                                     </div>
                                     <div className="flex items-center">
                                         <Target className="w-6 h-6 mr-2" />
-                                        <span className="text-lg">Professional Support</span>
+                                        <span className="text-lg">ID: {currentMoocData?.mooc_id || currentMoocData?.id}</span>
                                     </div>
                                 </div>
                             </div>
@@ -234,6 +569,14 @@ const CourseLearning = () => {
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 py-8">
+                    {/* MOOC Progress Bar với MOOC ID */}
+                    <MoocProgressBar 
+                        currentMoocData={currentMoocData}
+                        completedMoocs={completedMoocs}
+                        totalMoocs={courseData?.total_moocs || num_moocs} // Có thể điều chỉnh
+                        isTransitioning={isTransitioning}
+                    />
+
                     {!showQuiz ? (
                         /* Video Learning Section */
                         <div className="bg-white rounded-xl shadow-lg border border-blue-100 overflow-hidden mb-8">
@@ -244,11 +587,11 @@ const CourseLearning = () => {
                                             <Play className="w-8 h-8" />
                                         </div>
                                         <div>
-                                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg font-semibold text-sm">
-                                                ID: {course_id}
+                                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg font-semibold text-sm mb-1">
+                                                MOOC ID: {currentMoocData?.mooc_id || currentMoocData?.id}
                                             </div>
-                                            <div className="text-blue-600 font-bold text-lg mt-1">
-                                                Lesson Video
+                                            <div className="text-blue-600 font-bold text-lg">
+                                                {currentMoocData?.title || 'Lesson Video'}
                                             </div>
                                         </div>
                                     </div>
@@ -272,7 +615,7 @@ const CourseLearning = () => {
                                     <iframe
                                         ref={videoRef}
                                         className="w-full h-[500px] rounded-lg"
-                                        src={`${getYouTubeEmbedUrl(courseData.video)}?enablejsapi=1`}
+                                        src={`${getYouTubeEmbedUrl(currentMoocData?.video)}?enablejsapi=1`}
                                         title="Course Video"
                                         frameBorder="0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -285,7 +628,7 @@ const CourseLearning = () => {
                                     className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center group w-full"
                                     onClick={handleStartQuiz}
                                 >
-                                    <span>Take Quiz</span>
+                                    <span>Take Quiz for MOOC ID {currentMoocData?.mooc_id || currentMoocData?.id}</span>
                                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                                 </button>
                             </div>
@@ -302,7 +645,7 @@ const CourseLearning = () => {
                                             </div>
                                             <div>
                                                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-lg font-semibold text-sm">
-                                                    Question {currentQuestionIndex + 1}/{courseData.quiz.length}
+                                                    MOOC {currentMoocData?.mooc_id} - {currentMoocData?.title || `Question ${currentQuestionIndex + 1}`} ({currentQuestionIndex + 1}/{currentMoocData?.quiz?.length || courseData.quiz?.length || 0})
                                                 </div>
                                                 <div className="text-blue-600 font-bold text-lg mt-1">
                                                     Knowledge Assessment
@@ -313,11 +656,11 @@ const CourseLearning = () => {
 
                                     <div className="bg-blue-50 p-6 rounded-lg mb-6">
                                         <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                                            {courseData.quiz[currentQuestionIndex].question}
+                                            {(currentMoocData?.quiz || courseData.quiz)[currentQuestionIndex].question}
                                         </h3>
 
                                         <div className="space-y-3">
-                                            {courseData.quiz[currentQuestionIndex].options.map((option, optionIndex) => (
+                                            {(currentMoocData?.quiz || courseData.quiz)[currentQuestionIndex].options.map((option, optionIndex) => (
                                                 <div
                                                     key={optionIndex}
                                                     className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${selectedAnswers[currentQuestionIndex] === optionIndex
@@ -352,7 +695,7 @@ const CourseLearning = () => {
                                             Previous
                                         </button>
 
-                                        {currentQuestionIndex < courseData.quiz.length - 1 ? (
+                                        {currentQuestionIndex < (currentMoocData?.quiz || courseData.quiz).length - 1 ? (
                                             <button
                                                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
                                                 onClick={handleNextQuestion}
@@ -388,10 +731,10 @@ const CourseLearning = () => {
 
                                     <div className="bg-blue-50 p-6 rounded-lg mb-8 text-center">
                                         <div className="text-5xl font-bold text-blue-600 mb-2">
-                                            {quizScore}/{courseData.quiz.length * 2}
+                                            {quizScore}/{((currentMoocData?.quiz || courseData.quiz).length || 0) * 2}
                                         </div>
                                         <p className="text-gray-700">
-                                            {quizScore >= courseData.quiz.length ? "Excellent! You've mastered the content." : "Review the lesson to improve your understanding."}
+                                            {quizScore >= ((currentMoocData?.quiz || courseData.quiz).length || 0) ? "Excellent! You've mastered the content." : "Review the lesson to improve your understanding."}
                                         </p>
                                     </div>
 
@@ -442,7 +785,7 @@ const CourseLearning = () => {
                                     <CheckSquare className="w-12 h-12 text-blue-500 mx-auto mb-4" />
                                     <h3 className="font-semibold text-blue-700 mb-2 text-lg">Assessment</h3>
                                     <p className="text-gray-600 text-sm leading-relaxed">
-                                        {courseData.quiz.length} knowledge check questions
+                                        {(currentMoocData?.quiz || courseData.quiz)?.length || 0} knowledge check questions
                                     </p>
                                 </div>
 
