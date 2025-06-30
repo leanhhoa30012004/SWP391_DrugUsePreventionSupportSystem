@@ -124,7 +124,7 @@ const getUserSurveys = async (userId) => {
   );
   return rows;
 };
-=======
+
 const updateTokenUser = async (user_id, tokens) => {
   const rows = await db.execute(
     `UPDATE Users
@@ -144,11 +144,9 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
-
   getUserCourses,
   getUserCertificates,
   getUserSurveys,
-=======
   updateTokenUser
 
 };
