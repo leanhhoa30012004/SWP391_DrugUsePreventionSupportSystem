@@ -1,4 +1,5 @@
 const db = require("../../config/db.config");
+const bcrypt = require('bcryptjs');
 
 const addRequestAppointment = async (member_id, request_date, request_time) => {
     const [rows] = await db.execute(`INSERT INTO Request_appointment (member_id, date_sent_request, request_date, request_time)

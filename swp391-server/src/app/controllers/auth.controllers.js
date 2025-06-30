@@ -99,9 +99,8 @@ exports.loginManager = async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    // So sánh password dùng bcrypt
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    // So sánh password plain text (KHÔNG AN TOÀN, chỉ dùng để test/demo)
+    if (password !== user.password) {
       console.log("Password mismatch");
       return res.status(401).json({ message: "Invalid username or password" });
     }
