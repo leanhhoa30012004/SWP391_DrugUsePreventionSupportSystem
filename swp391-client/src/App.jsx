@@ -54,6 +54,7 @@ import SidebarLayout from './pages/Manager/dashboard/SidebarLayout'
 import SurveyManagement from './pages/Manager/dashboard/SurveyManagement'
 import CourseManagement from './pages/Manager/dashboard/CourseManagement'
 import ConsultantManagement from './pages/Manager/dashboard/ConsultantManagement'
+import ConsultantBooking from './pages/Consultant/Consultant.jsx'
 
 function App() {
   return (
@@ -95,6 +96,11 @@ function App() {
       <Route path="/survey/:sid" element={<Survey />} />
       <Route path="/survey/history/:memberId/:id" element={<SurveyHistoryPage />} />
       <Route path="/about" element={<AboutUsPage />} />
+
+      {/* Consultant Routes */}
+      <Route path="/consultant" element={<ConsultantBooking/>} />
+
+
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>

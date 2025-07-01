@@ -3,12 +3,13 @@ import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/footer";
 import Hero from "./Hero";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaShieldAlt, FaCheckCircle } from "react-icons/fa";
 import CoursesList from "./CourseList";
 import AboutUs from "./Aboutus";
 // Import AOS nếu bạn muốn dùng animations
 import AOS from 'aos';
+import SurveyIntroSection from "./Survey";
 // import 'aos/dist/aos.css';
 
 const SurveyPopup = ({ onClose }) => {
@@ -143,6 +144,7 @@ const Homepage = () => {
       
       {/* Uncomment if you want to use CoursesList */}
        <CoursesList />
+       <SurveyIntroSection/>
        <Footer/>
     </div>
   );
