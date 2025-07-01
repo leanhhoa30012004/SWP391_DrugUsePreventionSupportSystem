@@ -309,9 +309,9 @@ const CourseLearning = () => {
     // Submit quiz
     const handleSubmitQuiz = async () => {
         try {
+
             const payload = buildAnswerPayload();
             console.log("📦 FINAL PAYLOAD TO SERVER:", JSON.stringify(payload, null, 2));
-
             const response = await fetch('http://localhost:3000/api/course/submit-mooc-course', {
                 method: 'POST',
                 headers: {
