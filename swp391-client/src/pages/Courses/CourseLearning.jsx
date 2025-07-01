@@ -176,6 +176,7 @@ const CourseLearning = () => {
 
     // Fetch course data và current MOOC
     useEffect(() => {
+        if (completedMoocs && completedMoocs.length && completedMoocs[completedMoocs.length-1] == num_moocs) navigate('/course-completed')
         async function fetchCourseData() {
             setLoading(true);
             try {
@@ -190,6 +191,7 @@ const CourseLearning = () => {
                 }
                 const parseData = await response.json()
                 console.log("Parse Data: ", parseData)
+                if (parseData.message && parseData.message == 'You have completed all the content of this course')  navigate('/course-completed')
                 const data = parseData.data;
                 setNumMoocs(parseData.quantity)
                 console.log('📋 Course Data from API:', data);
@@ -236,7 +238,7 @@ const CourseLearning = () => {
                         timerProgressBar: true,
                         showConfirmButton: false,
                     }).then(() => {
-                        navigate('/courses');
+                        navigate('/course-completed');
                     });
                     return;
                 }
@@ -391,6 +393,7 @@ const CourseLearning = () => {
                 showConfirmButton: false,
             }).then(() => {
                 // Reload trang để lấy MOOC tiếp theo từ API
+                if (currentMoocId == num_moocs) navigate('/course-completed')
                 window.location.reload();
             });
 
