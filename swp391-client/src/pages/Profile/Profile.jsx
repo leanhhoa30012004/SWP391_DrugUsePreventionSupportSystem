@@ -156,7 +156,7 @@ const Profile = () => {
       if (response.data.success) {
         setUserInfo({ ...userInfo, ...formData });
         setEditMode(false);
-        
+
         Swal.fire({
           icon: "success",
           title: "Success!",
@@ -207,10 +207,10 @@ const Profile = () => {
         {/* Header Section */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-6">
-            <img 
-              src={Logo} 
-              alt="WeHope Logo" 
-              className="w-48 h-auto mx-auto drop-shadow-lg hover:scale-105 transition-transform duration-200" 
+            <img
+              src={Logo}
+              alt="WeHope Logo"
+              className="w-48 h-auto mx-auto drop-shadow-lg hover:scale-105 transition-transform duration-200"
             />
           </Link>
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-700 to-red-800 mb-2">
@@ -269,30 +269,27 @@ const Profile = () => {
                 <h3 className="text-lg font-bold text-gray-900 mb-2">Navigation</h3>
                 <p className="text-sm text-gray-600">Manage your profile and view your progress</p>
               </div>
-              
+
               <nav className="p-4 space-y-2">
                 <button
                   onClick={() => setActiveTab('info')}
-                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${
-                    activeTab === 'info'
+                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'info'
                       ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
                       : 'text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:scale-105'
-                  }`}
+                    }`}
                 >
-                  <div className={`p-2 rounded-lg ${
-                    activeTab === 'info'
+                  <div className={`p-2 rounded-lg ${activeTab === 'info'
                       ? 'bg-white/20'
                       : 'bg-gray-200 group-hover:bg-red-100'
-                  }`}>
+                    }`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold">Profile Information</div>
-                    <div className={`text-xs ${
-                      activeTab === 'info' ? 'text-red-100' : 'text-gray-500'
-                    }`}>
+                    <div className={`text-xs ${activeTab === 'info' ? 'text-red-100' : 'text-gray-500'
+                      }`}>
                       Manage your account details
                     </div>
                   </div>
@@ -303,35 +300,31 @@ const Profile = () => {
 
                 <button
                   onClick={() => setActiveTab('courses')}
-                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${
-                    activeTab === 'courses'
+                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'courses'
                       ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
                       : 'text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:scale-105'
-                  }`}
+                    }`}
                 >
-                  <div className={`p-2 rounded-lg ${
-                    activeTab === 'courses'
+                  <div className={`p-2 rounded-lg ${activeTab === 'courses'
                       ? 'bg-white/20'
                       : 'bg-gray-200 group-hover:bg-red-100'
-                  }`}>
+                    }`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold">My Courses</div>
-                    <div className={`text-xs ${
-                      activeTab === 'courses' ? 'text-red-100' : 'text-gray-500'
-                    }`}>
+                    <div className={`text-xs ${activeTab === 'courses' ? 'text-red-100' : 'text-gray-500'
+                      }`}>
                       View enrolled courses
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      activeTab === 'courses'
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${activeTab === 'courses'
                         ? 'bg-white/20 text-white'
                         : 'bg-red-100 text-red-600'
-                    }`}>
+                      }`}>
                       {courses.length}
                     </span>
                     {activeTab === 'courses' && (
@@ -342,35 +335,31 @@ const Profile = () => {
 
                 <button
                   onClick={() => setActiveTab('certificates')}
-                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${
-                    activeTab === 'certificates'
+                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'certificates'
                       ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
                       : 'text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:scale-105'
-                  }`}
+                    }`}
                 >
-                  <div className={`p-2 rounded-lg ${
-                    activeTab === 'certificates'
+                  <div className={`p-2 rounded-lg ${activeTab === 'certificates'
                       ? 'bg-white/20'
                       : 'bg-gray-200 group-hover:bg-red-100'
-                  }`}>
+                    }`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold">Certificates</div>
-                    <div className={`text-xs ${
-                      activeTab === 'certificates' ? 'text-red-100' : 'text-gray-500'
-                    }`}>
+                    <div className={`text-xs ${activeTab === 'certificates' ? 'text-red-100' : 'text-gray-500'
+                      }`}>
                       View your achievements
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      activeTab === 'certificates'
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${activeTab === 'certificates'
                         ? 'bg-white/20 text-white'
                         : 'bg-yellow-100 text-yellow-600'
-                    }`}>
+                      }`}>
                       {certificates.length}
                     </span>
                     {activeTab === 'certificates' && (
@@ -381,35 +370,31 @@ const Profile = () => {
 
                 <button
                   onClick={() => setActiveTab('surveys')}
-                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${
-                    activeTab === 'surveys'
+                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'surveys'
                       ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
                       : 'text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:scale-105'
-                  }`}
+                    }`}
                 >
-                  <div className={`p-2 rounded-lg ${
-                    activeTab === 'surveys'
+                  <div className={`p-2 rounded-lg ${activeTab === 'surveys'
                       ? 'bg-white/20'
                       : 'bg-gray-200 group-hover:bg-red-100'
-                  }`}>
+                    }`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold">Surveys</div>
-                    <div className={`text-xs ${
-                      activeTab === 'surveys' ? 'text-red-100' : 'text-gray-500'
-                    }`}>
+                    <div className={`text-xs ${activeTab === 'surveys' ? 'text-red-100' : 'text-gray-500'
+                      }`}>
                       Track your progress
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      activeTab === 'surveys'
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${activeTab === 'surveys'
                         ? 'bg-white/20 text-white'
                         : 'bg-blue-100 text-blue-600'
-                    }`}>
+                      }`}>
                       {surveys.length}
                     </span>
                     {activeTab === 'surveys' && (
@@ -423,396 +408,393 @@ const Profile = () => {
             {/* Content Area */}
             <div className="flex-1 p-8 bg-white/30 lg:rounded-r-3xl overflow-y-auto">
               {/* Tab Content */}
-            {activeTab === 'info' && (
-              <div className="space-y-8">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Profile Information
-                    </h2>
-                    <p className="text-gray-600">Manage your personal information and account settings</p>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {!editMode ? (
-                      <>
-                        <button
-                          onClick={() => setEditMode(true)}
-                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          <span>Edit Profile</span>
-                        </button>
-                        <button
-                          onClick={handleChangePassword}
-                          className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                          <span>Change Password</span>
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          <span>Cancel</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-            {editMode ? (
-              // Edit Form
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/30">
-                <form onSubmit={handleUpdateProfile} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        value={userInfo.username}
-                        disabled
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none"
-                      />
-                      <p className="mt-2 text-xs text-gray-500 flex items-center">
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        Username cannot be changed
-                      </p>
-                    </div>
-
+              {activeTab === 'info' && (
+                <div className="space-y-8">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        name="fullname"
-                        value={formData.fullname}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-white/80"
-                        placeholder="Enter your full name"
-                      />
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        Profile Information
+                      </h2>
+                      <p className="text-gray-600">Manage your personal information and account settings</p>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-white/80"
-                        placeholder="Enter your email"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">
-                        Birthday
-                      </label>
-                      <input
-                        type="date"
-                        name="birthday"
-                        value={formData.birthday}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-white/80"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-6 border-t border-gray-200">
-                    <button
-                      type="submit"
-                      disabled={updating}
-                      className={`px-8 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 shadow-lg active:scale-95 ${
-                        updating
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-xl"
-                      }`}
-                    >
-                      {updating ? (
-                        <span className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Updating...
-                        </span>
+                    <div className="flex flex-wrap gap-3">
+                      {!editMode ? (
+                        <>
+                          <button
+                            onClick={() => setEditMode(true)}
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Edit Profile</span>
+                          </button>
+                          <button
+                            onClick={handleChangePassword}
+                            className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            <span>Change Password</span>
+                          </button>
+                        </>
                       ) : (
-                        <span className="flex items-center">
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          Save Changes
-                        </span>
+                        <>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Cancel</span>
+                          </button>
+                        </>
                       )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            ) : (
-              // Display Mode
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/30">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Username
-                    </label>
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                      <p className="text-gray-900 font-medium">{userInfo.username}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Full Name
-                    </label>
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                      <p className="text-gray-900 font-medium">{userInfo.fullname}</p>
-                    </div>
-                  </div>
+                  {editMode ? (
+                    // Edit Form
+                    <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/30">
+                      <form onSubmit={handleUpdateProfile} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                              Username
+                            </label>
+                            <input
+                              type="text"
+                              value={userInfo.username}
+                              disabled
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none"
+                            />
+                            <p className="mt-2 text-xs text-gray-500 flex items-center">
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                              </svg>
+                              Username cannot be changed
+                            </p>
+                          </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Email Address
-                    </label>
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                      <p className="text-gray-900 font-medium">{userInfo.email}</p>
-                    </div>
-                  </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                              Full Name
+                            </label>
+                            <input
+                              type="text"
+                              name="fullname"
+                              value={formData.fullname}
+                              onChange={handleInputChange}
+                              required
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-white/80"
+                              placeholder="Enter your full name"
+                            />
+                          </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Birthday
-                    </label>
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-                      <p className="text-gray-900 font-medium">
-                        {new Date(userInfo.birthday).toLocaleDateString('vi-VN')}
-                      </p>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                              Email Address
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              required
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-white/80"
+                              placeholder="Enter your email"
+                            />
+                          </div>
+
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                              Birthday
+                            </label>
+                            <input
+                              type="date"
+                              name="birthday"
+                              value={formData.birthday}
+                              onChange={handleInputChange}
+                              required
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200 bg-white/80"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end pt-6 border-t border-gray-200">
+                          <button
+                            type="submit"
+                            disabled={updating}
+                            className={`px-8 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 shadow-lg active:scale-95 ${updating
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:shadow-xl"
+                              }`}
+                          >
+                            {updating ? (
+                              <span className="flex items-center">
+                                <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Updating...
+                              </span>
+                            ) : (
+                              <span className="flex items-center">
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Save Changes
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </form>
                     </div>
-                  </div>
+                  ) : (
+                    // Display Mode
+                    <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/30">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Username
+                          </label>
+                          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                            <p className="text-gray-900 font-medium">{userInfo.username}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Full Name
+                          </label>
+                          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                            <p className="text-gray-900 font-medium">{userInfo.fullname}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Email Address
+                          </label>
+                          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                            <p className="text-gray-900 font-medium">{userInfo.email}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Birthday
+                          </label>
+                          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                            <p className="text-gray-900 font-medium">
+                              {new Date(userInfo.birthday).toLocaleDateString('vi-VN')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-8 pt-6 border-t border-gray-200">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Profile verified and up to date
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              )}
 
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Profile verified and up to date
-                  </div>
-                </div>
-              </div>
-            )}
-              </div>
-            )}
-
-            {/* Courses Tab */}
-            {activeTab === 'courses' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">My Courses</h2>
-                {courses.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
-                      <svg fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L3.09 8.26V12H21V8.26L12 2ZM18.18 9H5.82L12 5.09L18.18 9Z"/>
-                        <path d="M3.09 13V17.74L12 24L20.91 17.74V13L12 19.26L3.09 13Z"/>
-                      </svg>
+              {/* Courses Tab */}
+              {activeTab === 'courses' && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900">My Courses</h2>
+                  {courses.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                        <svg fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2L3.09 8.26V12H21V8.26L12 2ZM18.18 9H5.82L12 5.09L18.18 9Z" />
+                          <path d="M3.09 13V17.74L12 24L20.91 17.74V13L12 19.26L3.09 13Z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Courses Yet</h3>
+                      <p className="text-gray-500">You haven't enrolled in any courses yet.</p>
+                      <button
+                        onClick={() => navigate('/courses')}
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      >
+                        Browse Courses
+                      </button>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Courses Yet</h3>
-                    <p className="text-gray-500">You haven't enrolled in any courses yet.</p>
-                    <button
-                      onClick={() => navigate('/courses')}
-                      className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                    >
-                      Browse Courses
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {courses.map((course) => (
-                      <div key={course.course_id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{course.title}</h3>
-                          <p className="text-sm text-gray-600 mb-4 line-clamp-3">{course.description}</p>
-                          <div className="flex items-center justify-between">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              course.status === 'completed' 
-                                ? 'bg-green-100 text-green-800'
-                                : course.status === 'in_progress'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {course.status === 'completed' ? 'Completed' : 
-                               course.status === 'in_progress' ? 'In Progress' : 'Not Started'}
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {courses.map((course) => (
+                        <div key={course.course_id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                          <div className="p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{course.title}</h3>
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-3">{course.description}</p>
+                            <div className="flex items-center justify-between">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${course.status === 'completed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : course.status === 'in_progress'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {course.status === 'completed' ? 'Completed' :
+                                  course.status === 'in_progress' ? 'In Progress' : 'Not Started'}
+                              </span>
+                              <button
+                                onClick={() => navigate(`/courses/${course.course_id}`)}
+                                className="text-red-600 hover:text-red-700 text-sm font-medium"
+                              >
+                                View Course
+                              </button>
+                            </div>
+                            {course.progress && (
+                              <div className="mt-4">
+                                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                  <span>Progress</span>
+                                  <span>{Math.round(course.progress)}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${course.progress}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Certificates Tab */}
+              {activeTab === 'certificates' && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900">My Certificates</h2>
+                  {certificates.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                        <svg fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M9,10H12A1,1 0 0,1 13,11V12A1,1 0 0,1 12,13H9V11M9,15H12A1,1 0 0,1 13,16V17A1,1 0 0,1 12,18H9V16M12,3A1,1 0 0,1 13,4V8A1,1 0 0,1 12,9H11V7H9V9H8A1,1 0 0,1 7,8V4A1,1 0 0,1 8,3H12M21,6V8H19V6H21M21,10V12H19V10H21M21,14V16H19V14H21Z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Certificates Yet</h3>
+                      <p className="text-gray-500">Complete courses and surveys to earn certificates.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {certificates.map((certificate) => (
+                        <div key={certificate.certificate_id} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg p-6 shadow-sm">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center">
+                              <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mr-4">
+                                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M9,10H12A1,1 0 0,1 13,11V12A1,1 0 0,1 12,13H9V11M9,15H12A1,1 0 0,1 13,16V17A1,1 0 0,1 12,18H9V16M12,3A1,1 0 0,1 13,4V8A1,1 0 0,1 12,9H11V7H9V9H8A1,1 0 0,1 7,8V4A1,1 0 0,1 8,3H12Z" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-semibold text-gray-900">{certificate.title}</h3>
+                                <p className="text-sm text-gray-600">{certificate.type}</p>
+                              </div>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {new Date(certificate.earned_date).toLocaleDateString('vi-VN')}
                             </span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-4">{certificate.description}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-yellow-700">
+                              Certificate ID: {certificate.certificate_id}
+                            </span>
+                            <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                              Download
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Surveys Tab */}
+              {activeTab === 'surveys' && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900">My Surveys</h2>
+                  {surveys.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                        <svg fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17,9H7V7H17M17,13H7V11H17M14,17H7V15H14M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5H8V18A2,2 0 0,0 10,20H16A2,2 0 0,0 18,18V8L13,3H12Z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Surveys Yet</h3>
+                      <p className="text-gray-500">Complete surveys to track your progress and earn certificates.</p>
+                      <button
+                        onClick={() => navigate('/survey')}
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      >
+                        Take Survey
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {surveys.map((survey) => (
+                        <div key={survey.survey_id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">{survey.title}</h3>
+                              <p className="text-sm text-gray-600">Completed on {new Date(survey.completed_date).toLocaleDateString('vi-VN')}</p>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-2xl font-bold text-red-600">{survey.score}</span>
+                                <span className="text-sm text-gray-500">/ {survey.total_questions}</span>
+                              </div>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${survey.risk_level === 'low'
+                                  ? 'bg-green-100 text-green-800'
+                                  : survey.risk_level === 'medium'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                {survey.risk_level === 'low' ? 'Low Risk' :
+                                  survey.risk_level === 'medium' ? 'Medium Risk' : 'High Risk'}
+                              </span>
+                            </div>
+                          </div>
+                          {survey.recommendations && (
+                            <div className="bg-blue-50 p-4 rounded-md">
+                              <h4 className="text-sm font-medium text-blue-900 mb-2">Recommendations:</h4>
+                              <p className="text-sm text-blue-800">{survey.recommendations}</p>
+                            </div>
+                          )}
+                          <div className="mt-4 flex space-x-3">
                             <button
-                              onClick={() => navigate(`/courses/${course.course_id}`)}
+                              onClick={() => navigate(`/survey/result/${survey.survey_id}`)}
                               className="text-red-600 hover:text-red-700 text-sm font-medium"
                             >
-                              View Course
+                              View Details
                             </button>
+                            {survey.certificate_eligible && (
+                              <button className="text-green-600 hover:text-green-700 text-sm font-medium">
+                                Claim Certificate
+                              </button>
+                            )}
                           </div>
-                          {course.progress && (
-                            <div className="mt-4">
-                              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                <span>Progress</span>
-                                <span>{Math.round(course.progress)}%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-red-500 h-2 rounded-full transition-all duration-300"
-                                  style={{ width: `${course.progress}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Certificates Tab */}
-            {activeTab === 'certificates' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">My Certificates</h2>
-                {certificates.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
-                      <svg fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9,10H12A1,1 0 0,1 13,11V12A1,1 0 0,1 12,13H9V11M9,15H12A1,1 0 0,1 13,16V17A1,1 0 0,1 12,18H9V16M12,3A1,1 0 0,1 13,4V8A1,1 0 0,1 12,9H11V7H9V9H8A1,1 0 0,1 7,8V4A1,1 0 0,1 8,3H12M21,6V8H19V6H21M21,10V12H19V10H21M21,14V16H19V14H21Z"/>
-                      </svg>
+                      ))}
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Certificates Yet</h3>
-                    <p className="text-gray-500">Complete courses and surveys to earn certificates.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {certificates.map((certificate) => (
-                      <div key={certificate.certificate_id} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center">
-                            <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mr-4">
-                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9,10H12A1,1 0 0,1 13,11V12A1,1 0 0,1 12,13H9V11M9,15H12A1,1 0 0,1 13,16V17A1,1 0 0,1 12,18H9V16M12,3A1,1 0 0,1 13,4V8A1,1 0 0,1 12,9H11V7H9V9H8A1,1 0 0,1 7,8V4A1,1 0 0,1 8,3H12Z"/>
-                              </svg>
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-900">{certificate.title}</h3>
-                              <p className="text-sm text-gray-600">{certificate.type}</p>
-                            </div>
-                          </div>
-                          <span className="text-xs text-gray-500">
-                            {new Date(certificate.earned_date).toLocaleDateString('vi-VN')}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700 mb-4">{certificate.description}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-yellow-700">
-                            Certificate ID: {certificate.certificate_id}
-                          </span>
-                          <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                            Download
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Surveys Tab */}
-            {activeTab === 'surveys' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">My Surveys</h2>
-                {surveys.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
-                      <svg fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17,9H7V7H17M17,13H7V11H17M14,17H7V15H14M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5H8V18A2,2 0 0,0 10,20H16A2,2 0 0,0 18,18V8L13,3H12Z"/>
-                      </svg>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Surveys Yet</h3>
-                    <p className="text-gray-500">Complete surveys to track your progress and earn certificates.</p>
-                    <button
-                      onClick={() => navigate('/survey')}
-                      className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                    >
-                      Take Survey
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {surveys.map((survey) => (
-                      <div key={survey.survey_id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{survey.title}</h3>
-                            <p className="text-sm text-gray-600">Completed on {new Date(survey.completed_date).toLocaleDateString('vi-VN')}</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-2xl font-bold text-red-600">{survey.score}</span>
-                              <span className="text-sm text-gray-500">/ {survey.total_questions}</span>
-                            </div>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              survey.risk_level === 'low' 
-                                ? 'bg-green-100 text-green-800'
-                                : survey.risk_level === 'medium'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {survey.risk_level === 'low' ? 'Low Risk' : 
-                               survey.risk_level === 'medium' ? 'Medium Risk' : 'High Risk'}
-                            </span>
-                          </div>
-                        </div>
-                        {survey.recommendations && (
-                          <div className="bg-blue-50 p-4 rounded-md">
-                            <h4 className="text-sm font-medium text-blue-900 mb-2">Recommendations:</h4>
-                            <p className="text-sm text-blue-800">{survey.recommendations}</p>
-                          </div>
-                        )}
-                        <div className="mt-4 flex space-x-3">
-                          <button
-                            onClick={() => navigate(`/survey/result/${survey.survey_id}`)}
-                            className="text-red-600 hover:text-red-700 text-sm font-medium"
-                          >
-                            View Details
-                          </button>
-                          {survey.certificate_eligible && (
-                            <button className="text-green-600 hover:text-green-700 text-sm font-medium">
-                              Claim Certificate
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

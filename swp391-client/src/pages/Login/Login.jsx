@@ -53,14 +53,14 @@ const Login = () => {
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        
+
         // Dispatch custom event to notify Navbar about user login
         window.dispatchEvent(new CustomEvent('userStateChanged'));
-        
+
         const user = response.data.user;
         let redirectPath = '/';
         let welcomeMessage = 'Welcome back!';
-        
+
         // Redirect based on user role
         if (user.role === 'manager' || user.role === 'admin') {
           redirectPath = '/admin/dashboard';
@@ -69,7 +69,7 @@ const Login = () => {
           redirectPath = '/';
           welcomeMessage = `Welcome back ${user.fullname || user.username}!`;
         }
-        
+
         await Swal.fire({
           title: "Login Successful!",
           text: welcomeMessage,
@@ -78,13 +78,13 @@ const Login = () => {
           timer: 2000,
           showConfirmButton: false
         });
-        
+
         navigate(redirectPath, { replace: true });
       }
     } catch (error) {
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      
+
       let errorMessage = 'Invalid username or password.';
       if (error.response) {
         switch (error.response.status) {
@@ -275,14 +275,14 @@ const Login = () => {
               </Link>
             </div>
           </form>
-            <div className="mt-6">
-              <p className="text-center text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-red-600 hover:text-red-500 transition-colors duration-200">
-                  Sign up here
-                </Link>
-              </p>
-            </div>
+          <div className="mt-6">
+            <p className="text-center text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-medium text-red-600 hover:text-red-500 transition-colors duration-200">
+                Sign up here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

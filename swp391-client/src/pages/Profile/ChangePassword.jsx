@@ -103,10 +103,10 @@ const ChangePassword = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50 to-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link to="/" className="flex justify-center mb-6">
-          <img 
-            src={Logo} 
-            alt="WeHope Logo" 
-            className="w-64 h-auto drop-shadow-lg hover:scale-105 transition-transform duration-200" 
+          <img
+            src={Logo}
+            alt="WeHope Logo"
+            className="w-64 h-auto drop-shadow-lg hover:scale-105 transition-transform duration-200"
           />
         </Link>
         <h2 className="mt-6 text-center text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-700 to-red-800 drop-shadow-sm">
@@ -241,11 +241,10 @@ const ChangePassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`flex-1 py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white transition-all duration-200 active:scale-95 ${
-                  loading
+                className={`flex-1 py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white transition-all duration-200 active:scale-95 ${loading
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-red-200"
-                }`}
+                  }`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
