@@ -8,5 +8,5 @@ router.get('/continues-learn-course-by-id/:member_id/:course_id', courseControll
 router.get('/enroll-course/:member_id/:course_id/:enroll_version', courseController.createMemberEnrollmentCourse)
 router.post('/submit-mooc-course', courseController.submitCourse)
 router.get('/check-enrollment-course/:member_id/:course_id/:enroll_version', courseController.checkEnrollmentCourse)
-router.get('/get-course-by-course_id-and-version/:course_id/:version', courseController.getCourseByCourseIdAndVersion)
+// router.get('/get-course-by-course_id-and-version/:course_id/:version', courseController.getCourseByCourseIdAndVersion)
 module.exports = router
