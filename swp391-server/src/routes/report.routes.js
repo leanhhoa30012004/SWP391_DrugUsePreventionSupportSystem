@@ -28,7 +28,13 @@ router.get(
   "/active-members",
   protectManager,
   restrictTo("manager", "admin"),
-  reportController.getReportNumberOfMembersByRole
+  reportController.getReportNumberOfUsers
+);
+router.get(
+  "/active-members-by-role",
+  protectManager,
+  restrictTo("manager", "admin"),
+  reportController.getReportNumberOfUsersByRole
 );
 // get report Appointments done by each consultant
 router.get(
