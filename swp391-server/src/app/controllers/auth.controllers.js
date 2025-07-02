@@ -84,7 +84,7 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ message: "Token invalid or expired" });
 
   const hashed = await bcrypt.hash(newPassword, 10);
-  await memberModel.updatePassword(member.member_id, hashed);
+  await memberModel.updatePassword(member.user_id, hashed);
   res.json({ message: "Password reset successful" });
 };
 exports.loginManager = async (req, res) => {
@@ -125,26 +125,26 @@ exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await memberModel.findById(userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "User not found" 
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
       });
     }
 
     // Remove password from response
     const { password, reset_token, reset_token_expiry, ...userInfo } = user;
-    
+
     res.status(200).json({
       success: true,
       user: userInfo
     });
   } catch (error) {
     console.error("Get profile error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Internal server error" 
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
     });
   }
 };
@@ -164,7 +164,7 @@ exports.updateProfile = async (req, res) => {
     }
 
     await memberModel.updateProfile(userId, { fullname, email, birthday });
-    
+
     res.status(200).json({
       success: true,
       message: "Profile updated successfully"
@@ -203,10 +203,10 @@ exports.changePassword = async (req, res) => {
 
     // Hash new password
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // Update password
     await memberModel.updatePassword(userId, hashedNewPassword);
-    
+
     res.status(200).json({
       success: true,
       message: "Password changed successfully"
@@ -223,7 +223,7 @@ exports.changePassword = async (req, res) => {
 exports.getUserCourses = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     // Mock data - thay thế bằng query database thực tế
     const courses = [
       {
@@ -245,7 +245,7 @@ exports.getUserCourses = async (req, res) => {
         completed_date: null
       }
     ];
-    
+
     res.status(200).json({
       success: true,
       courses: courses
@@ -262,7 +262,7 @@ exports.getUserCourses = async (req, res) => {
 exports.getUserCertificates = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     // Mock data - thay thế bằng query database thực tế
     const certificates = [
       {
@@ -274,7 +274,7 @@ exports.getUserCertificates = async (req, res) => {
         course_id: 1
       }
     ];
-    
+
     res.status(200).json({
       success: true,
       certificates: certificates
@@ -291,10 +291,37 @@ exports.getUserCertificates = async (req, res) => {
 exports.getUserSurveys = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
+
+    // Mock data - thay thế bằng query database thực tế
+    const surveys = [
+      {
+        survey_id: 1,
+        title: "Drug Risk Assessment",
+        completed_date: "2024-03-01",
+        score: 8,
+        total_questions: 10,
+        risk_level: "low",
+        recommendations: "Continue maintaining healthy lifestyle choices",
+        certificate_eligible: true
+      },
+      {
+        survey_id: 2,
+        title: "Knowledge Assessment",
+        completed_date: "2024-03-15",
+        score: 15,
+        total_questions: 20,
+        risk_level: "medium",
+        recommendations: "Consider enrolling in advanced prevention courses",
+        certificate_eligible: false
+      }
+    ];
+
+
+
     // Lấy survey history từ database
     const memberHistorySurvey = await surveyModel.getSurveyHistoryByMember(userId);
-    
+
     if (!memberHistorySurvey || memberHistorySurvey.length === 0) {
       return res.status(200).json({
         success: true,
@@ -308,7 +335,7 @@ exports.getUserSurveys = async (req, res) => {
         try {
           // Lấy survey data để tính score
           const surveyData = await surveyModel.findSurveyBySurveyID(historySurvey.survey_id);
-          
+
           if (!surveyData || !surveyData.content) {
             console.warn(`Survey content not found for ID: ${historySurvey.survey_id}`);
             return null;
@@ -326,12 +353,12 @@ exports.getUserSurveys = async (req, res) => {
           // Tính score
           const score = surveyModel.calculateScore(surveyData.content, answers);
           const totalQuestions = surveyData.content.length;
-          
+
           // Determine risk level based on score percentage
           const scorePercentage = (score / totalQuestions) * 100;
           let risk_level = 'low';
           let recommendations = 'Continue maintaining healthy lifestyle choices';
-          
+
           if (scorePercentage >= 70) {
             risk_level = 'high';
             recommendations = 'We recommend seeking professional help and joining support groups';
@@ -359,7 +386,8 @@ exports.getUserSurveys = async (req, res) => {
 
     // Filter out null results
     const validSurveys = surveys.filter(survey => survey !== null);
-    
+
+
     res.status(200).json({
       success: true,
       surveys: validSurveys
