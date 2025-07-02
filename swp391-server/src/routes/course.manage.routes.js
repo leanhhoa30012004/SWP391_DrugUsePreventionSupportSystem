@@ -23,8 +23,7 @@ router.delete(
 );
 router.get(
   "/list",
-  protectManager,
-  restrictTo("manager", "admin"),
+
   courseController.listOfCourse
 );
 router.get(
@@ -33,4 +32,6 @@ router.get(
   restrictTo("manager", "admin"),
   courseController.searchCourseByName
 );
+
+router.get('/get-all-course-full-info', courseController.getAllCourseFullInfo);
 module.exports = router;

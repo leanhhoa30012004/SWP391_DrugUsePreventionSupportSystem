@@ -83,7 +83,7 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ message: "Token invalid or expired" });
 
   const hashed = await bcrypt.hash(newPassword, 10);
-  await memberModel.updatePassword(member.member_id, hashed);
+  await memberModel.updatePassword(member.user_id, hashed);
   res.json({ message: "Password reset successful" });
 };
 exports.loginManager = async (req, res) => {
@@ -123,26 +123,26 @@ exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await memberModel.findById(userId);
-    
+
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "User not found" 
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
       });
     }
 
     // Remove password from response
     const { password, reset_token, reset_token_expiry, ...userInfo } = user;
-    
+
     res.status(200).json({
       success: true,
       user: userInfo
     });
   } catch (error) {
     console.error("Get profile error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Internal server error" 
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
     });
   }
 };
@@ -162,7 +162,7 @@ exports.updateProfile = async (req, res) => {
     }
 
     await memberModel.updateProfile(userId, { fullname, email, birthday });
-    
+
     res.status(200).json({
       success: true,
       message: "Profile updated successfully"
@@ -201,10 +201,10 @@ exports.changePassword = async (req, res) => {
 
     // Hash new password
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // Update password
     await memberModel.updatePassword(userId, hashedNewPassword);
-    
+
     res.status(200).json({
       success: true,
       message: "Password changed successfully"
@@ -221,7 +221,7 @@ exports.changePassword = async (req, res) => {
 exports.getUserCourses = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     // Mock data - thay thế bằng query database thực tế
     const courses = [
       {
@@ -243,7 +243,7 @@ exports.getUserCourses = async (req, res) => {
         completed_date: null
       }
     ];
-    
+
     res.status(200).json({
       success: true,
       courses: courses
@@ -260,7 +260,7 @@ exports.getUserCourses = async (req, res) => {
 exports.getUserCertificates = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     // Mock data - thay thế bằng query database thực tế
     const certificates = [
       {
@@ -272,7 +272,7 @@ exports.getUserCertificates = async (req, res) => {
         course_id: 1
       }
     ];
-    
+
     res.status(200).json({
       success: true,
       certificates: certificates
@@ -289,7 +289,7 @@ exports.getUserCertificates = async (req, res) => {
 exports.getUserSurveys = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     // Mock data - thay thế bằng query database thực tế
     const surveys = [
       {
@@ -313,7 +313,7 @@ exports.getUserSurveys = async (req, res) => {
         certificate_eligible: false
       }
     ];
-    
+
     res.status(200).json({
       success: true,
       surveys: surveys
