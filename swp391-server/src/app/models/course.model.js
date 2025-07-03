@@ -14,16 +14,16 @@ SELECT * FROM Ranked WHERE rn = 1;`);
     return rows.map(row => ({
         course_id: row.course_id,
         course_name: row.course_name,
-        content: typeof row.content === 'string' ? JSON.parse(row.content) : row.content,
+        content: JSON.parse(row.content),
         created_by: row.created_by,
         created_at: row.created_at,
         version: row.version,
     }));
 };
 // exports.checkEnrollemtCourse = async (req, res) => {
-//     const { user_id, course_id, enroll_version } = req.params;
+//     const { member_id, course_id, enroll_version } = req.params;
 //     try {
-//         const check = await courseModel.checkEnrollemtCourse(user_id, course_id, enroll_version);
+//         const check = await courseModel.checkEnrollemtCourse(member_id, course_id, enroll_version);
 //         res.json({ isEnrolled: check });
 //     } catch (error) {
 //         console.log('checkEnrollmentCOurse error: ', error)
@@ -54,14 +54,14 @@ SELECT * FROM Ranked WHERE rn = 1;`,
     }));
 };
 
-const memberContinuesLearnCourseById = async (user_id, course_id) => {
+const memberContinuesLearnCourseById = async (member_id, course_id) => {
     const [rows] = await db.execute(
         `SELECT c.course_id, cv.course_name, u.fullname, ce.learning_process, cv.content, ce.enroll_version
 FROM Course_enrollment ce JOIN Course c ON ce.course_id = c.course_id
 JOIN Course_version cv ON c.course_id = cv.course_id
-JOIN Users u ON ce.user_id = u.user_id
-WHERE ce.enroll_version = cv.version AND cv.course_id = ? AND ce.user_id = ? AND ce.is_active = 1`,
-        [course_id, user_id]
+JOIN Users u ON ce.member_id = u.user_id
+WHERE ce.enroll_version = cv.version AND cv.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
+        [course_id, member_id]
     );
     return {
         course_id: rows[0].course_id,
@@ -74,34 +74,34 @@ WHERE ce.enroll_version = cv.version AND cv.course_id = ? AND ce.user_id = ? AND
     };
 };
 
-const createMemberEnrollmentCourse = async (user_id, course_id, enroll_version) => {
+const createMemberEnrollmentCourse = async (member_id, course_id, enroll_version) => {
     const [rows] = await db.execute(
-        "INSERT INTO Course_enrollment (course_id, user_id, enroll_version) VALUES (?, ?, ?)",
-        [course_id, user_id, enroll_version]
+        "INSERT INTO Course_enrollment (course_id, member_id, enroll_version) VALUES (?, ?, ?)",
+        [course_id, member_id, enroll_version]
     );
     return rows;
 };
 
-const checkEnrollmentCourse = async (user_id, course_id, enroll_version) => {
+const checkEnrollmentCourse = async (member_id, course_id, enroll_version) => {
     const [rows] = await db.execute(
-        "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND course_id = ? AND user_id = ? AND enroll_version = ?",
-        [course_id, user_id, enroll_version]
+        "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND course_id = ? AND member_id = ? AND enroll_version = ?",
+        [course_id, member_id, enroll_version]
     );
     return rows.length > 0;
 };
 
-const updateLearningProcess = async (user_id, course_id, learning_process) => {
+const updateLearningProcess = async (member_id, course_id, learning_process) => {
     const [rows] = await db.execute(
-        "UPDATE Course_enrollment SET learning_process = ? WHERE user_id  = ? AND course_id  = ? AND is_active = 1",
-        [JSON.stringify(learning_process), user_id, course_id]
+        "UPDATE Course_enrollment SET learning_process = ? WHERE member_id  = ? AND course_id  = ? AND is_active = 1",
+        [JSON.stringify(learning_process), member_id, course_id]
     );
     return rows;
 };
 
-const updateStatusLearningProcess = async (user_id, course_id) => {
+const updateStatusLearningProcess = async (member_id, course_id) => {
 
-    const [rows] = await db.execute('UPDATE Course_enrollment SET status = "completed" WHERE user_id  = ? AND course_id  = ? AND is_active = 1',
-        [user_id, course_id]
+    const [rows] = await db.execute('UPDATE Course_enrollment SET status = "completed" WHERE member_id  = ? AND course_id  = ? AND is_active = 1',
+        [member_id, course_id]
     )
     return rows
 }
@@ -124,7 +124,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
     return {
         course_id: rows[0].course_id,
         course_name: rows[0].course_name,
-        content: typeof rows[0].content === 'string' ? JSON.parse(rows[0].content) : rows[0].content,
+        content: JSON.parse(rows[0].content),
         created_by: rows[0].created_by,
         created_at: rows[0].created_at,
         version: rows[0].version,
@@ -212,29 +212,37 @@ const calculateScoreMooc = async (questions, answers) => {
     };
 };
 
-const finishCourse = async (user_id, course_id) => {
+const finishCourse = async (member_id, course_id) => {
     const [rows] = await db.execute(`UPDATE Course_enrollment ce SET ce.status = 'completed'
-WHERE ce.course_id = ? AND ce.user_id = ? AND ce.is_active = 1`,
-        [course_id, user_id])
+WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
+        [course_id, member_id])
     return rows;
 }
-
 const createCourse = async (course) => {
-    const connection = await db.getConnection();
-    await connection.beginTransaction();
+    const connection = await db.getConnection(); // lấy connection từ pool
     try {
+        await connection.beginTransaction();
+
+
         const [insertCourse] = await connection.execute(
             'INSERT INTO Course(created_at, created_by, age_group) VALUES (NOW(), ?, ?)',
             [course.created_by, course.age_group]
         );
         const course_id = insertCourse.insertId;
 
+
         const [insertCourseVersion] = await connection.execute(
-            'INSERT INTO Course_version (course_id, course_name, content, version) VALUES (?,?,?,1.0)',
-            [course_id, course.course_name, JSON.stringify(course.content)]
+            'INSERT INTO Course_version (course_id, course_name, content, version, course_img) VALUES (?, ?, ?, 1.0, ?)',
+            [
+                course_id,
+                course.course_name,
+                JSON.stringify(course.content),
+                course.course_img
+            ]
         );
+
         await connection.commit();
-        connection.release();
+        connection.release(); 
 
         return {
             success: true,
@@ -244,18 +252,23 @@ const createCourse = async (course) => {
     } catch (error) {
         await connection.rollback();
         connection.release();
-        return { success: false, error };
+        return {
+            success: false,
+            error: error.message || error
+        };
     }
 };
+
 const updateCourse = async (course) => {
     const [rows] = await db.execute(
-        'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version) VALUES (?,?,?,NOW(),?,?)',
+        'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version, course_img) VALUES (?,?,?,NOW(),?,?, ?)',
         [
             course.course_id,
             course.course_name,
             JSON.stringify(course.content),
             course.edited_by,
             course.version + 0.1,
+            course.course_img
         ]
     );
     return rows;
@@ -266,54 +279,7 @@ const deleteCourse = async (course_id) => {
     ]);
 };
 
-const listOfCourseFullInfo = async () => {
-    const [rows] = await db.execute(
-        `WITH Ranked AS (
-            SELECT 
-                c.course_id, cv.course_name, c.created_by, c.created_at, c.age_group, cv.content, cv.version, cv.edited_at,
-                ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
-            FROM Course c
-            JOIN Course_version cv ON c.course_id = cv.course_id
-            WHERE c.is_active = 1
-        )
-        SELECT 
-            r.*, 
-            u.fullname AS created_by_name,
-            IFNULL(SUM(uc.is_active), 0) AS enrolled,
-            IFNULL(SUM(CASE WHEN uc.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed
-        FROM Ranked r
-        LEFT JOIN Users u ON r.created_by = u.user_id
-        LEFT JOIN Course_enrollment uc ON r.course_id = uc.course_id AND uc.is_active = TRUE
-        GROUP BY r.course_id, r.course_name, r.created_by, r.created_at, r.age_group, r.content, r.version, r.edited_at, u.fullname`
-    );
-    return rows.map(row => {
-        const content = typeof row.content === 'string' ? JSON.parse(row.content) : (row.content || {});
-        return {
-            id: row.course_id,
-            name: row.course_name,
-            createdAt: row.created_at,
-            created_by: row.created_by_name || '',
-            age_group: row.age_group || '',
-            lastUpdated: row.edited_at || row.created_at,
-            ...(content.instructor && { instructor: content.instructor }),
-            ...(content.type && { type: content.type }),
-            ...(content.duration && { duration: content.duration }),
-            ...(content.difficulty && { difficulty: content.difficulty }),
-            ...(content.capacity && { capacity: content.capacity }),
-            ...(typeof row.enrolled !== 'undefined' && { enrolled: Number(row.enrolled) }),
-            ...(typeof row.completed !== 'undefined' && { completed: Number(row.completed) }),
-            ...(content.rating && { rating: content.rating }),
-            ...(content.modules && { modules: content.modules }),
-            ...(content.status && { status: content.status }),
-            ...(content.description && { description: content.description }),
-            ...(content.objectives && { objectives: content.objectives }),
-            ...(content.targetAudience && { targetAudience: content.targetAudience }),
-            ...(typeof content.certificate !== 'undefined' && { certificate: content.certificate }),
-            ...(content.language && { language: content.language }),
-            version: row.version || 0.0,
-        };
-    });
-};
+
 module.exports = {
     listOfCourse,
     searchCourseByName,
@@ -329,5 +295,4 @@ module.exports = {
     updateStatusLearningProcess,
     createCourse,
     updateCourse,
-    listOfCourseFullInfo
 };
