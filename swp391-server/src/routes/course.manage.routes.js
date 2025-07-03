@@ -16,7 +16,7 @@ router.post(
   courseController.updateCourse
 );
 router.delete(
-  "/delete/:course_id",
+  "/delete",
   protectManager,
   restrictTo("manager", "admin"),
   courseController.deleteCourse

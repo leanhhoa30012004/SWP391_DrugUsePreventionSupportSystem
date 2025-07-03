@@ -100,10 +100,30 @@ exports.loginManager = async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    // So sánh password đã hash
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Check if password is hashed (bcrypt hashes start with $2b$, $2a$, or $2y$)
+    const isPasswordHashed = user.password.startsWith('$2b$') || user.password.startsWith('$2a$') || user.password.startsWith('$2y$');
+    
+    let isMatch = false;
+    
+    if (isPasswordHashed) {
+      // Password is hashed, use bcrypt compare
+      isMatch = await bcrypt.compare(password, user.password);
+      console.log("Using bcrypt comparison - Match:", isMatch);
+    } else {
+      // Password is plain text, do direct comparison (temporary fix)
+      isMatch = password === user.password;
+      console.log("Using plain text comparison - Match:", isMatch);
+      
+      // Hash the password for future use
+      if (isMatch) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await managerModels.updatePassword(user.user_id, hashedPassword);
+        console.log("Password has been hashed and updated in database");
+      }
+    }
+    
     if (!isMatch) {
-      console.log("Password mismatch", password, user.password);
+      console.log("Password mismatch");
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
@@ -291,33 +311,6 @@ exports.getUserCertificates = async (req, res) => {
 exports.getUserSurveys = async (req, res) => {
   try {
     const userId = req.user.userId;
-
-
-    // Mock data - thay thế bằng query database thực tế
-    const surveys = [
-      {
-        survey_id: 1,
-        title: "Drug Risk Assessment",
-        completed_date: "2024-03-01",
-        score: 8,
-        total_questions: 10,
-        risk_level: "low",
-        recommendations: "Continue maintaining healthy lifestyle choices",
-        certificate_eligible: true
-      },
-      {
-        survey_id: 2,
-        title: "Knowledge Assessment",
-        completed_date: "2024-03-15",
-        score: 15,
-        total_questions: 20,
-        risk_level: "medium",
-        recommendations: "Consider enrolling in advanced prevention courses",
-        certificate_eligible: false
-      }
-    ];
-
-
 
     // Lấy survey history từ database
     const memberHistorySurvey = await surveyModel.getSurveyHistoryByMember(userId);
