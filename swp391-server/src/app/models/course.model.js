@@ -223,14 +223,14 @@ const createCourse = async (course) => {
     try {
         await connection.beginTransaction();
 
-        // 1. Insert vào Course
+
         const [insertCourse] = await connection.execute(
             'INSERT INTO Course(created_at, created_by, age_group) VALUES (NOW(), ?, ?)',
             [course.created_by, course.age_group]
         );
         const course_id = insertCourse.insertId;
 
-        // 2. Insert vào Course_version
+
         const [insertCourseVersion] = await connection.execute(
             'INSERT INTO Course_version (course_id, course_name, content, version, course_img) VALUES (?, ?, ?, 1.0, ?)',
             [
@@ -242,7 +242,7 @@ const createCourse = async (course) => {
         );
 
         await connection.commit();
-        connection.release(); // trả connection về pool
+        connection.release(); 
 
         return {
             success: true,

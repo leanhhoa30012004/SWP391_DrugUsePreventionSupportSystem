@@ -1,3 +1,82 @@
+-- Tạo database
+
+USE `swp-db`;
+
+-- Bảng Users (dùng cho cả member và manager)
+CREATE TABLE IF NOT EXISTS Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    fullname VARCHAR(100),
+    age INT,
+    role ENUM('member', 'manager', 'admin') DEFAULT 'member',
+    reset_token VARCHAR(255),
+    reset_token_expiry DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bảng Course
+CREATE TABLE IF NOT EXISTS Course (
+    course_id INT AUTO_INCREMENT PRIMARY KEY,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by INT,
+    age_group VARCHAR(50),
+    is_active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (created_by) REFERENCES Users(user_id)
+);
+
+-- Bảng Course_version
+CREATE TABLE IF NOT EXISTS Course_version (
+    course_version_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT,
+    course_name VARCHAR(255),
+    content JSON,
+    edited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    edited_by INT,
+    version FLOAT DEFAULT 1.0,
+    FOREIGN KEY (course_id) REFERENCES Course(course_id),
+    FOREIGN KEY (edited_by) REFERENCES Users(user_id)
+);
+
+-- Bảng Survey
+CREATE TABLE IF NOT EXISTS Survey (
+    survey_id INT AUTO_INCREMENT PRIMARY KEY,
+    survey_type VARCHAR(100),
+    created_by INT,
+    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (created_by) REFERENCES Users(user_id)
+);
+
+-- Bảng Survey_version
+CREATE TABLE IF NOT EXISTS Survey_version (
+    survey_version_id INT AUTO_INCREMENT PRIMARY KEY,
+    survey_id INT,
+    content JSON,
+    edited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    edited_by INT,
+    version FLOAT DEFAULT 1.0,
+    FOREIGN KEY (survey_id) REFERENCES Survey(survey_id),
+    FOREIGN KEY (edited_by) REFERENCES Users(user_id)
+);
+
+-- Bảng Survey_enrollment
+CREATE TABLE IF NOT EXISTS Survey_enrollment (
+    enroll_id INT AUTO_INCREMENT PRIMARY KEY,
+    survey_id INT,
+    member_id INT,
+    response JSON,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    enroll_version FLOAT,
+    is_active TINYINT(1) DEFAULT 1,
+    FOREIGN KEY (survey_id) REFERENCES Survey(survey_id),
+    FOREIGN KEY (member_id) REFERENCES Users(user_id)
+);
+
+
+
+-- Thêm các bảng khác nếu cần thiết cho hệ thống của bạn
 -- Tạo bảng UserCourses để lưu thông tin khóa học của user
 CREATE TABLE IF NOT EXISTS UserCourses (
     user_course_id INT AUTO_INCREMENT PRIMARY KEY,

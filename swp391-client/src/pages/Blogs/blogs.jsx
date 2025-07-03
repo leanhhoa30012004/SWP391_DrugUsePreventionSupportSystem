@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaSearch, FaCalendarAlt, FaUser, FaEye, FaHeart, FaShareAlt, FaBookmark, FaTags, FaClock } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt, FaUser, FaEye, FaHeart, FaShareAlt, FaBookmark, FaTags, FaClock, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
@@ -9,6 +9,7 @@ const Blogs = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [expandedCards, setExpandedCards] = useState(new Set());
     const blogsPerPage = 6;
 
     // Sample blog data
@@ -147,6 +148,17 @@ const Blogs = () => {
         e.stopPropagation();
         // Handle bookmark functionality here
         console.log('Bookmarked blog:', blogId);
+    };
+
+    const toggleCardExpansion = (blogId, e) => {
+        e.stopPropagation();
+        const newExpandedCards = new Set(expandedCards);
+        if (expandedCards.has(blogId)) {
+            newExpandedCards.delete(blogId);
+        } else {
+            newExpandedCards.add(blogId);
+        }
+        setExpandedCards(newExpandedCards);
     };
 
     return (
@@ -293,73 +305,164 @@ const Blogs = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {currentBlogs.map(blog => (
-                                    <div
-                                        key={blog.id}
-                                        className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                                        onClick={() => handleBlogClick(blog)}
-                                    >
-                                        <div className="relative bg-gray-50 h-48 flex items-center justify-center p-4">
-                                            <img
-                                                src={blog.image}
-                                                alt={blog.title}
-                                                className="max-w-full max-h-full object-contain"
-                                                onError={(e) => {
-                                                    e.target.src = 'https://via.placeholder.com/400x300?text=Blog+Image';
-                                                }}
-                                            />
-                                            <div className="absolute top-3 right-3 flex gap-2">
-                                                <button
-                                                    onClick={(e) => handleBookmark(blog.id, e)}
-                                                    className="bg-white/90 p-2 rounded-full hover:bg-white transition-colors"
-                                                >
-                                                    <FaBookmark className="text-gray-600 hover:text-red-500" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="p-6">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
-                                                    {categories.find(c => c.id === blog.category)?.name}
-                                                </span>
-                                                <span className="text-gray-400 text-xs">•</span>
-                                                <span className="text-gray-500 text-xs">{blog.readTime}</span>
-                                            </div>
-                                            <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2">
-                                                {blog.title}
-                                            </h3>
-                                            <p className="text-gray-600 mb-4 line-clamp-3">
-                                                {blog.excerpt}
-                                            </p>
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                                        {blog.author.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-800">{blog.author}</p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {new Date(blog.date).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-3 text-sm text-gray-500">
-                                                    <div className="flex items-center gap-1">
-                                                        <FaEye />
-                                                        <span>{blog.views}</span>
-                                                    </div>
+                                {currentBlogs.map(blog => {
+                                    const isExpanded = expandedCards.has(blog.id);
+                                    return (
+                                        <div
+                                            key={blog.id}
+                                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                        >
+                                            <div className="relative bg-gray-50 h-48 flex items-center justify-center p-4">
+                                                <img
+                                                    src={blog.image}
+                                                    alt={blog.title}
+                                                    className="max-w-full max-h-full object-contain cursor-pointer"
+                                                    onClick={() => handleBlogClick(blog)}
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://via.placeholder.com/400x300?text=Blog+Image';
+                                                    }}
+                                                />
+                                                <div className="absolute top-3 right-3 flex gap-2">
                                                     <button
-                                                        onClick={(e) => handleLike(blog.id, e)}
-                                                        className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                                                        onClick={(e) => handleBookmark(blog.id, e)}
+                                                        className="bg-white/90 p-2 rounded-full hover:bg-white transition-colors"
                                                     >
-                                                        <FaHeart />
-                                                        <span>{blog.likes}</span>
+                                                        <FaBookmark className="text-gray-600 hover:text-red-500" />
                                                     </button>
                                                 </div>
                                             </div>
+                                            <div className="p-6">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
+                                                        {categories.find(c => c.id === blog.category)?.name}
+                                                    </span>
+                                                    <span className="text-gray-400 text-xs">•</span>
+                                                    <span className="text-gray-500 text-xs">{blog.readTime}</span>
+                                                </div>
+                                                <h3
+                                                    className="text-xl font-bold text-gray-800 mb-3 line-clamp-2 cursor-pointer hover:text-red-600 transition-colors"
+                                                    onClick={() => handleBlogClick(blog)}
+                                                >
+                                                    {blog.title}
+                                                </h3>
+                                                <p className="text-gray-600 mb-4 line-clamp-3">
+                                                    {blog.excerpt}
+                                                </p>
+
+                                                {/* Expand/Collapse Button */}
+                                                <button
+                                                    onClick={(e) => toggleCardExpansion(blog.id, e)}
+                                                    className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium mb-4 transition-colors"
+                                                >
+                                                    {isExpanded ? (
+                                                        <>
+                                                            <span>Ẩn chi tiết</span>
+                                                            <FaChevronUp />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span>Xem chi tiết</span>
+                                                            <FaChevronDown />
+                                                        </>
+                                                    )}
+                                                </button>
+
+                                                {/* Expanded Content */}
+                                                <div className={`transition-all duration-300 overflow-hidden ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                                    }`}>
+                                                    <div className="border-t border-gray-200 pt-4 mb-4">
+                                                        <h4 className="font-semibold text-gray-800 mb-2">Nội dung chi tiết:</h4>
+                                                        <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                                                            {blog.content}
+                                                        </p>
+
+                                                        {/* Tags */}
+                                                        <div className="mb-4">
+                                                            <h5 className="font-medium text-gray-700 mb-2 flex items-center gap-1">
+                                                                <FaTags className="text-gray-500" />
+                                                                Tags:
+                                                            </h5>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {blog.tags.map((tag, index) => (
+                                                                    <span
+                                                                        key={index}
+                                                                        className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs"
+                                                                    >
+                                                                        #{tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Action Buttons */}
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleBlogClick(blog)}
+                                                                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 text-sm"
+                                                            >
+                                                                <FaEye />
+                                                                Đọc toàn bộ
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => handleLike(blog.id, e)}
+                                                                className="bg-pink-100 text-pink-600 px-4 py-2 rounded-lg hover:bg-pink-200 transition-colors flex items-center gap-2 text-sm"
+                                                            >
+                                                                <FaHeart />
+                                                                Thích ({blog.likes})
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // Handle share functionality
+                                                                    navigator.share?.({
+                                                                        title: blog.title,
+                                                                        text: blog.excerpt,
+                                                                        url: window.location.href
+                                                                    }).catch(() => {
+                                                                        // Fallback for browsers that don't support Web Share API
+                                                                        navigator.clipboard.writeText(window.location.href);
+                                                                        alert('Link đã được sao chép!');
+                                                                    });
+                                                                }}
+                                                                className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm"
+                                                            >
+                                                                <FaShareAlt />
+                                                                Chia sẻ
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                            {blog.author.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-800">{blog.author}</p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {new Date(blog.date).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                        <div className="flex items-center gap-1">
+                                                            <FaEye />
+                                                            <span>{blog.views}</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => handleLike(blog.id, e)}
+                                                            className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <FaHeart />
+                                                            <span>{blog.likes}</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
