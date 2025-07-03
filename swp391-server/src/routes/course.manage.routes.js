@@ -16,15 +16,14 @@ router.post(
   courseController.updateCourse
 );
 router.delete(
-  "/delete/:course_id",
+  "/delete",
   protectManager,
   restrictTo("manager", "admin"),
   courseController.deleteCourse
 );
 router.get(
   "/list",
-  protectManager,
-  restrictTo("manager", "admin"),
+
   courseController.listOfCourse
 );
 router.get(
@@ -33,4 +32,6 @@ router.get(
   restrictTo("manager", "admin"),
   courseController.searchCourseByName
 );
+
+router.get('/get-all-course-full-info', courseController.getAllCourseFullInfo);
 module.exports = router;
