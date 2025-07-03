@@ -218,21 +218,31 @@ WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
         [course_id, member_id])
     return rows;
 }
-
 const createCourse = async (course) => {
-    await db.beginTransaction();
+    const connection = await db.getConnection(); // lấy connection từ pool
     try {
-        const [insertCourse] = await db.execute(
+        await connection.beginTransaction();
+
+        // 1. Insert vào Course
+        const [insertCourse] = await connection.execute(
             'INSERT INTO Course(created_at, created_by, age_group) VALUES (NOW(), ?, ?)',
             [course.created_by, course.age_group]
         );
         const course_id = insertCourse.insertId;
 
-        const [insertCourseVersion] = await db.execute(
-            'INSERT INTO Course_version (course_id, course_name, content, version) VALUES (?,?,?,1.0)',
-            [course_id, course.course_name, JSON.stringify(course.content)]
+        // 2. Insert vào Course_version
+        const [insertCourseVersion] = await connection.execute(
+            'INSERT INTO Course_version (course_id, course_name, content, version, course_img) VALUES (?, ?, ?, 1.0, ?)',
+            [
+                course_id,
+                course.course_name,
+                JSON.stringify(course.content),
+                course.course_img
+            ]
         );
-        await db.commit();
+
+        await connection.commit();
+        connection.release(); // trả connection về pool
 
         return {
             success: true,
@@ -240,19 +250,25 @@ const createCourse = async (course) => {
             course_version_id: insertCourseVersion.insertId
         };
     } catch (error) {
-        await db.rollback();
-        return { success: false, error };
+        await connection.rollback();
+        connection.release();
+        return {
+            success: false,
+            error: error.message || error
+        };
     }
 };
+
 const updateCourse = async (course) => {
     const [rows] = await db.execute(
-        'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version) VALUES (?,?,?,NOW(),?,?)',
+        'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version, course_img) VALUES (?,?,?,NOW(),?,?, ?)',
         [
             course.course_id,
             course.course_name,
             JSON.stringify(course.content),
             course.edited_by,
             course.version + 0.1,
+            course.course_img
         ]
     );
     return rows;
