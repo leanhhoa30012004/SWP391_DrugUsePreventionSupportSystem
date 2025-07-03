@@ -219,24 +219,19 @@ WHERE ce.course_id = ? AND ce.user_id = ? AND ce.is_active = 1`,
     return rows;
 }
 const createCourse = async (course) => {
-<<<<<<< HEAD
+
     const connection = await db.getConnection(); // lấy connection từ pool
     try {
         await connection.beginTransaction();
 
-        // 1. Insert vào Course
-=======
-    const connection = await db.getConnection();
-    await connection.beginTransaction();
-    try {
->>>>>>> main
+
         const [insertCourse] = await connection.execute(
             'INSERT INTO Course(created_at, created_by, age_group) VALUES (NOW(), ?, ?)',
             [course.created_by, course.age_group]
         );
         const course_id = insertCourse.insertId;
 
-<<<<<<< HEAD
+
         // 2. Insert vào Course_version
         const [insertCourseVersion] = await connection.execute(
             'INSERT INTO Course_version (course_id, course_name, content, version, course_img) VALUES (?, ?, ?, 1.0, ?)',
@@ -250,14 +245,7 @@ const createCourse = async (course) => {
 
         await connection.commit();
         connection.release(); // trả connection về pool
-=======
-        const [insertCourseVersion] = await connection.execute(
-            'INSERT INTO Course_version (course_id, course_name, content, version) VALUES (?,?,?,1.0)',
-            [course_id, course.course_name, JSON.stringify(course.content)]
-        );
-        await connection.commit();
-        connection.release();
->>>>>>> main
+
 
         return {
             success: true,
@@ -267,14 +255,12 @@ const createCourse = async (course) => {
     } catch (error) {
         await connection.rollback();
         connection.release();
-<<<<<<< HEAD
+
         return {
             success: false,
             error: error.message || error
         };
-=======
-        return { success: false, error };
->>>>>>> main
+
     }
 };
 
