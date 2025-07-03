@@ -134,7 +134,6 @@ WHERE user_id = ? AND is_active = 1`, [tokens, user_id]
   return rows;
 }
 
-
 module.exports = {
   createMember,
   findByUsername,
@@ -148,5 +147,4 @@ module.exports = {
   getUserCertificates,
   getUserSurveys,
   updateTokenUser
-
 };
