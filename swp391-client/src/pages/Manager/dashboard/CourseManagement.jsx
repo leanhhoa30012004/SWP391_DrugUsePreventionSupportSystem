@@ -80,15 +80,15 @@ const CourseManagement = () => {
             <FaBookOpen className="text-4xl text-[#6366f1]" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1">Quản lý khóa học</h1>
-            <p className="text-white text-sm md:text-base max-w-xl">Tạo, chỉnh sửa và quản lý các khóa học phòng chống ma túy.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1">Course Management</h1>
+            <p className="text-white text-sm md:text-base max-w-xl">Create, edit and manage drug prevention courses.</p>
           </div>
         </div>
         <button
           className="flex items-center gap-2 bg-[#6366f1] hover:bg-[#22c55e] text-white font-semibold px-6 py-3 rounded-xl shadow transition-all duration-200 text-base"
           onClick={() => setShowCreate(true)}
         >
-          <FaPlus /> Tạo khóa học
+          <FaPlus /> Create Course
         </button>
       </div>
       {/* Toolbar: Search */}
@@ -97,7 +97,7 @@ const CourseManagement = () => {
           <FaSearch className="text-[#6366f1]" />
           <input
             type="text"
-            placeholder="Tìm kiếm khóa học..."
+            placeholder="Search courses..."
             className="outline-none border-none flex-1 bg-transparent text-black"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -109,23 +109,23 @@ const CourseManagement = () => {
         <table className="min-w-full text-sm text-left">
           <thead className="bg-gradient-to-r from-[#6366f1] via-[#22c55e] to-[#fbbf24] text-white">
             <tr>
-              <th className="px-4 py-3 font-bold">STT</th>
-              <th className="px-4 py-3 font-bold">Tên</th>
-              <th className="px-4 py-3 font-bold">Nhóm tuổi</th>
-              <th className="px-4 py-3 font-bold">Người tạo</th>
-              <th className="px-4 py-3 font-bold">Ngày tạo</th>
-              <th className="px-4 py-3 font-bold">Cập nhật</th>
-              <th className="px-4 py-3 font-bold">Đã đăng ký</th>
-              <th className="px-4 py-3 font-bold">Hoàn thành</th>
-              <th className="px-4 py-3 font-bold">Mô tả</th>
+              <th className="px-4 py-3 font-bold">No.</th>
+              <th className="px-4 py-3 font-bold">Name</th>
+              <th className="px-4 py-3 font-bold">Age Group</th>
+              <th className="px-4 py-3 font-bold">Created By</th>
+              <th className="px-4 py-3 font-bold">Created Date</th>
+              <th className="px-4 py-3 font-bold">Last Updated</th>
+              <th className="px-4 py-3 font-bold">Enrolled</th>
+              <th className="px-4 py-3 font-bold">Completed</th>
+              <th className="px-4 py-3 font-bold">Description</th>
               <th className="px-4 py-3 font-bold">Version</th>
-              <th className="px-4 py-3 font-bold">Hành động</th>
+              <th className="px-4 py-3 font-bold">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredCourses.length === 0 ? (
               <tr>
-                <td colSpan={11} className="text-center py-8 text-gray-400">Không có khóa học nào.</td>
+                <td colSpan={11} className="text-center py-8 text-gray-400">No courses available.</td>
               </tr>
             ) : (
               filteredCourses.map((c, index) => (
@@ -143,7 +143,7 @@ const CourseManagement = () => {
                   <td className="px-4 py-3 flex gap-2">
                     <button
                       className="p-2 rounded-lg bg-[#fbbf24] hover:bg-[#eab308] text-white"
-                      title="Sửa"
+                      title="Edit"
                       onClick={() => {
                         setShowEdit(c);
                         setForm({
@@ -157,7 +157,7 @@ const CourseManagement = () => {
                     </button>
                     <button
                       className="p-2 rounded-lg bg-gray-200 hover:bg-red-200 text-[#e11d48]"
-                      title="Xóa"
+                      title="Delete"
                       onClick={() => setShowDelete(c)}
                     >
                       <FaTrash />
@@ -169,20 +169,20 @@ const CourseManagement = () => {
           </tbody>
         </table>
       </div>
-      {/* Modal tạo */}
+      {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl min-w-[340px] animate-fade-in">
-            <h2 className="text-lg font-bold mb-4">Tạo khóa học</h2>
+            <h2 className="text-lg font-bold mb-4">Create Course</h2>
             <input
               className="border p-2 mb-3 w-full rounded"
-              placeholder="Tên"
+              placeholder="Name"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             />
             <textarea
               className="border p-2 mb-3 w-full rounded"
-              placeholder="Mô tả"
+              placeholder="Description"
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             />
@@ -191,32 +191,32 @@ const CourseManagement = () => {
               value={form.age_group}
               onChange={e => setForm(f => ({ ...f, age_group: e.target.value }))}
             >
-              <option value="">Chọn nhóm tuổi</option>
+              <option value="">Select Age Group</option>
               <option value="Teenagers">Teenagers</option>
               <option value="Young Adult">Young Adult</option>
               <option value="Adult">Adult</option>
             </select>
             <div className="flex gap-2 justify-end">
-              <button className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded font-semibold" onClick={handleCreate}>Tạo</button>
-              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowCreate(false)}>Hủy</button>
+              <button className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded font-semibold" onClick={handleCreate}>Create</button>
+              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowCreate(false)}>Cancel</button>
             </div>
           </div>
         </div>
       )}
-      {/* Modal sửa */}
+      {/* Edit Modal */}
       {showEdit && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl min-w-[340px] animate-fade-in">
-            <h2 className="text-lg font-bold mb-4">Sửa khóa học</h2>
+            <h2 className="text-lg font-bold mb-4">Edit Course</h2>
             <input
               className="border p-2 mb-3 w-full rounded"
-              placeholder="Tên"
+              placeholder="Name"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             />
             <textarea
               className="border p-2 mb-3 w-full rounded"
-              placeholder="Mô tả"
+              placeholder="Description"
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             />
@@ -225,27 +225,27 @@ const CourseManagement = () => {
               value={form.age_group}
               onChange={e => setForm(f => ({ ...f, age_group: e.target.value }))}
             >
-              <option value="">Chọn nhóm tuổi</option>
+              <option value="">Select Age Group</option>
               <option value="Teenagers">Teenagers</option>
               <option value="Young Adult">Young Adult</option>
               <option value="Adult">Adult</option>
             </select>
             <div className="flex gap-2 justify-end">
-              <button className="px-4 py-2 bg-green-500 text-white rounded font-semibold" onClick={handleUpdate}>Lưu</button>
-              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowEdit(null)}>Hủy</button>
+              <button className="px-4 py-2 bg-green-500 text-white rounded font-semibold" onClick={handleUpdate}>Save</button>
+              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowEdit(null)}>Cancel</button>
             </div>
           </div>
         </div>
       )}
-      {/* Modal xóa */}
+      {/* Delete Modal */}
       {showDelete && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl min-w-[340px] animate-fade-in">
-            <h2 className="text-lg font-bold mb-4">Xóa khóa học</h2>
-            <p className="mb-4">Bạn chắc chắn muốn xóa <b>{showDelete.name}</b>?</p>
+            <h2 className="text-lg font-bold mb-4">Delete Course</h2>
+            <p className="mb-4">Are you sure you want to delete <b>{showDelete.name}</b>?</p>
             <div className="flex gap-2 justify-end">
-              <button className="px-4 py-2 bg-red-500 text-white rounded font-semibold" onClick={handleDelete}>Xóa</button>
-              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowDelete(null)}>Hủy</button>
+              <button className="px-4 py-2 bg-red-500 text-white rounded font-semibold" onClick={handleDelete}>Delete</button>
+              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowDelete(null)}>Cancel</button>
             </div>
           </div>
         </div>

@@ -74,26 +74,28 @@ CREATE TABLE IF NOT EXISTS Survey_enrollment (
     FOREIGN KEY (member_id) REFERENCES Users(user_id)
 );
 
+
+
 -- Thêm các bảng khác nếu cần thiết cho hệ thống của bạn
 -- Tạo bảng UserCourses để lưu thông tin khóa học của user
 CREATE TABLE IF NOT EXISTS UserCourses (
     user_course_id INT AUTO_INCREMENT PRIMARY KEY,
-    member_id INT NOT NULL,
+    user_id INT NOT NULL,
     course_id INT NOT NULL,
     enrolled_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('not_started', 'in_progress', 'completed') DEFAULT 'not_started',
     progress DECIMAL(5,2) DEFAULT 0.00,
     completed_date TIMESTAMP NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (member_id) REFERENCES Users(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES Course(course_id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_course (member_id, course_id)
+    UNIQUE KEY unique_user_course (user_id, course_id)
 );
 
 -- Tạo bảng Certificates để lưu chứng chỉ
 CREATE TABLE IF NOT EXISTS Certificates (
     certificate_id INT AUTO_INCREMENT PRIMARY KEY,
-    member_id INT NOT NULL,
+    user_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     type ENUM('course_completion', 'survey_completion', 'achievement') DEFAULT 'course_completion',
@@ -102,7 +104,7 @@ CREATE TABLE IF NOT EXISTS Certificates (
     course_id INT NULL,
     survey_id INT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (member_id) REFERENCES Users(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES Course(course_id) ON DELETE SET NULL,
     FOREIGN KEY (survey_id) REFERENCES Survey(survey_id) ON DELETE SET NULL
 );

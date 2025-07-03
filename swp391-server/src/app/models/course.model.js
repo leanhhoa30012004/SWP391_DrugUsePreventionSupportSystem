@@ -283,7 +283,7 @@ const listOfCourseFullInfo = async () => {
             IFNULL(SUM(CASE WHEN uc.status = 'completed' THEN 1 ELSE 0 END), 0) AS completed
         FROM Ranked r
         LEFT JOIN Users u ON r.created_by = u.user_id
-        LEFT JOIN UserCourses uc ON r.course_id = uc.course_id AND uc.is_active = TRUE
+        LEFT JOIN Course_enrollment uc ON r.course_id = uc.course_id AND uc.is_active = TRUE
         GROUP BY r.course_id, r.course_name, r.created_by, r.created_at, r.age_group, r.content, r.version, r.edited_at, u.fullname`
     );
     return rows.map(row => {
