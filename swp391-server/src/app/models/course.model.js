@@ -219,7 +219,6 @@ WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
     return rows;
 }
 const createCourse = async (course) => {
-
     const connection = await db.getConnection(); // lấy connection từ pool
     try {
         await connection.beginTransaction();
@@ -232,7 +231,6 @@ const createCourse = async (course) => {
         const course_id = insertCourse.insertId;
 
 
-        // 2. Insert vào Course_version
         const [insertCourseVersion] = await connection.execute(
             'INSERT INTO Course_version (course_id, course_name, content, version, course_img) VALUES (?, ?, ?, 1.0, ?)',
             [
@@ -244,7 +242,7 @@ const createCourse = async (course) => {
         );
 
         await connection.commit();
-        connection.release(); // trả connection về pool
+        connection.release(); 
 
         return {
             success: true,
@@ -258,7 +256,6 @@ const createCourse = async (course) => {
             success: false,
             error: error.message || error
         };
-
     }
 };
 
