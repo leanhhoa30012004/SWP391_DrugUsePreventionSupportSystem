@@ -22,7 +22,7 @@ const ManagerLogin = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
+
     if (token && ['manager', 'admin'].includes(user.role)) {
       navigate('/admin/dashboard', { replace: true });
     }
