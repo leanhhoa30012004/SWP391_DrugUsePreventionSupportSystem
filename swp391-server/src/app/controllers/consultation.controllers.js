@@ -54,10 +54,10 @@ exports.getAllAppointmentByMemberId = async (req, res) => {
     }
 }
 
-exports.getAllApointmentByConsultantId = async (req, res) => {
+exports.getAllAppointmentByConsultantId = async (req, res) => {
     const consultant_id = req.params.consultant_id;
     try {
-        const rows = await consultationModel.getAllApointmentByConsultantId(consultant_id);
+        const rows = await consultationModel.getAllAppointmentByConsultantId(consultant_id);
         res.json(rows);
     } catch (error) {
         console.log('getAllRequestAppointmentForConsultant error:', error);
