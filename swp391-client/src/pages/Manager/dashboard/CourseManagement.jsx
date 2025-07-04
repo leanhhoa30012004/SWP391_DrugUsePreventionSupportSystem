@@ -174,7 +174,7 @@ const CourseManagement = () => {
           alert(`Lesson ${i + 1} must have at least one question`);
           return;
         }
-        
+
         // Validate that each question has text
         for (let j = 0; j < lesson.quiz.length; j++) {
           const question = lesson.quiz[j];
@@ -210,7 +210,7 @@ const CourseManagement = () => {
 
       alert('Course created successfully!');
       setShowCreate(false);
-      
+
       // Reset form to initial state
       setForm({
         name: '',
@@ -236,7 +236,7 @@ const CourseManagement = () => {
           }
         ]
       });
-      
+
       // Refresh the courses list
       await fetchCourses();
     } catch (error) {
@@ -261,7 +261,7 @@ const CourseManagement = () => {
           alert(`Lesson ${i + 1} must have at least one question`);
           return;
         }
-        
+
         // Validate that each question has text
         for (let j = 0; j < lesson.quiz.length; j++) {
           const question = lesson.quiz[j];
@@ -298,7 +298,7 @@ const CourseManagement = () => {
 
       alert('Course updated successfully!');
       setShowEdit(null);
-      
+
       // Reset form to initial state
       setForm({
         name: '',
@@ -324,7 +324,7 @@ const CourseManagement = () => {
           }
         ]
       });
-      
+
       // Refresh the courses list
       await fetchCourses();
     } catch (error) {
@@ -815,8 +815,8 @@ const CourseManagement = () => {
                                 />
                                 <button
                                   className={`w-10 h-10 rounded-lg transition-all duration-200 shadow-sm ${option.score > 0
-                                      ? 'bg-green-500 text-white shadow-green-200'
-                                      : 'bg-gray-200 text-gray-500 hover:bg-green-100'
+                                    ? 'bg-green-500 text-white shadow-green-200'
+                                    : 'bg-gray-200 text-gray-500 hover:bg-green-100'
                                     }`}
                                   title="Set as correct answer"
                                   onClick={() => setCorrectAnswer(lessonIndex, qIndex, oIndex)}
@@ -995,7 +995,7 @@ const CourseManagement = () => {
                 <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
                   🎓 Course Content & Lessons
                 </h3>
-                
+
                 {form.content.map((lesson, lessonIndex) => (
                   <div key={lesson.id} className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 mb-6 border border-orange-100">
                     {/* Lesson Header */}
@@ -1006,7 +1006,7 @@ const CourseManagement = () => {
                         </div>
                         <h4 className="font-semibold text-gray-800">Lesson {lesson.id}</h4>
                       </div>
-                      
+
                       {/* Action Buttons */}
                       <div className="flex gap-2 flex-wrap">
                         <button
@@ -1143,11 +1143,10 @@ const CourseManagement = () => {
                                   }}
                                 />
                                 <button
-                                  className={`w-10 h-10 rounded-lg transition-all duration-200 shadow-sm ${
-                                    option.score > 0 
-                                      ? 'bg-green-500 text-white shadow-green-200' 
-                                      : 'bg-gray-200 text-gray-500 hover:bg-green-100'
-                                  }`}
+                                  className={`w-10 h-10 rounded-lg transition-all duration-200 shadow-sm ${option.score > 0
+                                    ? 'bg-green-500 text-white shadow-green-200'
+                                    : 'bg-gray-200 text-gray-500 hover:bg-green-100'
+                                    }`}
                                   title="Set as correct answer"
                                   onClick={() => setCorrectAnswer(lessonIndex, qIndex, oIndex)}
                                 >
@@ -1193,13 +1192,13 @@ const CourseManagement = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-4 justify-end pt-6">
-                <button 
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all duration-200" 
+                <button
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all duration-200"
                   onClick={() => setShowEdit(null)}
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                   onClick={handleUpdate}
                 >

@@ -398,7 +398,7 @@ module.exports = {
     createCourse,
     updateCourse,
 
-    listOfCourseFullInfo
+    listOfCourseFullInfo,
 
     getAllCourseFollowEnrollmentCourseByMemberId
 
