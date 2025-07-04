@@ -264,6 +264,7 @@ const createCourse = async (course) => {
 };
 
 const updateCourse = async (course) => {
+    console.log(JSON.stringify(course.content))
     const [rows] = await db.execute(
         'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version, course_img) VALUES (?,?,?,NOW(),?,?, ?)',
         [

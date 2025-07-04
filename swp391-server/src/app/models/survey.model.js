@@ -66,6 +66,7 @@ SELECT * FROM Ranked WHERE rn = 1;
 };
 
 const findSurveyBySurveyID = async (survey_id) => {
+  console.log(survey_id)
   const [rows] = await db.execute(
     `WITH Ranked AS (
   SELECT 
@@ -77,7 +78,7 @@ const findSurveyBySurveyID = async (survey_id) => {
     sv.edited_at,
     sv.version,
     ROW_NUMBER() OVER (
-      PARTITION BY s.survey_id 
+      PARTITION BY s.survey_id
       ORDER BY sv.version DESC
     ) AS rn
   FROM Survey s
@@ -88,6 +89,7 @@ const findSurveyBySurveyID = async (survey_id) => {
   `,
     [survey_id]
   );
+
   if (rows.length === 0) {
     throw new Error("Survey not found");
   }
@@ -213,6 +215,7 @@ const updateSurvey = async (survey) => {
 
     // Kiểm tra và xử lý dữ liệu
     const contentString = JSON.stringify(content);
+    console.log(contentString)
     const newVersion = parseFloat(version || 1) + 0.1;
     const [rows] = await db.execute(
       'INSERT INTO Survey_version (content, edited_at, edited_by, survey_id, version) VALUES (?, NOW(), ?, ?, ?);',

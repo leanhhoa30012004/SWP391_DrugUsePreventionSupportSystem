@@ -6,7 +6,7 @@ exports.createSurvey = async (req, res) => {
   try {
     const survey_id = await surveyModels.addSurvey({
       survey_type,
-      content: JSON.stringify(content),
+      content: content,
       created_by,
     });
     res.status(201).json({ message: "Survey created successfully", survey_id });
@@ -20,13 +20,14 @@ exports.createSurvey = async (req, res) => {
 exports.updateSurvey = async (req, res) => {
   const { survey_id, content } = req.body;
 
-
+  const version = (await surveyModels.findSurveyBySurveyID(survey_id)).version;
   const edited_by = req.user.user_id; // Assuming user_id is set in the request by authentication middleware
   try {
     const result = await surveyModels.updateSurvey({
       survey_id: survey_id,
-      content: JSON.stringify(content),
+      content: content,
       edited_by: edited_by,
+      version: version
     });
     res.json({ message: "Survey updated successfully", result });
   } catch (error) {
