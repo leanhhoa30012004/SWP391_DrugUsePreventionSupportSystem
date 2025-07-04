@@ -5,26 +5,36 @@ const createMeetConfig = require('../../config/createMeet.config');
 
 
 exports.checkAppointment = async (req, res) => {
-    const { request_date, request_time } = req.params;
+    const { member_id, appointment_date, appointment_time } = req.params;
+    // console.log(member_id, appointment_date, appointment_time)
+    // console.log(await consultationModel.checkAppointmentByMemberId(member_id, appointment_date, appointment_time))
+    let status = false;
+    let booked = false;
     try {
-        const numberOfAppointment = await consultationModel.numberOfRequestAppointment(request_date, request_time);
-        const numberOfConsultant = await consultationModel.numberOfConsultant();
-        if (numberOfAppointment.count_by_date < numberOfConsultant[0].numberOfConsultant * 3) {
-            if (numberOfAppointment.count_by_time < 2) {
-                res.json(true);
-            } else res.json(false);
-        } else res.json(false)
+        if (await consultationModel.checkAppointmentByMemberId(member_id, appointment_date, appointment_time)) {
+            booked = true;
+        }
+        else {
+            const freetime = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time);
+            if (freetime.countByTime === 0)
+                status = true;
+        }
+        return res.json({ "status": status, "booked": booked })
     } catch (error) {
         console.log('checkAppointment error:', error);
         res.status(500).json({ error: error.message || "Internal Server Error" });
     }
 }
 
-exports.addRequestAppointment = async (req, res) => {
-    const { member_id, request_date, request_time } = req.body;
+exports.addAppointment = async (req, res) => {
+    const { member_id, appointment_date, appointment_time } = req.body;
     try {
-        const rows = await consultationModel.addRequestAppointment(member_id, request_date, request_time);
-        if (!rows)
+        // const checkMemberRequestAppointment = await consultationModel.getRequestAppointmentByMemberIdAndDate(member_id, request_date, request_time);
+        // if (checkMemberRequestAppointment === 1) return res.json('You cannot book multiple appointments at the same time!')
+        const getConsultantFree = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time)
+        const isInsert = await consultationModel.addAppointment(member_id, appointment_date, appointment_time, getConsultantFree.user_id);
+        console.log(isInsert)
+        if (isInsert)
             res.json('Your request has been recorded by the system. Please wait for the latest notification.')
         else res.json('somethings wrong!')
     } catch (error) {
@@ -44,9 +54,10 @@ exports.getAllAppointmentByMemberId = async (req, res) => {
     }
 }
 
-exports.getAllRequestAppointmentForConsultant = async (req, res) => {
+exports.getAllApointmentByConsultantId = async (req, res) => {
+    const consultant_id = req.params.consultant_id;
     try {
-        const rows = await consultationModel.getAllRequestAppointmentForConsultant();
+        const rows = await consultationModel.getAllApointmentByConsultantId(consultant_id);
         res.json(rows);
     } catch (error) {
         console.log('getAllRequestAppointmentForConsultant error:', error);
@@ -71,7 +82,8 @@ exports.oAuth2CallBack = async (req, res) => {
     const oAuth2Client = getOAuth2Client();
     try {
         const { tokens } = await oAuth2Client.getToken(code);
-        console.log('token>>>', tokens)
+        // console.log('token>>>', tokens)
+
         const row = await memberModel.updateTokenUser(consultant_id, JSON.stringify(tokens))
         if (!row) throw error
         return res.send('Google Calender connected successfully!')
@@ -82,13 +94,31 @@ exports.oAuth2CallBack = async (req, res) => {
     }
 }
 
-exports.acceptAppointmentRequest = async (req, res) => {
-    const { consultant_id, assign_by } = req.params;
-    const { request_id, appointment_id, date, time } = req.body;
+
+exports.deleteAppointment = async (req, res) => {
+    const appointment_id = req.params.appointment_id;
     try {
-        await consultationModel.acceptAppointment(request_id, consultant_id, assign_by)
-        const meetLink = await createMeetConfig.createMeetEvent(consultant_id, date, time);
-        const row = await consultationModel.createMeetLink(consultant_id, appointment_id, meetLink);
+        if (await consultationModel.deleteRequestAppointment(appointment_id))
+            return res.json('Your appointment has been cancelled!');
+        else res.json('Your appointment cannot be canceled!')
+    } catch (error) {
+        console.error('deleteRequestAppointment:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+
+
+}
+
+exports.createMeetLink = async (req, res) => {
+    const appointment_id = req.params.appointment_id;
+    try {
+        const appointment = await consultationModel.getAppointmentById(appointment_id);
+        const dateStr = (new Date(appointment.appointment_date)).toISOString().slice(0, 10);
+        // console.log(">>>>>>>>>>>", appointment.appointment_time)
+        const timeStr = appointment.appointment_time.slice(0, 5);
+        const meetLink = await createMeetConfig.createMeetEvent(appointment.consultant_id, dateStr, timeStr);
+        const row = await consultationModel.createMeetLink(appointment.consultant_id, appointment_id, meetLink);
+
         if (!row) return res.json('Fail to create meet link!')
         return res.json('Create meet link successfully!')
     } catch (error) {
