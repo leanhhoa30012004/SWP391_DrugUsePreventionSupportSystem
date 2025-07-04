@@ -15,6 +15,7 @@ router.post(
   restrictTo("manager"),
   surveyManageController.updateSurvey
 );
+
 router.delete(
   "/delete/:id",
   protectManager,
