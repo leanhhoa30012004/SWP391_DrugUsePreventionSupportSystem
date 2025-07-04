@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/footer';
 
 function Courses() {
-    const userId = localStorage.getItem('user_id');
+    const userId = JSON.parse(localStorage.getItem('user'))?.user_id;
     const navigate = useNavigate();
     const [filters, setFilters] = useState({
         ageGroup: '',
@@ -24,11 +24,12 @@ function Courses() {
         const fetchAllCourses = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://localhost:3000/api/course/get-all-course', {
+                const response = await axios.get(`http://localhost:3000/api/course/get-all-course-follow-course-enrollment-by-member-id/${userId}`, {
                     headers: {
                         'Content-Type': 'application/json',
                     }
                 });
+
                 console.log(response.data)
                 setCoursesData(response.data);
                 setError('');
@@ -251,7 +252,7 @@ function Courses() {
                                             <div key={course.id || course._id} className="bg-white border border-red-100 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                                                 <div className="relative">
                                                     <img
-                                                        src={course.image}
+                                                        src={course.course_img}
                                                         alt={course.title || course.course_name}
                                                         className="h-48 w-full object-cover"
                                                         onError={(e) => {
@@ -363,7 +364,7 @@ function Courses() {
                     </div>
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </>
     );
 }
