@@ -66,6 +66,7 @@ SELECT * FROM Ranked WHERE rn = 1;
 };
 
 const findSurveyBySurveyID = async (survey_id) => {
+  console.log(survey_id)
   const [rows] = await db.execute(
     `WITH Ranked AS (
   SELECT 
@@ -77,7 +78,7 @@ const findSurveyBySurveyID = async (survey_id) => {
     sv.edited_at,
     sv.version,
     ROW_NUMBER() OVER (
-      PARTITION BY s.survey_id 
+      PARTITION BY s.survey_id
       ORDER BY sv.version DESC
     ) AS rn
   FROM Survey s
@@ -88,6 +89,7 @@ const findSurveyBySurveyID = async (survey_id) => {
   `,
     [survey_id]
   );
+
   if (rows.length === 0) {
     throw new Error("Survey not found");
   }
@@ -170,32 +172,42 @@ const addEnrollmentSurvey = async (survey_id, member_id, response, enroll_versio
 };
 const addSurvey = async (survey) => {
   const { survey_type, content, created_by } = survey;
-  await db.beginTransaction();
+  const connection = await db.getConnection(); 
+
   try {
-    // Thêm vào bảng Survey
-    const [insertSurvey] = await db.execute(
+    await connection.beginTransaction();
+
+  
+    const [insertSurvey] = await connection.execute(
       'INSERT INTO Survey (survey_type, created_by, created_date) VALUES (?, ?, NOW());',
       [survey_type, created_by]
     );
     const survey_id = insertSurvey.insertId;
 
-    // Thêm vào bảng Survey_version
-    const [insertSurveyVersion] = await db.execute(
+ 
+    const [insertSurveyVersion] = await connection.execute(
       'INSERT INTO Survey_version (survey_id, content, version) VALUES (?, ?, ?);',
       [survey_id, JSON.stringify(content), 1.0]
     );
 
-    await db.commit();
+    await connection.commit();
+    connection.release(); 
+
     return {
       success: true,
       survey_id,
       survey_version_id: insertSurveyVersion.insertId
     };
   } catch (error) {
-    await db.rollback();
-    return { success: false, error };
+    await connection.rollback();
+    connection.release(); 
+    return {
+      success: false,
+      error: error.message || error
+    };
   }
 };
+
 const updateSurvey = async (survey) => {
   try {
     const { survey_id, content, edited_by, version } =
@@ -203,6 +215,7 @@ const updateSurvey = async (survey) => {
 
     // Kiểm tra và xử lý dữ liệu
     const contentString = JSON.stringify(content);
+    console.log(contentString)
     const newVersion = parseFloat(version || 1) + 0.1;
     const [rows] = await db.execute(
       'INSERT INTO Survey_version (content, edited_at, edited_by, survey_id, version) VALUES (?, NOW(), ?, ?, ?);',

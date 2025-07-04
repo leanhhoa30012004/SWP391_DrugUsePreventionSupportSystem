@@ -45,7 +45,6 @@ const updatePassword = async (id, newPassword) => {
   );
 };
 
-
 const findById = async (id) => {
   const [rows] = await db.execute(
     "SELECT * FROM Users WHERE user_id = ? AND role = 'member' AND is_active = 1",
@@ -143,6 +142,7 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
+
   getUserCourses,
   getUserCertificates,
   getUserSurveys,
