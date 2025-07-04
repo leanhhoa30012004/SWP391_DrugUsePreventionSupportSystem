@@ -25,7 +25,7 @@ exports.getCourseByName = async (req, res) => {
 }
 exports.checkEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
-    
+
     try {
         const check = await courseModel.checkEnrollmentCourse(member_id, course_id, enroll_version);
         res.json({ isEnrolled: check });
@@ -42,8 +42,8 @@ exports.memberContinuesLearnCourseById = async (req, res) => {
         const course_content = course_progress.content;
 
         // Đếm số MOOC đã hoàn thành (score >= 8 và không null/undefined)
-        const moocLength = Array.isArray(learning_progress_mooc) 
-            ? learning_progress_mooc.filter(mooc => mooc && mooc.totalScore >= 8).length 
+        const moocLength = Array.isArray(learning_progress_mooc)
+            ? learning_progress_mooc.filter(mooc => mooc && mooc.totalScore >= 8).length
             : 0;
 
         console.log(`Progress: ${moocLength}/${course_content.length} MOOCs completed`);
@@ -64,7 +64,7 @@ exports.memberContinuesLearnCourseById = async (req, res) => {
             });
         } else {
             // Đã hoàn thành tất cả MOOCs
-            res.json({ 
+            res.json({
                 message: "You have completed all the content of this course",
                 quantity: course_content.length
             });
@@ -127,6 +127,17 @@ exports.submitCourse = async (req, res) => {
     } catch (error) {
         console.log('submitCourse error: ', error);
         res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+}
+
+exports.getAllCourseFollowSurveyEnrollmentByMemberId = async (req, res) => {
+    const member_id = req.params.member_id;
+    try {
+        const listOfCourse = await courseModel.getAllCourseFollowEnrollmentCourseByMemberId(member_id);
+        return res.json(listOfCourse);
+    } catch (error) {
+        console.error('getAllCourseEnrollmetByMemberId error:', error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
