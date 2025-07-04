@@ -52,6 +52,7 @@ exports.memberContinuesLearnCourseById = async (req, res) => {
             // Trả về MOOC đầu tiên với quantity
             const firstMooc = course_content[0];
             res.json({
+                version: course_progress.version,
                 data: firstMooc,
                 quantity: course_content.length
             });
@@ -59,6 +60,7 @@ exports.memberContinuesLearnCourseById = async (req, res) => {
             // Trả về MOOC tiếp theo với quantity
             const nextMooc = course_content[moocLength];
             res.json({
+                version: course_progress.version,
                 data: nextMooc,
                 quantity: course_content.length
             });
@@ -96,17 +98,18 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
 exports.submitCourse = async (req, res) => {
     const { member_id, course_id, member_answer, version } = req.body;
     console.log('1st log: ', req.body)
-
+    const co = 1.7;
     try {
-        const course = await courseModel.getCourseByIdAndVersion(course_id, version);
+        const course = await courseModel.getCourseByIdAndVersion(course_id, version );
 
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
         const submittedCourse = await courseModel.calculateScoreMooc(course.content, member_answer);
-        // if (submittedCourse.totalScore < 8) {
-        //     return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
-        // }
+        console.log('2nd log: ', submittedCourse)
+        if (submittedCourse.totalScore < 8) {
+            return res.status(400).json({ error: "You need to score at least 8 to complete this course" });
+        }
         const learning_process = await courseModel.memberContinuesLearnCourseById(member_id, course_id);
         learning_process.learning_process.push(submittedCourse.MoocDetails);
         await courseModel.updateLearningProcess(member_id, course_id, learning_process.learning_process);

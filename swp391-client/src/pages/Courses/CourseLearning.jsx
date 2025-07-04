@@ -30,7 +30,7 @@ import Swal from 'sweetalert2';
 const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransitioning }) => {
     // Lấy mooc_id hiện tại từ API
     const currentMoocId = currentMoocData?.mooc_id || currentMoocData?.id || 1;
-    
+
     return (
         <div className="bg-white rounded-xl shadow-lg border border-blue-100 mb-6 overflow-hidden">
             <div className="bg-gradient-to-r from-blue-50 to-white p-6">
@@ -40,7 +40,7 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
                         MOOC ID: {currentMoocId} | Progress: {completedMoocs.length}/{totalMoocs}
                     </div>
                 </div>
-                
+
                 {/* Progress Bar với MOOC ID */}
                 <div className="relative">
                     <div className="flex items-center justify-between mb-2">
@@ -48,17 +48,17 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
                             const moocNumber = index + 1;
                             const isCompleted = completedMoocs.includes(moocNumber);
                             const isCurrent = currentMoocId === moocNumber;
-                            
+
                             return (
                                 <div key={index} className="flex items-center">
                                     {/* MOOC Circle */}
                                     <div className={`
                                         relative w-12 h-12 rounded-full border-4 flex items-center justify-center font-bold text-sm
                                         transition-all duration-500 ease-in-out
-                                        ${isCompleted 
-                                            ? 'bg-green-500 border-green-500 text-white shadow-lg' 
-                                            : isCurrent 
-                                                ? `bg-blue-500 border-blue-500 text-white shadow-lg ${isTransitioning ? 'animate-pulse' : ''}` 
+                                        ${isCompleted
+                                            ? 'bg-green-500 border-green-500 text-white shadow-lg'
+                                            : isCurrent
+                                                ? `bg-blue-500 border-blue-500 text-white shadow-lg ${isTransitioning ? 'animate-pulse' : ''}`
                                                 : 'bg-gray-100 border-gray-300 text-gray-500'
                                         }
                                     `}>
@@ -67,19 +67,19 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
                                         ) : (
                                             moocNumber
                                         )}
-                                        
+
                                         {/* Transition Animation */}
                                         {isTransitioning && isCurrent && (
                                             <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></div>
                                         )}
                                     </div>
-                                    
+
                                     {/* Connection Line */}
                                     {index < totalMoocs - 1 && (
                                         <div className={`
                                             h-1 w-20 mx-2 transition-all duration-700 ease-in-out
-                                            ${isCompleted 
-                                                ? 'bg-green-500' 
+                                            ${isCompleted
+                                                ? 'bg-green-500'
                                                 : 'bg-gray-300'
                                             }
                                         `}></div>
@@ -88,22 +88,22 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
                             );
                         })}
                     </div>
-                    
+
                     {/* MOOC Labels với ID */}
                     <div className="flex justify-between mt-3">
                         {Array.from({ length: totalMoocs }, (_, index) => {
                             const moocNumber = index + 1;
                             const isCompleted = completedMoocs.includes(moocNumber);
                             const isCurrent = currentMoocId === moocNumber;
-                            
+
                             return (
                                 <div key={index} className="text-center" style={{ width: '80px' }}>
                                     <div className={`
                                         text-xs font-medium transition-colors duration-300
-                                        ${isCompleted 
-                                            ? 'text-green-600' 
-                                            : isCurrent 
-                                                ? 'text-blue-600' 
+                                        ${isCompleted
+                                            ? 'text-green-600'
+                                            : isCurrent
+                                                ? 'text-blue-600'
                                                 : 'text-gray-500'
                                         }
                                     `}>
@@ -111,17 +111,17 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
                                     </div>
                                     <div className={`
                                         text-xs mt-1 transition-colors duration-300
-                                        ${isCompleted 
-                                            ? 'text-green-500' 
-                                            : isCurrent 
-                                                ? 'text-blue-500' 
+                                        ${isCompleted
+                                            ? 'text-green-500'
+                                            : isCurrent
+                                                ? 'text-blue-500'
                                                 : 'text-gray-400'
                                         }
                                     `}>
-                                        {isCompleted 
-                                            ? 'Completed' 
-                                            : isCurrent 
-                                                ? 'In Progress' 
+                                        {isCompleted
+                                            ? 'Completed'
+                                            : isCurrent
+                                                ? 'In Progress'
                                                 : 'Pending'
                                         }
                                     </div>
@@ -164,9 +164,10 @@ const CourseLearning = () => {
     const [selectedAnswers, setSelectedAnswers] = useState({});
     const [quizSubmitted, setQuizSubmitted] = useState(false);
     const [quizScore, setQuizScore] = useState(0);
+    const [courseVersion, setCourseVersion] = useState(1.0); // Mặc định là 1.0, có thể thay đổi nếu cần
     const videoRef = useRef(null);
     const navigate = useNavigate();
-    const [num_moocs  , setNumMoocs] = useState(0)
+    const [num_moocs, setNumMoocs] = useState(0)
     // ================================
     // 1. LOGIC XỬ LÝ TIẾN TRÌNH MOOC
     // ================================
@@ -176,25 +177,27 @@ const CourseLearning = () => {
 
     // Fetch course data và current MOOC
     useEffect(() => {
-        if (completedMoocs && completedMoocs.length && completedMoocs[completedMoocs.length-1] == num_moocs) navigate('/course-completed')
+        if (completedMoocs && completedMoocs.length && completedMoocs[completedMoocs.length - 1] == num_moocs) navigate('/course-completed')
         async function fetchCourseData() {
             setLoading(true);
             try {
                 console.log(`🔄 Fetching course data for member ${uid}, course ${course_id}`);
-                
+
                 // Call API to get current MOOC that the member is learning
                 const response = await fetch(`http://localhost:3000/api/course/continues-learn-course-by-id/${uid}/${course_id}`);
                 console.log('📡 API Response:', response);
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 const parseData = await response.json()
                 console.log("Parse Data: ", parseData)
-                if (parseData.message && parseData.message == 'You have completed all the content of this course')  navigate('/course-completed')
+                if (parseData.message && parseData.message == 'You have completed all the content of this course') navigate('/course-completed')
                 const data = parseData.data;
+
+                setCourseVersion(parseData.version.toFixed(1)); // Lấy version từ API response
                 setNumMoocs(parseData.quantity)
-                console.log('📋 Course Data from API:', data);
+                //console.log('📋 Course Data from API:', data);
 
                 // Cập nhật courseData
                 setCourseData(data);
@@ -211,7 +214,7 @@ const CourseLearning = () => {
                         ...data,
                         mooc_id: currentMoocId
                     });
-                    
+
                     // Log thông tin chi tiết về MOOC hiện tại
                     console.log('📖 Current MOOC Details:', {
                         mooc_id: currentMoocId,
@@ -220,7 +223,7 @@ const CourseLearning = () => {
                         video: data.video,
                         quiz_count: data.quiz?.length || 0
                     });
-                    
+
                 } else {
                     console.warn('⚠️ No MOOC ID found in API response');
                     // Fallback nếu không có mooc_id
@@ -234,7 +237,7 @@ const CourseLearning = () => {
                         icon: 'success',
                         title: 'Course Completed!',
                         text: 'Congratulations! You have completed all the content of this course.',
-                        timer:3000,
+                        timer: 3000,
                         timerProgressBar: true,
                         showConfirmButton: false,
                     }).then(() => {
@@ -311,7 +314,7 @@ const CourseLearning = () => {
         try {
 
             const payload = buildAnswerPayload();
-            console.log("📦 FINAL PAYLOAD TO SERVER:", JSON.stringify(payload, null, 2));
+            //console.log("📦 FINAL PAYLOAD TO SERVER:", JSON.stringify(payload, null, 2));
             const response = await fetch('http://localhost:3000/api/course/submit-mooc-course', {
                 method: 'POST',
                 headers: {
@@ -327,12 +330,12 @@ const CourseLearning = () => {
             const calculateTotalScore = (moocResults) => {
                 let total = 0;
                 console.log("📊 CALCULATING SCORE FROM RESPONSE:");
-                
+
                 if (Array.isArray(moocResults)) {
                     moocResults.forEach((mooc, moocIndex) => {
                         console.log(`MOOC ${moocIndex + 1} (ID: ${mooc.mooc_id}):`);
                         console.log(`- Total Score: ${mooc.totalScore}`);
-                        
+
                         Object.entries(mooc.details).forEach(([questionNum, questionData]) => {
                             console.log(`  Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
                             total += questionData.score || 0;
@@ -347,7 +350,7 @@ const CourseLearning = () => {
                         });
                     }
                 }
-                
+
                 console.log(`🎯 TOTAL CALCULATED SCORE: ${total}`);
                 return total;
             };
@@ -371,7 +374,7 @@ const CourseLearning = () => {
             // Nếu pass - Xử lý tiến trình
             console.log(`✅ PASSED: Score ${totalScore} >= 8 for MOOC ID ${currentMoocData?.mooc_id}`);
             setIsTransitioning(true);
-            
+
             // Cập nhật MOOC đã hoàn thành
             const currentMoocId = currentMoocData?.mooc_id || currentMoocData?.id;
             const newCompletedMoocs = completedMoocs && completedMoocs.length > 0 ? [...completedMoocs, currentMoocId] : [currentMoocId];
@@ -388,7 +391,7 @@ const CourseLearning = () => {
                         <div class="text-sm text-gray-600 mt-2">Great job! Moving to next MOOC...</div>
                     </div>
                 `,
-                timer:3000,
+                timer: 3000,
                 timerProgressBar: true,
                 showConfirmButton: false,
             }).then(() => {
@@ -420,9 +423,9 @@ const CourseLearning = () => {
             const selectedOptionIndex = selectedAnswers[questionIndex];
             const selectedOption = currentQuiz[questionIndex].options[selectedOptionIndex];
             const answerText = selectedOption.text;
-            
+
             answers[questionNum] = answerText;
-            
+
             answerDetails[questionNum] = {
                 question: currentQuiz[questionIndex].question,
                 selectedAnswer: answerText,
@@ -432,7 +435,7 @@ const CourseLearning = () => {
         });
 
         const realMoocId = currentMoocData?.mooc_id || currentMoocData?.id || 1;
-        
+
         const payload = {
             member_id: uid,
             course_id: parseInt(course_id),
@@ -440,15 +443,14 @@ const CourseLearning = () => {
                 mooc_id: realMoocId,
                 answers: answers
             },
-            version: courseData?.version || 1.0,
+            version: courseVersion || 1.0,
         };
 
         // Log chi tiết
         console.log("📋 DETAILED ANSWER BREAKDOWN:");
         console.log("Real MOOC ID from API:", realMoocId);
         console.log("MOOC Title:", currentMoocData?.title);
-        console.log("Selected Answers:", answerDetails);
-        
+
         return payload;
     };
 
@@ -498,7 +500,7 @@ const CourseLearning = () => {
                         <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">No MOOC Data Found</h2>
                         <p className="text-gray-600">Unable to load MOOC content. Please try again.</p>
-                        <button 
+                        <button
                             onClick={() => window.location.reload()}
                             className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"
                         >
@@ -547,7 +549,7 @@ const CourseLearning = () => {
                                         </div>
                                     )}
                                 </h1>
-                                
+
                                 <p className="text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
                                     {courseData?.description || currentMoocData?.description || 'Course description'}
                                 </p>
@@ -573,7 +575,7 @@ const CourseLearning = () => {
 
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     {/* MOOC Progress Bar với MOOC ID */}
-                    <MoocProgressBar 
+                    <MoocProgressBar
                         currentMoocData={currentMoocData}
                         completedMoocs={completedMoocs}
                         totalMoocs={courseData?.total_moocs || num_moocs} // Có thể điều chỉnh
