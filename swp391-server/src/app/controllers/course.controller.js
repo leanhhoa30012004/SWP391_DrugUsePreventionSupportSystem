@@ -15,12 +15,12 @@ exports.getCourseByName = async (req, res) => {
     try {
         const courses = await courseModel.searchCourseByName(course_name);
         if (courses.length === 0 || !courses) {
-            res.json(`Cannot found with keyword '${course_name}'`)
+            return res.json(`Cannot found with keyword '${course_name}'`)
         }
-        res.json(courses)
+        return res.json(courses)
     } catch (error) {
         console.log('getCourseByName error: ', error)
-        res.status(500).json({ error: error.message || 'Internal Server Error' })
+       return res.status(500).json({ error: error.message || 'Internal Server Error' })
     }
 }
 exports.checkEnrollmentCourse = async (req, res) => {
