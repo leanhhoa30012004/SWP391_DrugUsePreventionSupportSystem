@@ -150,3 +150,16 @@ exports.getSurveyHistoryByMember = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+exports.getAllSurveyFollowSurveyEnrollmentByMemberId = async (req, res) => {
+    const member_id = req.params.member_id;
+    console.log(member_id)
+    try {
+        const listOfSurvey = await surveyModel.getAllSurveyFollowEnrollmentSurveyByMemberId(member_id);
+        console.log(listOfSurvey)
+        return res.json(listOfSurvey);
+    } catch (error) {
+        console.error('getAllSurveyEnrollmetByMemberId error:', error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
