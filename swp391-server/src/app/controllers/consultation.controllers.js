@@ -3,6 +3,7 @@ const { getAuthUrl, getOAuth2Client } = require('../../config/googleAuth.config'
 const memberModel = require('../models/member.model');
 const createMeetConfig = require('../../config/createMeet.config');
 
+
 exports.checkAppointment = async (req, res) => {
     const { member_id, appointment_date, appointment_time } = req.params;
     // console.log(member_id, appointment_date, appointment_time)
@@ -82,6 +83,7 @@ exports.oAuth2CallBack = async (req, res) => {
     try {
         const { tokens } = await oAuth2Client.getToken(code);
         // console.log('token>>>', tokens)
+
         const row = await memberModel.updateTokenUser(consultant_id, JSON.stringify(tokens))
         if (!row) throw error
         return res.send('Google Calender connected successfully!')
@@ -116,6 +118,7 @@ exports.createMeetLink = async (req, res) => {
         const timeStr = appointment.appointment_time.slice(0, 5);
         const meetLink = await createMeetConfig.createMeetEvent(appointment.consultant_id, dateStr, timeStr);
         const row = await consultationModel.createMeetLink(appointment.consultant_id, appointment_id, meetLink);
+
         if (!row) return res.json('Fail to create meet link!')
         return res.json('Create meet link successfully!')
     } catch (error) {

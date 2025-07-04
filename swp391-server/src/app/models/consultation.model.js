@@ -61,6 +61,7 @@ const deleteRequestAppointment = async (appointment_id) => {
     const [rows] = await db.execute(`UPDATE Appointment SET is_active = 0
 WHERE appointment_id = ?`, [appointment_id]);
     return rows.affectedRows > 0;
+
 }
 
 const getConsultantFreeTime = async (appointment_date, appointment_time) => {
@@ -99,4 +100,3 @@ module.exports = {
     checkAppointmentByMemberId,
     getConsultantFreeTime,
     getAppointmentById
-}

@@ -10,7 +10,10 @@ import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
 import Blogs from './pages/Blogs/blogs'
 import Courses from './pages/Courses/Courses'
-import CourseDetail from './pages/Courses/CourseDetail.jsx'
+
+import CourseDetail from '.\\pages\\Courses\\CourseDetail.jsx'
+import CourseCompleted from './pages/Courses/CourseCompleted'
+
 
 // Auth components
 import Register from './pages/Register/Register'
@@ -19,6 +22,13 @@ import ForgotPassword from './pages/ForgotPassword/forgotPassword'
 import ResetPassword from './pages/ForgotPassword/resetPassword'
 // import ConfirmationCode from './pages/ForgotPassword/ConfirmationCode'
 import ManagerLogin from './pages/Login/ManagerLogin'
+
+// Profile components
+import Profile from './pages/Profile/Profile'
+import ChangePassword from './pages/Profile/ChangePassword'
+
+// Protected Route component
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Admin components
 import AdminDashboardLayout from './pages/Admin/dashboard/AdminDashboardLayout'
@@ -44,6 +54,7 @@ import SidebarLayout from './pages/Manager/dashboard/SidebarLayout'
 import SurveyManagement from './pages/Manager/dashboard/SurveyManagement'
 import CourseManagement from './pages/Manager/dashboard/CourseManagement'
 import ConsultantManagement from './pages/Manager/dashboard/ConsultantManagement'
+import ConsultantBooking from './pages/Consultant/Consultant.jsx'
 
 function App() {
   return (
@@ -58,20 +69,38 @@ function App() {
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/:course_id" element={<CourseDetail />} />
       <Route path="/learning/:course_id" element={<CourseLearning />} />
+      <Route path="/course-completed" element={<CourseCompleted />} />
 
       {/* Auth Routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       {/* <Route path="/confirmation-code" element={<ConfirmationCode />} /> */}
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/manager-login" element={<ManagerLogin />} />
+
+      {/* Profile Routes */}
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/change-password" element={
+        <ProtectedRoute>
+          <ChangePassword />
+        </ProtectedRoute>
+      } />
 
       {/* Survey Routes */}
       <Route path="/survey" element={<SurveySelectionPage />} />
       <Route path="/survey/:sid" element={<Survey />} />
       <Route path="/survey/history/:memberId/:id" element={<SurveyHistoryPage />} />
       <Route path="/about" element={<AboutUsPage />} />
+
+      {/* Consultant Routes */}
+      <Route path="/consultant" element={<ConsultantBooking/>} />
+
+
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>

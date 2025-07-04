@@ -11,4 +11,5 @@ router.get('/get-auth-url/:consultant_id', consultationController.getAuthUrl);
 router.get('/oauth2callback', consultationController.oAuth2CallBack)
 router.get('/delete-appointment/:appointment_id', consultationController.deleteAppointment)
 router.get('/create-meet-link/:appointment_id', consultationController.createMeetLink)
+
 module.exports = router;
