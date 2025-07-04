@@ -338,6 +338,49 @@ WHERE r.rn = 1;`);
     }));
 };
 
+const getAllCourseFollowEnrollmentCourseByMemberId = async (member_id) => {
+    const [listOfCourse] = await db.execute(`SELECT
+	c.course_id,
+	c.created_at,
+	c.created_by,
+	c.age_group,
+	cv.course_img,
+	cv.course_name,
+	cv.content,
+	cv.edited_at,
+	cv.edited_by,
+	cv.version
+FROM Course c
+LEFT JOIN Course_enrollment ce
+	ON c.course_id = ce.course_id AND ce.member_id = ? AND ce.is_active = 1
+LEFT JOIN Course_version cv
+	ON cv.course_id = c.course_id
+	AND (
+		cv.version = ce.enroll_version
+		OR (
+			ce.enroll_version IS NULL AND
+			cv.version = (
+				SELECT MAX(version )
+				FROM Course_version
+				WHERE course_id = c.course_id AND is_active = 1 
+			)
+		)
+	)
+WHERE c.is_active = 1`, [member_id]);
+    return listOfCourse.map(course => ({
+        course_id: course.course_id,
+        created_at: course.created_at,
+        created_by: course.created_by,
+        age_group: course.age_group,
+        course_img: course.course_img,
+        course_name: course.course_name,
+        content: JSON.parse(course.content),
+        edited_at: course.edited_at,
+        edited_by: course.edited_by,
+        version: course.version
+    }));
+}
+
 
 module.exports = {
     listOfCourse,
@@ -354,5 +397,9 @@ module.exports = {
     updateStatusLearningProcess,
     createCourse,
     updateCourse,
+
     listOfCourseFullInfo
+
+    getAllCourseFollowEnrollmentCourseByMemberId
+
 };

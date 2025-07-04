@@ -172,26 +172,26 @@ const addEnrollmentSurvey = async (survey_id, member_id, response, enroll_versio
 };
 const addSurvey = async (survey) => {
   const { survey_type, content, created_by } = survey;
-  const connection = await db.getConnection(); 
+  const connection = await db.getConnection();
 
   try {
     await connection.beginTransaction();
 
-  
+
     const [insertSurvey] = await connection.execute(
       'INSERT INTO Survey (survey_type, created_by, created_date) VALUES (?, ?, NOW());',
       [survey_type, created_by]
     );
     const survey_id = insertSurvey.insertId;
 
- 
+
     const [insertSurveyVersion] = await connection.execute(
       'INSERT INTO Survey_version (survey_id, content, version) VALUES (?, ?, ?);',
       [survey_id, JSON.stringify(content), 1.0]
     );
 
     await connection.commit();
-    connection.release(); 
+    connection.release();
 
     return {
       success: true,
@@ -200,7 +200,7 @@ const addSurvey = async (survey) => {
     };
   } catch (error) {
     await connection.rollback();
-    connection.release(); 
+    connection.release();
     return {
       success: false,
       error: error.message || error
@@ -235,6 +235,46 @@ const deleteSurvey = async (survey_id) => {
   return rows;
 };
 
+const getAllSurveyFollowEnrollmentSurveyByMemberId = async (member_id) => {
+  const [listOfSurvey] = await db.execute(`SELECT
+    s.survey_id,
+    s.survey_type,
+    s.created_by,
+    s.created_date,
+    sv.content,
+    sv.edited_at,
+    sv.edited_by,
+    sv.version
+FROM Survey s
+LEFT JOIN Survey_enrollment se 
+    ON s.survey_id = se.survey_id AND se.member_id = ? AND se.is_active = 1
+LEFT JOIN Survey_version sv 
+    ON sv.survey_id = s.survey_id 
+    AND sv.is_active = 1
+    AND (
+        sv.version = se.enroll_version
+        OR (
+            se.enroll_version IS NULL AND
+            sv.version = (
+                SELECT MAX(version)
+                FROM Survey_version
+                WHERE survey_id = s.survey_id AND is_active = 1
+            )
+        )
+    )
+WHERE s.is_active = 1;`, [member_id]);
+  return listOfSurvey.map(survey => ({
+    survey_id: survey.survey_id,
+    survey_type: survey.survey_type,
+    created_by: survey.created_by,
+    created_date: survey.created_date,
+    content: JSON.parse(survey.content),
+    edited_at: survey.edited_at,
+    edited_by: survey.edited_by,
+    version: survey.version
+  }));
+}
+
 module.exports = {
   listOfSurvey,
   findSurveyByType,
@@ -246,4 +286,5 @@ module.exports = {
   addEnrollmentSurvey,
   updateSurvey,
   addSurvey,
+  getAllSurveyFollowEnrollmentSurveyByMemberId
 };
