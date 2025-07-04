@@ -4,7 +4,7 @@ const listOfCourse = async () => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
   SELECT 
-   	c.course_id , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+   	c.course_id , cv.course_img , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
     ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
   FROM Course c
   JOIN Course_version cv  ON c.course_id = cv.course_id
@@ -13,6 +13,7 @@ const listOfCourse = async () => {
 SELECT * FROM Ranked WHERE rn = 1;`);
     return rows.map(row => ({
         course_id: row.course_id,
+        course_img: row.course_img,
         course_name: row.course_name,
         content: JSON.parse(row.content),
         created_by: row.created_by,
@@ -35,7 +36,7 @@ const searchCourseByName = async (course_name) => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
   SELECT 
-   	c.course_id , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+   	c.course_id , cv.course_img , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
     ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
   FROM Course c
   JOIN Course_version cv  ON c.course_id = cv.course_id
@@ -46,6 +47,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
     );
     return rows.map(row => ({
         course_id: row.course_id,
+        course_img: row.course_img,
         course_name: row.course_name,
         content: JSON.parse(row.content),
         created_by: row.created_by,
@@ -56,7 +58,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
 
 const memberContinuesLearnCourseById = async (member_id, course_id) => {
     const [rows] = await db.execute(
-        `SELECT c.course_id, cv.course_name, u.fullname, ce.learning_process, cv.content, ce.enroll_version
+        `SELECT c.course_id, cv.course_img, cv.course_name, u.fullname, ce.learning_process, cv.content, ce.enroll_version
 FROM Course_enrollment ce JOIN Course c ON ce.course_id = c.course_id
 JOIN Course_version cv ON c.course_id = cv.course_id
 JOIN Users u ON ce.member_id = u.user_id
@@ -65,6 +67,7 @@ WHERE ce.enroll_version = cv.version AND cv.course_id = ? AND ce.member_id = ? A
     );
     return {
         course_id: rows[0].course_id,
+        course_img: rows[0].course_img,
         fullname: rows[0].fullname,
         course_name: rows[0].course_name,
         // learning_process: JSON.parse(rows[0].learning_process),
@@ -111,7 +114,7 @@ const getCourseById = async (course_id) => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
   SELECT 
-   	c.course_id , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+   	c.course_id , cv.course_img , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
     ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
   FROM Course c
   JOIN Course_version cv  ON c.course_id = cv.course_id
@@ -123,6 +126,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
 
     return {
         course_id: rows[0].course_id,
+        course_img: rows[0].course_img,
         course_name: rows[0].course_name,
         content: JSON.parse(rows[0].content),
         created_by: rows[0].created_by,
@@ -133,7 +137,7 @@ SELECT * FROM Ranked WHERE rn = 1;`,
 
 const getCourseByIdAndVersion = async (course_id, version) => {
     const [rows] = await db.execute(
-        `SELECT c.course_id, cv.course_name, c.created_at, c.created_by, c.age_group, cv.content, cv.version
+        `SELECT c.course_id, cv.course_img, cv.course_name, c.created_at, c.created_by, c.age_group, cv.content, cv.version
 FROM Course c JOIN Course_version cv  ON c.course_id  = cv.course_id
 WHERE c.course_id = ? AND cv.version = ? AND c.is_active = 1`,
         [course_id, version])
