@@ -22,7 +22,7 @@ exports.findSurveyByType = async (req, res) => {
 };
 
 exports.findSurveyBySurveyId = async (req, res) => {
-    const survey_id = req.params.surveyId;
+    const survey_id = req.params.survey_id;
     try {
         const survey = await surveyModel.findSurveyBySurveyID(survey_id);
         res.json(survey);
@@ -68,7 +68,7 @@ exports.submitSurvey = async (req, res) => {
 };
 
 exports.getSurveyHistoryByMember = async (req, res) => {
-    const user_id = req.params.memberId;
+    const user_id = req.params.member_id;
 
     // Validate input
     if (!user_id) {

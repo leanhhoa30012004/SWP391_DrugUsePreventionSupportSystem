@@ -139,8 +139,9 @@ const getCourseByIdAndVersion = async (course_id, version) => {
     const [rows] = await db.execute(
         `SELECT c.course_id, cv.course_img, cv.course_name, c.created_at, c.created_by, c.age_group, cv.content, cv.version
 FROM Course c JOIN Course_version cv  ON c.course_id  = cv.course_id
-WHERE c.course_id = ? AND cv.version = ? AND c.is_active = 1`,
+WHERE c.course_id = ? AND cv.version LIKE ? AND c.is_active = 1`,
         [course_id, version])
+
     return {
         course_id: rows[0].course_id,
         course_name: rows[0].course_name,
@@ -397,9 +398,7 @@ module.exports = {
     updateStatusLearningProcess,
     createCourse,
     updateCourse,
-
     listOfCourseFullInfo,
-
     getAllCourseFollowEnrollmentCourseByMemberId
 
 };
