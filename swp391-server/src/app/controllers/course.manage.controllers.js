@@ -19,12 +19,12 @@ exports.createCourse = async (req, res) => {
   }
 }
 exports.updateCourse = async (req, res) => {
-  const { course_id, course_name, content, course_img} = req.body;
-  let version = 1.0; 
+  const { course_id, course_name, content, course_img } = req.body;
+  let version = 1.0;
   console.log(course_id)
   try {
-     version = (await courseModels.getCourseById(course_id)).version;
-    
+    version = (await courseModels.getCourseById(course_id)).version;
+
   } catch (error) {
     console.error("Error fetching course version:", error);
     return res
@@ -49,7 +49,7 @@ exports.updateCourse = async (req, res) => {
   }
 }
 exports.deleteCourse = async (req, res) => {
-    const { course_id } = req.params;
+  const { course_id } = req.params;
   try {
     await courseModels.deleteCourse(course_id);
     res.json({ message: "Course deleted successfully" });
@@ -72,7 +72,7 @@ exports.listOfCourse = async (req, res) => {
   }
 }
 exports.searchCourseByName = async (req, res) => {
-    const course_name= req.params.query;
+  const course_name = req.params.query;
   try {
     const courses = await courseModels.searchCourseByName(course_name);
     res.json({ message: "Search results", courses });

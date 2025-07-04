@@ -283,6 +283,60 @@ const deleteCourse = async (course_id) => {
         course_id,
     ]);
 };
+const listOfCourseFullInfo = async () => {
+    const [rows] = await db.execute(
+        `WITH Ranked AS (
+  SELECT 
+   	c.course_id , cv.course_img , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, c.age_group,
+    ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
+  FROM Course c
+  JOIN Course_version cv  ON c.course_id = cv.course_id
+  WHERE c.is_active = 1
+),
+EnrollmentStats AS (
+  SELECT 
+    ce.course_id,
+    COUNT(*) as enrolled_count,
+    SUM(CASE WHEN ce.status = 'completed' THEN 1 ELSE 0 END) as completed_count
+  FROM Course_enrollment ce
+  WHERE ce.is_active = 1
+  GROUP BY ce.course_id
+)
+SELECT 
+  r.course_id,
+  r.course_img,
+  r.course_name,
+  r.created_by,
+  r.created_at,
+  r.content,
+  r.version,
+  r.age_group,
+  COALESCE(es.enrolled_count, 0) as enrolled,
+  COALESCE(es.completed_count, 0) as completed,
+  r.created_at as lastUpdated,
+  (SELECT u.fullname FROM Users u WHERE u.user_id = r.created_by) as created_by_name
+FROM Ranked r
+LEFT JOIN EnrollmentStats es ON r.course_id = es.course_id
+WHERE r.rn = 1;`);
+    
+    return rows.map(row => ({
+        id: row.course_id,
+        course_id: row.course_id,
+        course_img: row.course_img,
+        name: row.course_name,
+        course_name: row.course_name,
+        content: JSON.parse(row.content),
+        description: JSON.parse(row.content).description || '',
+        created_by: row.created_by_name || row.created_by,
+        createdAt: row.created_at,
+        created_at: row.created_at,
+        version: row.version,
+        age_group: row.age_group,
+        enrolled: row.enrolled,
+        completed: row.completed,
+        lastUpdated: row.lastUpdated,
+    }));
+};
 
 const getAllCourseFollowEnrollmentCourseByMemberId = async (member_id) => {
     const [listOfCourse] = await db.execute(`SELECT
@@ -343,5 +397,9 @@ module.exports = {
     updateStatusLearningProcess,
     createCourse,
     updateCourse,
+
+    listOfCourseFullInfo
+
     getAllCourseFollowEnrollmentCourseByMemberId
+
 };
