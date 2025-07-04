@@ -246,7 +246,7 @@ const createCourse = async (course) => {
         );
 
         await connection.commit();
-        connection.release(); 
+        connection.release();
 
         return {
             success: true,
@@ -318,7 +318,7 @@ SELECT
 FROM Ranked r
 LEFT JOIN EnrollmentStats es ON r.course_id = es.course_id
 WHERE r.rn = 1;`);
-    
+
     return rows.map(row => ({
         id: row.course_id,
         course_id: row.course_id,
