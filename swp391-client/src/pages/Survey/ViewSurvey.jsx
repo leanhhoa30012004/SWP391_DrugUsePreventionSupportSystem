@@ -122,11 +122,11 @@ const SurveySelectionPage = () => {
     navigate(`/survey/history/${memberId}/${id}`);
   };
 
-  const handleViewLatestResult = (id) => {
-    // For this data structure, we'll navigate to the history page
-    // since we don't have a specific result_id
-    navigate(`/survey-history/${memberId}/${id}`);
-  };
+  // const handleViewLatestResult = (id) => {
+  //   // For this data structure, we'll navigate to the history page
+  //   // since we don't have a specific result_id
+  //   navigate(`/survey-history/${memberId}/${id}`);
+  // };
 
   const toggleCardExpansion = (surveyId) => {
     setExpandedCard(expandedCard === surveyId ? null : surveyId);
@@ -298,13 +298,13 @@ const SurveySelectionPage = () => {
 
                         {status.completed && (
                           <>
-                            <button
+                            {/* <button
                               className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
                               onClick={() => handleViewLatestResult(survey.survey_id)}
                             >
                               <Eye className="w-5 h-5 mr-2" />
                               <span>View Results</span>
-                            </button>
+                            </button> */}
 
                             <button
                               className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"

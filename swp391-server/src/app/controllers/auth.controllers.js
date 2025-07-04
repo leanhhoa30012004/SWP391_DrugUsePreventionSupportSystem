@@ -131,7 +131,7 @@ exports.loginManager = async (req, res) => {
     const token = jwt.sign(
       { userId: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "7h" }
+      { expiresIn: "12h" }
     );
 
     console.log("Manager login successful for:", username);
