@@ -105,7 +105,7 @@ const ConsultantManagement = () => {
       stars.push(
         <FaStar 
           key={i} 
-          className={i <= rating ? 'text-yellow-400' : 'text-gray-300'} 
+          className={i <= rating ? 'text-[#e11d48]' : 'text-gray-300'} 
         />
       );
     }
@@ -115,17 +115,19 @@ const ConsultantManagement = () => {
   return (
     <div className="h-full w-full flex flex-col bg-gradient-to-br from-[#fff1f2] via-[#fef2f2] to-[#f8fafc] p-0 rounded-2xl shadow-lg">
       {/* Header with red background and large consultant icon */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-gradient-to-r from-[#e11d48] via-[#be123c] to-[#fbbf24] rounded-t-2xl shadow-lg">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow-lg">
+          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
             <FaUserMd className="text-4xl text-[#e11d48]" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1">Consultant Management</h1>
-            <p className="text-white text-sm md:text-base max-w-xl">Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Consultant Management</h1>
+            <p className="text-[#be123c] text-sm md:text-base max-w-xl font-medium">
+              Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.
+            </p>
           </div>
         </div>
-        <button className="flex items-center gap-2 bg-[#fbbf24] hover:bg-[#e11d48] text-white font-semibold px-6 py-3 rounded-xl shadow transition-all duration-200 text-base">
+        <button className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base">
           <FaPlus /> Add Consultant
         </button>
       </div>
@@ -163,9 +165,9 @@ const ConsultantManagement = () => {
         </div>
       </div>
       {/* Consultant Table with enhanced details */}
-      <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1">
+      <div className="overflow-auto rounded-b-3xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
         <table className="min-w-full text-sm text-left">
-          <thead className="bg-gradient-to-r from-[#e11d48] via-[#be123c] to-[#fbbf24] text-white">
+          <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
               <th className="px-4 py-3 font-bold">Consultant</th>
               <th className="px-4 py-3 font-bold">Contact</th>
@@ -207,7 +209,7 @@ const ConsultantManagement = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-block px-3 py-1 rounded-full bg-[#fbbf24] text-white font-bold text-xs shadow">{consultant.specialty}</span>
+                    <span className="inline-block px-4 py-2 rounded-full bg-[#e11d48]/20 text-[#e11d48] font-bold text-sm border border-[#e11d48]/30">{consultant.specialty}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
@@ -237,7 +239,7 @@ const ConsultantManagement = () => {
                       <FaEye />
                     </button>
                     <button
-                      className="p-2 rounded-lg bg-[#fbbf24] hover:bg-[#eab308] text-white"
+                      className="p-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white"
                       title="Edit"
                       onClick={() => setEditConsultant(consultant)}
                     >
@@ -306,7 +308,7 @@ const ConsultantManagement = () => {
                   <FaGraduationCap /> Professional Details
                 </h3>
                 <div className="space-y-2 text-black">
-                  <div><b>Specialty:</b> <span className="inline-block px-2 py-1 rounded-full bg-[#fbbf24] text-white font-bold text-xs">{viewConsultant.specialty}</span></div>
+                  <div><b>Specialty:</b> <span className="inline-block px-2 py-1 rounded-full bg-[#e11d48]/20 text-[#e11d48] font-bold text-sm border border-[#e11d48]/30">{viewConsultant.specialty}</span></div>
                   <div><b>Education:</b> {viewConsultant.education}</div>
                   <div><b>Experience:</b> {viewConsultant.experience} years</div>
                   <div><b>Total Sessions:</b> {viewConsultant.sessions}</div>
