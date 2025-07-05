@@ -62,28 +62,16 @@ const CourseManagement = () => {
     const totalQuestions = newContent[lessonIndex].quiz.length;
     const scorePerQuestion = calculateScorePerQuestion(totalQuestions);
 
-    // Reset tất cả điểm trong lesson về 0
-    newContent[lessonIndex].quiz.forEach(question => {
+    // Tự động chọn đáp án đúng cho mỗi câu hỏi
+    newContent[lessonIndex].quiz.forEach((question, qIndex) => {
+      // Reset tất cả điểm của câu hỏi hiện tại
       question.options.forEach(option => {
         option.score = 0;
       });
-    });
 
-    // Tự động chọn đáp án đúng cho mỗi câu hỏi
-    newContent[lessonIndex].quiz.forEach((question, qIndex) => {
-      // Tìm câu trả lời đúng hiện tại (nếu có)
-      let correctOptionIndex = question.options.findIndex(option => option.score > 0);
-
-      if (correctOptionIndex === -1) {
-        // Nếu chưa có đáp án đúng, tự động chọn đáp án đầu tiên có text
-        const firstFilledOptionIndex = question.options.findIndex(option => option.text.trim() !== '');
-        if (firstFilledOptionIndex !== -1) {
-          correctOptionIndex = firstFilledOptionIndex;
-        } else {
-          // Nếu không có đáp án nào có text, chọn đáp án đầu tiên
-          correctOptionIndex = 0;
-        }
-      }
+      // Tìm đáp án đầu tiên có text để làm đáp án đúng
+      const firstFilledOptionIndex = question.options.findIndex(option => option.text.trim() !== '');
+      const correctOptionIndex = firstFilledOptionIndex !== -1 ? firstFilledOptionIndex : 0;
 
       // Đặt điểm cho đáp án đúng
       question.options[correctOptionIndex].score = scorePerQuestion;
@@ -98,34 +86,27 @@ const CourseManagement = () => {
     const totalQuestions = newContent[lessonIndex].quiz.length;
     const scorePerQuestion = calculateScorePerQuestion(totalQuestions);
 
-    // Reset tất cả điểm trong lesson về 0
-    newContent[lessonIndex].quiz.forEach(question => {
-      question.options.forEach(option => {
-        option.score = 0;
-      });
+    // Chỉ reset điểm của câu hỏi hiện tại
+    newContent[lessonIndex].quiz[questionIndex].options.forEach(option => {
+      option.score = 0;
     });
 
     // Đặt điểm cho câu trả lời đúng của câu hỏi hiện tại
     newContent[lessonIndex].quiz[questionIndex].options[optionIndex].score = scorePerQuestion;
 
-    // Tự động tính toán và phân bổ điểm cho tất cả các câu hỏi khác
+    // Cập nhật điểm cho tất cả các câu hỏi khác mà đã có đáp án đúng (giữ nguyên vị trí đáp án đúng)
     newContent[lessonIndex].quiz.forEach((question, qIndex) => {
       if (qIndex !== questionIndex) {
         // Tìm câu trả lời đúng hiện tại (nếu có)
         const correctOptionIndex = question.options.findIndex(option => option.score > 0);
-        if (correctOptionIndex === -1) {
-          // Nếu chưa có đáp án đúng, tự động chọn đáp án đầu tiên có text làm đáp án đúng
-          const firstFilledOptionIndex = question.options.findIndex(option => option.text.trim() !== '');
-          if (firstFilledOptionIndex !== -1) {
-            question.options[firstFilledOptionIndex].score = scorePerQuestion;
-          } else {
-            // Nếu không có đáp án nào có text, chọn đáp án đầu tiên
-            question.options[0].score = scorePerQuestion;
-          }
-        } else {
-          // Nếu đã có đáp án đúng, cập nhật điểm
+        if (correctOptionIndex !== -1) {
+          // Nếu đã có đáp án đúng, chỉ cập nhật lại điểm (giữ nguyên vị trí)
+          question.options.forEach(option => {
+            option.score = 0;
+          });
           question.options[correctOptionIndex].score = scorePerQuestion;
         }
+        // Nếu chưa có đáp án đúng, không làm gì cả (để user tự chọn)
       }
     });
 
@@ -174,7 +155,7 @@ const CourseManagement = () => {
           alert(`Lesson ${i + 1} must have at least one question`);
           return;
         }
-        
+
         // Validate that each question has text
         for (let j = 0; j < lesson.quiz.length; j++) {
           const question = lesson.quiz[j];
@@ -210,7 +191,7 @@ const CourseManagement = () => {
 
       alert('Course created successfully!');
       setShowCreate(false);
-      
+
       // Reset form to initial state
       setForm({
         name: '',
@@ -236,7 +217,7 @@ const CourseManagement = () => {
           }
         ]
       });
-      
+
       // Refresh the courses list
       await fetchCourses();
     } catch (error) {
@@ -261,7 +242,7 @@ const CourseManagement = () => {
           alert(`Lesson ${i + 1} must have at least one question`);
           return;
         }
-        
+
         // Validate that each question has text
         for (let j = 0; j < lesson.quiz.length; j++) {
           const question = lesson.quiz[j];
@@ -298,7 +279,7 @@ const CourseManagement = () => {
 
       alert('Course updated successfully!');
       setShowEdit(null);
-      
+
       // Reset form to initial state
       setForm({
         name: '',
@@ -324,7 +305,7 @@ const CourseManagement = () => {
           }
         ]
       });
-      
+
       // Refresh the courses list
       await fetchCourses();
     } catch (error) {
@@ -517,24 +498,24 @@ const CourseManagement = () => {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-0 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden animate-fade-in border border-gray-100">
+          <div className="bg-white p-0 rounded-2xl shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden border border-gray-200">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-8 py-6">
+            <div className="bg-red-500 border-b border-red-600 px-8 py-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">✨ Create New Course</h2>
-                  <p className="text-indigo-100">Build an engaging drug prevention course</p>
+                  <h2 className="text-xl font-semibold text-white mb-1">Create New Course</h2>
+                  <p className="text-red-100">Build a drug prevention course</p>
                 </div>
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 backdrop-blur-sm"
+                    className="bg-red-400 hover:bg-red-300 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                     onClick={loadSampleData}
                   >
-                    🎯 Load Sample Data
+                    Load Sample Data
                   </button>
                   <button
-                    className="text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200"
+                    className="text-white hover:bg-red-400 p-2 rounded-lg transition-all duration-200"
                     onClick={() => {
                       // Reset form when closing create modal
                       setForm({
@@ -571,17 +552,17 @@ const CourseManagement = () => {
             </div>
 
             {/* Content Section */}
-            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gradient-to-br from-gray-50 to-indigo-50">
+            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gray-50">
               {/* Basic Course Info */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  📚 Basic Information
+              <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Basic Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Course Name *</label>
                     <input
-                      className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                      className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                       placeholder="Enter course name..."
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -590,7 +571,7 @@ const CourseManagement = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Target Age Group *</label>
                     <select
-                      className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                      className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                       value={form.age_group}
                       onChange={e => setForm(f => ({ ...f, age_group: e.target.value }))}
                     >
@@ -605,7 +586,7 @@ const CourseManagement = () => {
                 <div className="mt-6 space-y-2">
                   <label className="text-sm font-medium text-gray-700">Course Image URL</label>
                   <input
-                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                     placeholder="https://example.com/image.jpg"
                     value={form.course_img}
                     onChange={e => setForm(f => ({ ...f, course_img: e.target.value }))}
@@ -615,7 +596,7 @@ const CourseManagement = () => {
                 <div className="mt-6 space-y-2">
                   <label className="text-sm font-medium text-gray-700">Course Description</label>
                   <textarea
-                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white resize-none"
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white resize-none"
                     placeholder="Describe what students will learn in this course..."
                     value={form.description}
                     onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -625,17 +606,17 @@ const CourseManagement = () => {
               </div>
 
               {/* Course Content */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-                  🎓 Course Content & Lessons
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                  Course Content & Lessons
                 </h3>
 
                 {form.content.map((lesson, lessonIndex) => (
-                  <div key={lesson.id} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 mb-6 border border-indigo-100">
+                  <div key={lesson.id} className="bg-blue-50 rounded-lg p-6 mb-6 border border-blue-200">
                     {/* Lesson Header */}
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                        <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
                           {lesson.id}
                         </div>
                         <h4 className="font-semibold text-gray-800">Lesson {lesson.id}</h4>
@@ -644,29 +625,29 @@ const CourseManagement = () => {
                       {/* Action Buttons */}
                       <div className="flex gap-2 flex-wrap">
                         <button
-                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200"
                           onClick={() => autoSetAllCorrectAnswers(lessonIndex)}
                         >
-                          🎯 Auto Set All ({lesson.quiz.length} Q = {calculateScorePerQuestion(lesson.quiz.length)} pts each)
+                          Auto Set All ({lesson.quiz.length} Q = {calculateScorePerQuestion(lesson.quiz.length)} pts each)
                         </button>
                         <button
-                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200"
                           onClick={() => updateAllScores(lessonIndex)}
                         >
-                          🔄 Reset Scores
+                          Reset Scores
                         </button>
-                        <div className="bg-purple-500 text-white text-xs px-3 py-2 rounded-lg font-medium shadow-sm">
-                          📊 Total: {calculateCurrentTotalScore(lessonIndex)}/10
+                        <div className="bg-gray-500 text-white text-xs px-3 py-2 rounded-lg font-medium">
+                          Total: {calculateCurrentTotalScore(lessonIndex)}/10
                         </div>
                         {form.content.length > 1 && (
                           <button
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                            className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200"
                             onClick={() => {
                               const newContent = form.content.filter((_, i) => i !== lessonIndex);
                               setForm(f => ({ ...f, content: newContent }));
                             }}
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
                         )}
                       </div>
@@ -674,11 +655,11 @@ const CourseManagement = () => {
 
                     {/* Video URL */}
                     <div className="mb-6 space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        🎥 Video URL
+                      <label className="text-sm font-medium text-gray-700">
+                        Video URL
                       </label>
                       <input
-                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                         placeholder="https://www.youtube.com/watch?v=..."
                         value={lesson.video}
                         onChange={e => {
@@ -692,11 +673,11 @@ const CourseManagement = () => {
                     {/* Quiz Questions */}
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          ❓ Quiz Questions
+                        <label className="text-sm font-medium text-gray-700">
+                          Quiz Questions
                         </label>
                         <button
-                          className="bg-indigo-500 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200"
                           onClick={() => {
                             const newContent = [...form.content];
                             newContent[lessonIndex].quiz.push({
@@ -712,19 +693,19 @@ const CourseManagement = () => {
                             setForm(f => ({ ...f, content: newContent }));
                           }}
                         >
-                          ➕ Add Question
+                          Add Question
                         </button>
                       </div>
 
                       {lesson.quiz.map((question, qIndex) => (
-                        <div key={qIndex} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                        <div key={qIndex} className="bg-white rounded-lg p-4 border border-gray-200">
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3 flex-1">
-                              <div className="bg-gray-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                              <div className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                                 {qIndex + 1}
                               </div>
                               <input
-                                className="flex-1 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                                className="flex-1 border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Enter your question..."
                                 value={question.question}
                                 onChange={e => {
@@ -736,14 +717,14 @@ const CourseManagement = () => {
                             </div>
                             {lesson.quiz.length > 1 && (
                               <button
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200 ml-2"
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-all duration-200 ml-2"
                                 onClick={() => {
                                   const newContent = [...form.content];
                                   newContent[lessonIndex].quiz.splice(qIndex, 1);
                                   setForm(f => ({ ...f, content: newContent }));
                                 }}
                               >
-                                🗑️
+                                Delete
                               </button>
                             )}
                           </div>
@@ -751,11 +732,11 @@ const CourseManagement = () => {
                           <div className="space-y-3 ml-9">
                             {question.options.map((option, oIndex) => (
                               <div key={oIndex} className="flex gap-3 items-center group">
-                                <div className="bg-gray-100 text-gray-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium">
+                                <div className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium">
                                   {String.fromCharCode(65 + oIndex)}
                                 </div>
                                 <input
-                                  className="flex-1 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                                  className="flex-1 border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                   placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
                                   value={option.text}
                                   onChange={e => {
@@ -765,7 +746,7 @@ const CourseManagement = () => {
                                   }}
                                 />
                                 <input
-                                  className="w-20 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-center"
+                                  className="w-20 border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center"
                                   type="number"
                                   step="0.01"
                                   placeholder="Score"
@@ -777,9 +758,9 @@ const CourseManagement = () => {
                                   }}
                                 />
                                 <button
-                                  className={`w-10 h-10 rounded-lg transition-all duration-200 shadow-sm ${option.score > 0
-                                      ? 'bg-green-500 text-white shadow-green-200'
-                                      : 'bg-gray-200 text-gray-500 hover:bg-green-100'
+                                  className={`w-10 h-10 rounded-lg transition-all duration-200 ${option.score > 0
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-gray-200 text-gray-600 hover:bg-green-100'
                                     }`}
                                   title="Set as correct answer"
                                   onClick={() => setCorrectAnswer(lessonIndex, qIndex, oIndex)}
@@ -797,7 +778,7 @@ const CourseManagement = () => {
 
                 {/* Add New Lesson Button */}
                 <button
-                  className="w-full border-2 border-dashed border-indigo-300 bg-indigo-50 hover:bg-indigo-100 p-6 rounded-2xl text-indigo-600 hover:text-indigo-700 font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 p-6 rounded-lg text-blue-600 hover:text-blue-800 font-medium transition-all duration-200 flex items-center justify-center gap-2"
                   onClick={() => {
                     // Find the next available ID to avoid conflicts
                     const maxId = Math.max(...form.content.map(lesson => lesson.id));
@@ -820,14 +801,14 @@ const CourseManagement = () => {
                     setForm(f => ({ ...f, content: [...f.content, newLesson] }));
                   }}
                 >
-                  ➕ Add New Lesson
+                  Add New Lesson
                 </button>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 justify-end pt-6">
+              <div className="flex gap-4 justify-end pt-6 pb-4 pr-4">
                 <button
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all duration-200"
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-all duration-200"
                   onClick={() => {
                     // Reset form when canceling create
                     setForm({
@@ -860,7 +841,7 @@ const CourseManagement = () => {
                   Cancel
                 </button>
                 <button
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all duration-200"
                   onClick={handleCreate}
                 >
                   Create Course
@@ -873,24 +854,24 @@ const CourseManagement = () => {
       {/* Edit Modal */}
       {showEdit && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-0 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden animate-fade-in border border-gray-100">
+          <div className="bg-white p-0 rounded-2xl shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden border border-gray-200">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 px-8 py-6">
+            <div className="bg-red-500 border-b border-red-600 px-8 py-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">✏️ Edit Course</h2>
-                  <p className="text-orange-100">Update your drug prevention course</p>
+                  <h2 className="text-xl font-semibold text-white mb-1">Edit Course</h2>
+                  <p className="text-red-100">Update your drug prevention course</p>
                 </div>
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 backdrop-blur-sm"
+                    className="bg-red-400 hover:bg-red-300 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                     onClick={loadSampleData}
                   >
-                    🎯 Load Sample Data
+                    Load Sample Data
                   </button>
                   <button
-                    className="text-white hover:bg-white/20 p-2 rounded-xl transition-all duration-200"
+                    className="text-white hover:bg-red-400 p-2 rounded-lg transition-all duration-200"
                     onClick={() => setShowEdit(null)}
                   >
                     ✕
@@ -900,17 +881,17 @@ const CourseManagement = () => {
             </div>
 
             {/* Content Section */}
-            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gradient-to-br from-gray-50 to-orange-50">
+            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gray-50">
               {/* Basic Course Info */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  📚 Basic Information
+              <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Basic Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Course Name *</label>
                     <input
-                      className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                      className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                       placeholder="Enter course name..."
                       value={form.name}
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -919,7 +900,7 @@ const CourseManagement = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Target Age Group *</label>
                     <select
-                      className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                      className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                       value={form.age_group}
                       onChange={e => setForm(f => ({ ...f, age_group: e.target.value }))}
                     >
@@ -934,7 +915,7 @@ const CourseManagement = () => {
                 <div className="mt-6 space-y-2">
                   <label className="text-sm font-medium text-gray-700">Course Image URL</label>
                   <input
-                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                     placeholder="https://example.com/image.jpg"
                     value={form.course_img}
                     onChange={e => setForm(f => ({ ...f, course_img: e.target.value }))}
@@ -944,7 +925,7 @@ const CourseManagement = () => {
                 <div className="mt-6 space-y-2">
                   <label className="text-sm font-medium text-gray-700">Course Description</label>
                   <textarea
-                    className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white resize-none"
+                    className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white resize-none"
                     placeholder="Describe what students will learn in this course..."
                     value={form.description}
                     onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
@@ -954,48 +935,48 @@ const CourseManagement = () => {
               </div>
 
               {/* Course Content */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-                  🎓 Course Content & Lessons
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                  Course Content & Lessons
                 </h3>
-                
+
                 {form.content.map((lesson, lessonIndex) => (
-                  <div key={lesson.id} className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 mb-6 border border-orange-100">
+                  <div key={lesson.id} className="bg-green-50 rounded-lg p-6 mb-6 border border-green-200">
                     {/* Lesson Header */}
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                        <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
                           {lesson.id}
                         </div>
                         <h4 className="font-semibold text-gray-800">Lesson {lesson.id}</h4>
                       </div>
-                      
+
                       {/* Action Buttons */}
                       <div className="flex gap-2 flex-wrap">
                         <button
-                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200"
                           onClick={() => autoSetAllCorrectAnswers(lessonIndex)}
                         >
-                          🎯 Auto Set All ({lesson.quiz.length} Q = {calculateScorePerQuestion(lesson.quiz.length)} pts each)
+                          Auto Set All ({lesson.quiz.length} Q = {calculateScorePerQuestion(lesson.quiz.length)} pts each)
                         </button>
                         <button
-                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200"
                           onClick={() => updateAllScores(lessonIndex)}
                         >
-                          🔄 Reset Scores
+                          Reset Scores
                         </button>
-                        <div className="bg-purple-500 text-white text-xs px-3 py-2 rounded-lg font-medium shadow-sm">
-                          📊 Total: {calculateCurrentTotalScore(lessonIndex)}/10
+                        <div className="bg-gray-500 text-white text-xs px-3 py-2 rounded-lg font-medium">
+                          Total: {calculateCurrentTotalScore(lessonIndex)}/10
                         </div>
                         {form.content.length > 1 && (
                           <button
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                            className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200"
                             onClick={() => {
                               const newContent = form.content.filter((_, i) => i !== lessonIndex);
                               setForm(f => ({ ...f, content: newContent }));
                             }}
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
                         )}
                       </div>
@@ -1003,11 +984,11 @@ const CourseManagement = () => {
 
                     {/* Video URL */}
                     <div className="mb-6 space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        🎥 Video URL
+                      <label className="text-sm font-medium text-gray-700">
+                        Video URL
                       </label>
                       <input
-                        className="w-full border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 bg-white"
+                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
                         placeholder="https://www.youtube.com/watch?v=..."
                         value={lesson.video}
                         onChange={e => {
@@ -1021,11 +1002,11 @@ const CourseManagement = () => {
                     {/* Quiz Questions */}
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          ❓ Quiz Questions
+                        <label className="text-sm font-medium text-gray-700">
+                          Quiz Questions
                         </label>
                         <button
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm"
+                          className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded-lg font-medium transition-all duration-200"
                           onClick={() => {
                             const newContent = [...form.content];
                             newContent[lessonIndex].quiz.push({
@@ -1041,19 +1022,19 @@ const CourseManagement = () => {
                             setForm(f => ({ ...f, content: newContent }));
                           }}
                         >
-                          ➕ Add Question
+                          Add Question
                         </button>
                       </div>
 
                       {lesson.quiz.map((question, qIndex) => (
-                        <div key={qIndex} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                        <div key={qIndex} className="bg-white rounded-lg p-4 border border-gray-200">
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3 flex-1">
-                              <div className="bg-gray-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                              <div className="bg-green-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                                 {qIndex + 1}
                               </div>
                               <input
-                                className="flex-1 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                                className="flex-1 border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Enter your question..."
                                 value={question.question}
                                 onChange={e => {
@@ -1065,14 +1046,14 @@ const CourseManagement = () => {
                             </div>
                             {lesson.quiz.length > 1 && (
                               <button
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200 ml-2"
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-all duration-200 ml-2"
                                 onClick={() => {
                                   const newContent = [...form.content];
                                   newContent[lessonIndex].quiz.splice(qIndex, 1);
                                   setForm(f => ({ ...f, content: newContent }));
                                 }}
                               >
-                                🗑️
+                                Delete
                               </button>
                             )}
                           </div>
@@ -1080,11 +1061,11 @@ const CourseManagement = () => {
                           <div className="space-y-3 ml-9">
                             {question.options.map((option, oIndex) => (
                               <div key={oIndex} className="flex gap-3 items-center group">
-                                <div className="bg-gray-100 text-gray-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium">
+                                <div className="bg-green-100 text-green-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium">
                                   {String.fromCharCode(65 + oIndex)}
                                 </div>
                                 <input
-                                  className="flex-1 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
+                                  className="flex-1 border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                   placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
                                   value={option.text}
                                   onChange={e => {
@@ -1094,7 +1075,7 @@ const CourseManagement = () => {
                                   }}
                                 />
                                 <input
-                                  className="w-20 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-center"
+                                  className="w-20 border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center"
                                   type="number"
                                   step="0.01"
                                   placeholder="Score"
@@ -1106,11 +1087,10 @@ const CourseManagement = () => {
                                   }}
                                 />
                                 <button
-                                  className={`w-10 h-10 rounded-lg transition-all duration-200 shadow-sm ${
-                                    option.score > 0 
-                                      ? 'bg-green-500 text-white shadow-green-200' 
-                                      : 'bg-gray-200 text-gray-500 hover:bg-green-100'
-                                  }`}
+                                  className={`w-10 h-10 rounded-lg transition-all duration-200 ${option.score > 0
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-gray-200 text-gray-600 hover:bg-green-100'
+                                    }`}
                                   title="Set as correct answer"
                                   onClick={() => setCorrectAnswer(lessonIndex, qIndex, oIndex)}
                                 >
@@ -1127,7 +1107,7 @@ const CourseManagement = () => {
 
                 {/* Add New Lesson Button */}
                 <button
-                  className="w-full border-2 border-dashed border-orange-300 bg-orange-50 hover:bg-orange-100 p-6 rounded-2xl text-orange-600 hover:text-orange-700 font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-green-300 bg-green-50 hover:bg-green-100 p-6 rounded-lg text-green-600 hover:text-green-800 font-medium transition-all duration-200 flex items-center justify-center gap-2"
                   onClick={() => {
                     // Find the next available ID to avoid conflicts
                     const maxId = Math.max(...form.content.map(lesson => lesson.id));
@@ -1150,23 +1130,23 @@ const CourseManagement = () => {
                     setForm(f => ({ ...f, content: [...f.content, newLesson] }));
                   }}
                 >
-                  ➕ Add New Lesson
+                  Add New Lesson
                 </button>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 justify-end pt-6">
-                <button 
-                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all duration-200" 
+              <div className="flex gap-4 justify-end pt-6 pb-4 pr-4">
+                <button
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-all duration-200"
                   onClick={() => setShowEdit(null)}
                 >
                   Cancel
                 </button>
-                <button 
-                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                <button
+                  className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all duration-200"
                   onClick={handleUpdate}
                 >
-                  💾 Save Changes
+                  Save Changes
                 </button>
               </div>
             </div>
