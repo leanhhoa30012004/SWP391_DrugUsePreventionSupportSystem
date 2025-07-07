@@ -5,7 +5,7 @@ import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle,
 const fakeConsultants = [
   {
     id: 1,
-    name: 'Dr. Nguyen Van B',
+    name: 'Dr. Nguyen Van Cục Cức',
     email: 'nguyenb@wehope.org',
     phone: '0901234567',
     specialty: 'Psychology',
@@ -103,9 +103,9 @@ const ConsultantManagement = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <FaStar 
-          key={i} 
-          className={i <= rating ? 'text-[#e11d48]' : 'text-gray-300'} 
+        <FaStar
+          key={i}
+          className={i <= rating ? 'text-[#e11d48]' : 'text-gray-300'}
         />
       );
     }
@@ -264,7 +264,7 @@ const ConsultantManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-[#e11d48] text-xl" onClick={() => setViewConsultant(null)}>&times;</button>
-            
+
             {/* Header with avatar and basic info */}
             <div className="flex flex-col md:flex-row items-center gap-6 mb-6 pb-6 border-b">
               <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#fbbf24] flex items-center justify-center text-white text-5xl shadow-lg">
@@ -346,7 +346,7 @@ const ConsultantManagement = () => {
                 <h3 className="text-lg font-bold text-[#e11d48] mb-2">Description</h3>
                 <p className="text-black">{viewConsultant.description}</p>
               </div>
-              
+
               <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-bold text-[#e11d48] mb-2">Achievements</h3>
                 <div className="space-y-1">
@@ -359,12 +359,11 @@ const ConsultantManagement = () => {
               <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-bold text-[#e11d48] mb-2">Status Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-black">
-                  <div><b>Current Status:</b> 
-                    <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${
-                      viewConsultant.status === 'Active' 
-                        ? 'bg-green-100 text-green-700' 
+                  <div><b>Current Status:</b>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${viewConsultant.status === 'Active'
+                        ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-500'
-                    }`}>
+                      }`}>
                       {viewConsultant.status}
                     </span>
                   </div>
