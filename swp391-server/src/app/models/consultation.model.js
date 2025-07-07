@@ -52,6 +52,7 @@ const createMeetLink = async (consultant_id, appointment_id, meetLink) => {
 
 
 const checkAppointmentByMemberId = async (member_id, appointment_date, appointment_time) => {
+    console.log('model >>>>>>>', member_id, appointment_date, appointment_time)
     const [rows] = await db.execute(`SELECT *
 FROM Appointment WHERE member_id = ? AND appointment_date = ? AND appointment_time = ? AND is_active = 1`, [member_id, appointment_date, appointment_time])
     return rows.length > 0 ? true : false
@@ -87,6 +88,7 @@ WHERE u.role = 'consultant'
 GROUP BY u.user_id
 ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appointment_date])
     console.log(rows[0])
+
     return rows[0];
 }
 
