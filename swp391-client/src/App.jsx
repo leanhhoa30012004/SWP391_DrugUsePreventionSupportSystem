@@ -55,7 +55,8 @@ import SurveyManagement from './pages/Manager/dashboard/SurveyManagement'
 import CourseManagement from './pages/Manager/dashboard/CourseManagement'
 import ConsultantManagement from './pages/Manager/dashboard/ConsultantManagement'
 import ConsultantBooking from './pages/Consultant/Consultant.jsx'
-
+import OnlineConsultant from './pages/Homepage/Onlineconsultant'
+import OnlyConsultant from './pages/OnlyConsultant/OnlyConsultant.jsx'
 function App() {
   return (
     <Routes>
@@ -99,7 +100,7 @@ function App() {
 
       {/* Consultant Routes */}
       <Route path="/consultant" element={<ConsultantBooking/>} />
-
+      <Route path="/onlyconsultant" element={<OnlyConsultant/>}/>
 
 
       {/* Admin Routes */}
@@ -119,6 +120,7 @@ function App() {
         <Route path="survey" element={<SurveyManagement />} />
         <Route path="course" element={<CourseManagement />} />
         <Route path="consultant" element={<ConsultantManagement />} />
+        
       </Route>
     </Routes>
   )
