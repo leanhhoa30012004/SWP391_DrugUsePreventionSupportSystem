@@ -66,18 +66,29 @@ WHERE appointment_id = ?`, [appointment_id]);
 }
 
 const getConsultantFreeTime = async (appointment_date, appointment_time) => {
-    const [rows] = await db.execute(`SELECT u.user_id, COUNT(CASE 
-    WHEN a.appointment_date = ? AND a.appointment_time = ? THEN a.appointment_id 
+    const [rows] = await db.execute(`SELECT 
+    u.user_id, 
+    COUNT(CASE 
+        WHEN a.appointment_date = ? 
+            AND a.appointment_time = ? 
+            AND (a.status = 'pending' OR a.status IS NULL)
+        THEN a.appointment_id 
     END) AS countByTime,
-    COUNT(CASE
-    	WHEN a.appointment_date = ? THEN a.appointment_id
+
+    COUNT(CASE 
+        WHEN a.appointment_date = ? 
+            AND (a.status = 'pending' OR a.status IS NULL)
+        THEN a.appointment_id 
     END) AS countByDate
+
 FROM Users u
 LEFT JOIN Appointment a ON a.consultant_id = u.user_id
-WHERE u.role = 'consultant' AND a.is_active = 1
+WHERE u.role = 'consultant' 
+  AND (a.is_active = 1 OR a.is_active IS NULL)
 GROUP BY u.user_id
-ORDER BY countByTime , countByDate;`, [appointment_date, appointment_time, appointment_date])
-    console.log(">>>?> ",rows[0])
+ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appointment_date])
+    console.log(rows[0])
+
     return rows[0];
 }
 

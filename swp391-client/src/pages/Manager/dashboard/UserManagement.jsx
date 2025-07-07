@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../config/axios/axiosInstance';
 import { Link } from 'react-router-dom';
 import Logo from '../../../assets/logo-WeHope.png';
+import { FaEdit } from 'react-icons/fa';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -10,6 +11,8 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [error, setError] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editUserData, setEditUserData] = useState({ user_id: '', fullname: '', email: '', birthday: '', password: '' });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -95,6 +98,26 @@ const UserManagement = () => {
     } catch (error) {
       console.error('Error toggling active:', error);
       setError('Failed to update user status');
+    }
+  };
+
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    try {
+      await axiosInstance.post('/manager/profile', {
+        fullname: editUserData.fullname,
+        email: editUserData.email,
+        password: editUserData.password,
+        birthday: editUserData.birthday,
+      });
+      setShowEditModal(false);
+      setEditUserData({ user_id: '', fullname: '', email: '', birthday: '', password: '' });
+      fetchUsers();
+      setError('');
+      alert('User profile updated successfully!');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to update user profile');
+      alert(error.response?.data?.message || 'Failed to update user profile');
     }
   };
 
@@ -258,6 +281,22 @@ const UserManagement = () => {
                         <span className={`font-semibold text-xs select-none transition-colors duration-300 ml-2 ${user.is_active ? 'text-red-600' : 'text-gray-700'}`}>
                           {user.is_active ? 'Active' : 'Inactive'}
                         </span>
+                        <button
+                          className="ml-2 p-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white"
+                          title="Edit Profile"
+                          onClick={() => {
+                            setEditUserData({
+                              user_id: uid,
+                              fullname: user.fullname,
+                              email: user.email,
+                              birthday: user.birthday ? new Date(user.birthday).toISOString().split('T')[0] : '',
+                              password: '',
+                            });
+                            setShowEditModal(true);
+                          }}
+                        >
+                          <FaEdit />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -372,6 +411,82 @@ const UserManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <div className="fixed inset-0 bg-gray-700 bg-opacity-40 flex items-center justify-center z-50">
+          <div className="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-fadeInUp">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-red-600 tracking-tight">Edit User Profile</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleEditUser} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editUserData.fullname}
+                  onChange={(e) => setEditUserData({ ...editUserData, fullname: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  placeholder="Enter full name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={editUserData.email}
+                  onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  placeholder="Enter email"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Birthday</label>
+                <input
+                  type="date"
+                  required
+                  value={editUserData.birthday}
+                  onChange={(e) => setEditUserData({ ...editUserData, birthday: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Password (leave blank to keep current)</label>
+                <input
+                  type="password"
+                  value={editUserData.password}
+                  onChange={(e) => setEditUserData({ ...editUserData, password: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-3 sm:space-y-0 pt-4 justify-center items-center">
+                <button
+                  type="submit"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
                   className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
                 >
                   Cancel
