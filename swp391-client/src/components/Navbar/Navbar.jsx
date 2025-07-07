@@ -84,86 +84,103 @@ const Navbar = () => {
   return (
     <>
       {/* Spacer for fixed navbar */}
-      <div className="h-[70px] sm:h-[80px] lg:h-[90px] w-full">
-        <nav className={`fixed top-0 left-0 right-0 h-[70px] w-full sm:h-[80px] lg:h-[90px] bg-white z-[1000] transition-all duration-300
+      <div className="h-[50px] sm:h-[60px] lg:h-[90px] w-full">
+        <nav className={`fixed top-0 left-0 right-0 h-[50px] sm:h-[60px] lg:h-[90px] w-full bg-white z-[1000] transition-all duration-300
           ${isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md' : 'bg-white shadow-md'}`}>
+          
+          {/* Container with justify-between layout */}
           <div className="h-full w-full max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-10 lg:px-4 relative">
+            
             {/* Logo container */}
-            <div className="h-[90px] px-4 flex items-center">
-              <Link to="/" className="p-2 w-[100px]">
+            <div className="w-[120px] h-[50px] sm:w-[140px] sm:h-[60px] lg:w-[200px] lg:h-[90px] flex items-center">
+              <Link to="/" className="block w-full h-full relative">
                 <img
                   src={Logo}
                   alt="Logo"
-                  className="h-full w-auto object-contain"
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               </Link>
             </div>
 
-            {/* Desktop Menu */}
-            <div className="hidden lg:flex items-center justify-center space-x-4 grow">
-              {NavbarMenu.map((item) => (
-                <NavLink
-                  key={item.id}
-                  to={item.link}
-                  className={({ isActive }) =>
-                    `px-3 py-2 text-center whitespace-nowrap transition-all duration-200 font-medium rounded-lg ${
-                      isActive
-                        ? 'bg-red-50 text-red-600 font-bold shadow'
-                        : 'text-gray-700 hover:text-red-600'
-                    }`
-                  }
-                  end
-                >
-                  {item.title}
-                </NavLink>
-              ))}
+            {/* Desktop Menu - Absolute positioned center */}
+            <div className="hidden lg:flex items-center justify-center transform -translate-x-1/2">
+              <div className="flex items-center absolute justify-center-safe space-x-2">
+                {NavbarMenu.map((item) => (
+                  <NavLink
+                    key={item.id}
+                    to={item.link}
+                    className={({ isActive }) =>
+                      `px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg whitespace-nowrap ${
+                        isActive
+                          ? 'bg-red-50 text-red-600 font-bold shadow'
+                          : 'text-gray-700 hover:text-red-600'
+                      }`
+                    }
+                    end
+                  >
+                    {item.title}
+                  </NavLink>
+                ))}
+              </div>
             </div>
 
             {/* Right side: Search, User/Auth, Hamburger */}
-            <div className="flex items-center gap-8 lg:gap-4">
+            <div className="flex items-center gap-4 flex-shrink-0">
+              
               {/* Search Bar (desktop) */}
-              <div className="relative hidden sm:block ml-4">
+              <div className="relative hidden sm:block">
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-32 sm:w-40 lg:w-48 h-9 border-2 border-[#ac302e] rounded-full 
-                           px-4 pr-6 text-sm focus:outline-none focus:border-[#e53535f2]
+                           px-4 pr-10 text-sm focus:outline-none focus:border-[#e53535f2]
                            transition-all duration-200 bg-white hover:bg-red-50 text-[#ff0400]"
                 />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[#E53935] hover:text-white cursor-pointer">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E53935] hover:text-white cursor-pointer">
                   <IoMdSearch className="w-4 h-4" />
                 </div>
               </div>
 
               {/* User Section */}
               {user ? (
-                <div className="relative group">
-                  <img
-                    src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || user.userName || 'default'}`}
-                    alt={user.fullName || "User"}
-                    className="w-8 h-8 mx-2 lg:w-10 lg:h-10 rounded-full object-cover border cursor-pointer"
-                    onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  />
-                  {/* Popover menu */}
-                  {isUserMenuOpen && (
-                    <div ref={userMenuRef} className="absolute right-0 mt-2 z-50">
-                      {menu}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img
+                      src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || user.username || 'default'}`}
+                      alt={user.fullname || user.username || "User"}
+                      className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border-2 border-[#E53935]/20 cursor-pointer hover:border-[#E53935] transition-all duration-200 hover:scale-105 shadow-sm"
+                      onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                    />
+                    {/* Popover menu */}
+                    {isUserMenuOpen && (
+                      <div ref={userMenuRef} className="absolute right-0 mt-2 z-50">
+                        {menu}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="hidden xl:block">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-gray-600">Welcome,</span>
+                      <span className="text-sm font-semibold text-[#E53935] max-w-[100px] truncate">
+                        {user.username || 'User'}
+                      </span>
                     </div>
-                  )}
+                  </div>
                 </div>
               ) : (
                 <div className="flex gap-2">
                   <Link
                     to="/login"
-                    className="px-5 py-2 text-sm text-[#E53935] border border-[#E53935] rounded-lg transition-colors duration-200 hover:bg-[#E53935] hover:text-white whitespace-nowrap"
+                    className="px-4 py-2 text-sm text-[#E53935] border border-[#E53935] rounded-lg transition-colors duration-200 hover:bg-[#E53935] hover:text-white whitespace-nowrap"
                   >
                     Log in
                   </Link>
                   <Link
                     to="/register"
-                    className="px-5 py-2 text-sm bg-[#E53935] text-white rounded-lg transition-colors duration-200 hover:bg-white hover:text-[#E53935] border border-[#E53935] whitespace-nowrap"
+                    className="px-4 py-2 text-sm bg-[#E53935] text-white rounded-lg transition-colors duration-200 hover:bg-white hover:text-[#E53935] border border-[#E53935] whitespace-nowrap"
                   >
                     Register
                   </Link>
@@ -172,13 +189,13 @@ const Navbar = () => {
 
               {/* Hamburger for mobile/tablet */}
               <button
-                className="lg:hidden flex flex-col justify-center items-center w-10 h-10 ml-2"
+                className="lg:hidden flex flex-col justify-center items-center w-8 h-8"
                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 aria-label="Open menu"
               >
-                <span className={`block w-6 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-[#E53935] transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+                <span className={`block w-5 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+                <span className={`block w-5 h-0.5 bg-[#E53935] mb-1 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`block w-5 h-0.5 bg-[#E53935] transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
               </button>
             </div>
 
@@ -193,7 +210,7 @@ const Navbar = () => {
                 ${isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'}
               `}
             >
-              <div className="container mx-auto px-4 py-2">
+              <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-4 py-2">
                 {/* Mobile Search */}
                 <div className="py-4 border-b border-[#E53935]/20">
                   <div className="relative">
@@ -235,12 +252,12 @@ const Navbar = () => {
                     <div className="px-4">
                       <div className="flex items-center mb-3">
                         <img
-                          src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || 'default'}`}
-                          alt={user.fullName}
-                          className="w-10 h-10 rounded-full"
+                          src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || user.username || 'default'}`}
+                          alt={user.fullname || user.username || "User"}
+                          className="w-8 h-8 rounded-full object-cover border-2 border-[#E53935]/20"
                         />
                         <span className="ml-3 font-medium text-[#E53935]">
-                          {user.fullName}
+                          {user.fullname || user.username || 'User'}
                         </span>
                       </div>
                       <div className="flex flex-col gap-2">
@@ -295,4 +312,3 @@ const Navbar = () => {
 }
 
 export default Navbar;
-

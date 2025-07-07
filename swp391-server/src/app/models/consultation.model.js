@@ -52,13 +52,12 @@ const createMeetLink = async (consultant_id, appointment_id, meetLink) => {
 
 
 const checkAppointmentByMemberId = async (member_id, appointment_date, appointment_time) => {
-    console.log('model >>>>>>>', member_id, appointment_date, appointment_time)
     const [rows] = await db.execute(`SELECT *
 FROM Appointment WHERE member_id = ? AND appointment_date = ? AND appointment_time = ? AND is_active = 1`, [member_id, appointment_date, appointment_time])
     return rows.length > 0 ? true : false
 }
 
-const deleteRequestAppointment = async (appointment_id) => {
+const rejectAppointment = async (appointment_id) => {
     const [rows] = await db.execute(`UPDATE Appointment SET is_active = 0
 WHERE appointment_id = ?`, [appointment_id]);
     return rows.affectedRows > 0;
@@ -87,7 +86,6 @@ WHERE u.role = 'consultant'
   AND (a.is_active = 1 OR a.is_active IS NULL)
 GROUP BY u.user_id
 ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appointment_date])
-    console.log(rows[0])
 
     return rows[0];
 }
@@ -99,6 +97,22 @@ WHERE appointment_id = ? AND is_active = 1`, [appointment_id])
     return row[0];
 }
 
+const getAllAppointment = async (appointment_date, appointment_time) => {
+    const [row] = await db.execute(`SELECT *
+FROM Appointment
+WHERE appointment_date LIKE ? AND appointment_time LIKE ?
+ORDER BY appointment_date, appointment_time, consultant_id, status
+`, [`%${appointment_date}%`, `%${appointment_time}%`])
+    return row;
+}
+
+const completeAppointment = async (appointment_id) => {
+    const [row] = await db.execute(`UPDATE Appointment
+SET status = 'completed'
+WHERE appointment_id = ?`, [appointment_id])
+    return row.affectedRows > 0
+}
+
 
 module.exports = {
     addAppointment,
@@ -108,8 +122,10 @@ module.exports = {
     getAllApointmentByConsultantId,
     createMeetLink,
     // getRequestAppointmentByMemberIdAndDate,
-    deleteRequestAppointment,
+    rejectAppointment,
     checkAppointmentByMemberId,
     getConsultantFreeTime,
-    getAppointmentById
+    getAppointmentById,
+    getAllAppointment,
+    completeAppointment
 }
