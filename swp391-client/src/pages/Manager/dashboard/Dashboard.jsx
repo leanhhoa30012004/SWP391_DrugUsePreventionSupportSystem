@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaChartPie, FaBookOpen, FaUserFriends, FaHeartbeat, FaArrowUp, FaArrowDown, FaCircle, FaMedal, FaUser, FaCrown, FaUserCheck, FaChartLine, FaChartBar, FaUsers, FaUserClock, FaUserPlus } from 'react-icons/fa';
+import { FaChartPie, FaBookOpen, FaUserFriends, FaHeartbeat, FaArrowUp, FaArrowDown, FaCircle, FaMedal, FaUser, FaCrown, FaUserCheck, FaChartLine, FaChartBar, FaUsers, FaUserClock, FaUserPlus, FaSignOutAlt } from 'react-icons/fa';
+import axios from 'axios';
 
 const fakeStats = {
   totalUsers: 11238,
@@ -95,13 +96,99 @@ const mostImprovedConsultant = `Consultant #${mostImprovedIdx + 1}`;
 const consultantDiversity = `8/10`;
 const longestActiveConsultant = 'Consultant #3';
 
+const BarChart = ({ data, months, title, description, caption }) => {
+  const chartHeight = 120;
+  const barWidth = 20;
+  const gap = 36;
+  const topMargin = 30; // Thêm khoảng trống phía trên
+  const maxVal = Math.max(...data);
+  return (
+    <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center border border-[#e11d48]/10 w-full">
+      <h2 className="font-bold text-2xl mb-2 text-[#e11d48] text-center">{title}</h2>
+      {description && <div className="text-sm text-[#e11d48]/80 mb-6 text-center max-w-xl">{description}</div>}
+      <div className="w-full overflow-x-auto flex justify-center">
+        <svg width={months.length * (barWidth + gap) + gap} height={chartHeight + 70} className="block">
+          {months.map((m, i) => {
+            const barH = (data[i] / maxVal) * chartHeight;
+            const centerX = gap + i * (barWidth + gap) + barWidth / 2;
+            const valueY = chartHeight - barH - 10 + topMargin;
+            return (
+              <g key={m}>
+                {/* Value label */}
+                <text
+                  x={centerX}
+                  y={valueY}
+                  textAnchor="middle"
+                  fontSize="18"
+                  fontWeight="bold"
+                  fill="#e11d48"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {data[i]}
+                </text>
+                {/* Bar */}
+                <rect
+                  x={centerX - barWidth / 2}
+                  y={chartHeight - barH + topMargin}
+                  width={barWidth}
+                  height={barH}
+                  rx="12"
+                  fill="#e11d48"
+                />
+                {/* Month label */}
+                <text
+                  x={centerX}
+                  y={chartHeight + 32 + topMargin}
+                  textAnchor="middle"
+                  fontSize="15"
+                  fill="#e11d48"
+                  opacity="0.7"
+                >
+                  {m}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      {caption && <div className="mt-4 text-xs text-[#e11d48]/80 text-center">{caption}</div>}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [managerInfo, setManagerInfo] = useState(null);
+  // State cho real-time survey count
+  const [surveyCount, setSurveyCount] = useState(0);
+  const [surveyLoading, setSurveyLoading] = useState(false);
+  const [surveyPeriod, setSurveyPeriod] = useState('month'); // day/week/month/year
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setManagerInfo(user);
   }, []);
+
+  useEffect(() => {
+    const fetchSurveyCount = async () => {
+      setSurveyLoading(true);
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const week = Math.ceil((today.getDate() - today.getDay() + 1) / 7);
+      const date = today.toISOString().slice(0, 10);
+      const token = JSON.parse(localStorage.getItem('user'))?.token;
+      try {
+        const res = await axios.get(`/api/report/survey-done/${surveyPeriod}/${date}/${year}/${week}/${month}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSurveyCount(res.data.count ?? 0);
+      } catch (err) {
+        setSurveyCount(0);
+      }
+      setSurveyLoading(false);
+    };
+    fetchSurveyCount();
+  }, [surveyPeriod]);
 
   // Helper to render line chart for analytics (Consultations & Surveys)
   const LineChart = () => {
@@ -278,6 +365,81 @@ const Dashboard = () => {
     );
   };
 
+  // TopUsersTable mới (bỏ avatar, hiện đầy đủ tên/email/role, badge Top 1)
+  const TopUsersTable = ({ users }) => (
+    <div className="bg-white rounded-3xl shadow p-6 flex flex-col border border-[#e11d48]/10">
+      <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Top Active Users</h2>
+      <ul className="space-y-5">
+        {users.map((user, idx) => (
+          <li key={user.email} className="flex items-center gap-4 pb-2 border-b last:border-b-0 border-[#e11d48]/10">
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-lg md:text-xl text-[#e11d48] break-words whitespace-normal">{user.name}</span>
+                {idx === 0 && (
+                  <span className="ml-1 flex items-center gap-1 bg-[#e11d48] text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
+                    <FaCrown className="text-xs mr-1" />Top 1
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-gray-400 break-words whitespace-normal">{user.email}</div>
+              <div className="text-xs text-gray-400 break-words whitespace-normal">{user.role} • Last active: {user.lastActive}</div>
+            </div>
+            {/* Score */}
+            <div className="ml-2 flex flex-col items-end">
+              <div className="font-extrabold text-2xl text-[#e11d48] drop-shadow-sm">{user.score}</div>
+              <div className="text-xs text-gray-400 mt-0.5">Score</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  // StatTable tổng hợp 4 số liệu, Total Surveys lấy real-time
+  const StatTable = () => (
+    <div className="bg-white rounded-3xl shadow p-6 border border-[#e11d48]/10">
+      <table className="w-full text-left">
+        <tbody>
+          <tr className="border-b border-[#e11d48]/10">
+            <td className="py-3 pr-2"><FaUserFriends className="text-2xl text-[#e11d48]" /></td>
+            <td className="font-semibold text-[#e11d48]">Users</td>
+            <td className="text-2xl font-extrabold text-[#e11d48]">{fakeStats.totalUsers.toLocaleString()}</td>
+            <td className="text-green-500 text-sm font-bold pl-2">+{fakeStats.totalUsers}%</td>
+          </tr>
+          <tr className="border-b border-[#e11d48]/10">
+            <td className="py-3 pr-2"><FaBookOpen className="text-2xl text-[#e11d48]" /></td>
+            <td className="font-semibold text-[#e11d48] flex items-center gap-2">
+              Surveys
+              <select value={surveyPeriod} onChange={e => setSurveyPeriod(e.target.value)} className="ml-2 px-2 py-1 rounded border border-[#e11d48]/30 text-xs text-[#e11d48] bg-white focus:outline-none">
+                <option value="day">Today</option>
+                <option value="week">This week</option>
+                <option value="month">This month</option>
+                <option value="year">This year</option>
+              </select>
+            </td>
+            <td className="text-2xl font-extrabold text-[#e11d48]">
+              {surveyLoading ? <span className="text-base text-gray-400">Loading...</span> : surveyCount}
+            </td>
+            <td></td>
+          </tr>
+          <tr className="border-b border-[#e11d48]/10">
+            <td className="py-3 pr-2"><FaBookOpen className="text-2xl text-[#e11d48]" /></td>
+            <td className="font-semibold text-[#e11d48]">Courses</td>
+            <td className="text-2xl font-extrabold text-[#e11d48]">{fakeStats.totalCourses.toLocaleString()}</td>
+            <td className="text-green-500 text-sm font-bold pl-2">+{fakeStats.totalCourses}%</td>
+          </tr>
+          <tr>
+            <td className="py-3 pr-2"><FaHeartbeat className="text-2xl text-[#e11d48]" /></td>
+            <td className="font-semibold text-[#e11d48]">Consultants</td>
+            <td className="text-2xl font-extrabold text-[#e11d48]">{fakeStats.totalConsultants.toLocaleString()}</td>
+            <td className="text-green-500 text-sm font-bold pl-2">+{fakeStats.totalConsultants}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] text-[#e11d48] p-8">
       {/* Header */}
@@ -291,7 +453,7 @@ const Dashboard = () => {
         <div className="flex items-center gap-3">
           {/* Auto-generated manager avatar with initials and unique color */}
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-lg ring-2 ring-[#e11d48]"
+            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow ring-2 ring-[#e11d48] bg-gradient-to-br from-[#e11d48] to-[#be123c] text-white"
             style={{
               background: `linear-gradient(135deg, ${getAvatarColor(managerInfo?.fullname || managerInfo?.username || 'Manager')} 60%, #fff 100%)`,
               color: '#fff',
@@ -304,123 +466,101 @@ const Dashboard = () => {
             <div className="font-bold text-[#e11d48]">Hello, {managerInfo?.fullname || managerInfo?.username || 'Manager'}!</div>
             <span className="text-xs text-[#e11d48]/70">Manager</span>
           </div>
+          <button
+            className="ml-2 px-4 py-2 rounded-2xl bg-[#e11d48] text-white font-bold shadow-lg hover:bg-[#be123c] transition-colors flex items-center gap-2 border-none text-base"
+            title="Đăng xuất"
+            onClick={() => {
+              localStorage.removeItem('user');
+              window.location.href = '/login';
+            }}
+          >
+            <FaSignOutAlt className="text-lg" style={{ color: 'white' }} />
+            <span className="font-semibold text-white">Logout</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {/* Top Active Users */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg flex flex-col col-span-1 border border-[#e11d48]/10">
-          <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Top Active Users</h2>
-          <ul>
-            {fakeStats.topUsers.map((user, idx) => (
-              <li key={user.email} className="flex items-center gap-3 mb-4">
-                {/* Avatar with initials, unique color, and ring */}
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg ring-2 ring-[#e11d48]"
-                  style={{
-                    background: `linear-gradient(135deg, ${getAvatarColor(user.name)} 60%, #fff 100%)`,
-                    color: '#fff',
-                  }}
-                  title={user.name}
-                >
-                  {user.name.split(' ').map(w => w[0]).join('').toUpperCase()}
-                </div>
-                <div>
-                  <div className="font-semibold text-[#e11d48] flex items-center gap-2">
-                    {user.name} {idx === 0 && <span className="ml-2 bg-[#fbbf24] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"><FaCrown className="text-xs" />Top 1</span>}
+      {/* Top Active Users - Nằm ngang, ở trên StatTable */}
+      <div className="w-full flex flex-col items-center mb-8">
+        <div className="w-full">
+          <div className="flex flex-col items-center mb-4">
+            <div className="flex items-center gap-2">
+              <FaUserFriends className="text-2xl md:text-3xl text-[#e11d48] drop-shadow" />
+              <h2 className="font-extrabold text-2xl md:text-3xl text-[#e11d48] tracking-tight text-center">Top Active Users</h2>
+            </div>
+            <div className="w-32 h-1 mt-2 rounded-full bg-gradient-to-r from-[#e11d48] via-[#fbbf24] to-[#e11d48] opacity-70" />
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#e11d48]/10">
+            <div className="flex flex-row flex-wrap justify-center gap-6">
+              {fakeStats.topUsers.map((user, idx) => (
+                <div key={user.email} className="flex flex-col items-center justify-between p-4 min-w-[200px] max-w-[240px] flex-1 border-r last:border-r-0 border-[#e11d48]/10">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-lg md:text-xl text-[#e11d48] break-words whitespace-normal text-center">{user.name}</span>
+                    {idx === 0 && (
+                      <span className="ml-1 flex items-center gap-1 bg-[#e11d48] text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
+                        <FaCrown className="text-xs mr-1" />Top 1
+                      </span>
+                    )}
                   </div>
-                  <div className="text-xs text-[#e11d48]/70">{user.email}</div>
-                  <div className="text-xs text-[#e11d48]/70">{user.role} • Last active: {user.lastActive}</div>
+                  <div className="text-xs text-gray-400 break-words whitespace-normal text-center">{user.email}</div>
+                  <div className="text-xs text-gray-400 break-words whitespace-normal text-center">{user.role} • Last active: {user.lastActive}</div>
+                  <div className="font-extrabold text-2xl text-[#e11d48] drop-shadow-sm mt-2">{user.score}</div>
+                  <div className="text-xs text-gray-400 mt-0.5">Score</div>
                 </div>
-                <div className="ml-auto font-bold text-[#e11d48]">{user.score}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Stat Cards */}
-        <div className="col-span-2 grid grid-cols-2 gap-6">
-          {/* Total Users */}
-          <div className="bg-gradient-to-tr from-[#e11d48] to-[#fbbf24] rounded-2xl shadow-lg p-6 flex flex-col items-start border border-[#e11d48]/10">
-            <div className="text-2xl mb-2 text-white"><FaUserFriends /></div>
-            <div className="text-3xl font-extrabold text-white">{fakeStats.totalUsers.toLocaleString()}</div>
-            <div className="font-semibold text-white/90">Total Users</div>
-            <div className={`text-sm mt-2 flex items-center gap-1 ${fakeStats.totalUsers > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {fakeStats.totalUsers > 0 ? <FaArrowUp /> : <FaArrowDown />}
-              {fakeStats.totalUsers > 0 ? `+${fakeStats.totalUsers > 0 ? fakeStats.totalUsers : 0}%` : ''} this month
-            </div>
-          </div>
-          {/* Total Surveys */}
-          <div className="bg-gradient-to-tr from-[#e11d48] to-[#f87171] rounded-2xl shadow-lg p-6 flex flex-col items-start border border-[#e11d48]/10">
-            <div className="text-2xl mb-2 text-white"><FaBookOpen /></div>
-            <div className="text-3xl font-extrabold text-white">{fakeStats.totalSurveys.toLocaleString()}</div>
-            <div className="font-semibold text-white/90">Total Surveys</div>
-            <div className={`text-sm mt-2 flex items-center gap-1 ${fakeStats.totalSurveys > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {fakeStats.totalSurveys > 0 ? <FaArrowUp /> : <FaArrowDown />}
-              {fakeStats.totalSurveys > 0 ? `+${fakeStats.totalSurveys > 0 ? fakeStats.totalSurveys : 0}%` : ''} this month
-            </div>
-          </div>
-          {/* Total Courses */}
-          <div className="bg-gradient-to-tr from-[#e11d48] to-[#fbbf24] rounded-2xl shadow-lg p-6 flex flex-col items-start border border-[#e11d48]/10">
-            <div className="text-2xl mb-2 text-white"><FaBookOpen /></div>
-            <div className="text-3xl font-extrabold text-white">{fakeStats.totalCourses.toLocaleString()}</div>
-            <div className="font-semibold text-white/90">Total Courses</div>
-            <div className={`text-sm mt-2 flex items-center gap-1 ${fakeStats.totalCourses > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {fakeStats.totalCourses > 0 ? <FaArrowUp /> : <FaArrowDown />}
-              {fakeStats.totalCourses > 0 ? `+${fakeStats.totalCourses > 0 ? fakeStats.totalCourses : 0}%` : ''} this month
-            </div>
-          </div>
-          {/* Total Consultants */}
-          <div className="bg-gradient-to-tr from-[#e11d48] to-[#be123c] rounded-2xl shadow-lg p-6 flex flex-col items-start border border-[#e11d48]/10">
-            <div className="text-2xl mb-2 text-white"><FaHeartbeat /></div>
-            <div className="text-3xl font-extrabold text-white">{fakeStats.totalConsultants.toLocaleString()}</div>
-            <div className="font-semibold text-white/90">Total Consultants</div>
-            <div className={`text-sm mt-2 flex items-center gap-1 ${fakeStats.totalConsultants > 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {fakeStats.totalConsultants > 0 ? <FaArrowUp /> : <FaArrowDown />}
-              {fakeStats.totalConsultants > 0 ? `+${fakeStats.totalConsultants > 0 ? fakeStats.totalConsultants : 0}%` : ''} this month
+              ))}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* User Distribution Pie Chart */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg flex flex-col items-center col-span-1 border border-[#e11d48]/10">
-          <h2 className="font-bold text-lg mb-4 text-[#e11d48]">User Distribution</h2>
-          {/* Pie chart SVG */}
-          <svg viewBox="0 0 36 36" className="w-32 h-32 mb-2">
-            {(() => {
-              let total = fakeStats.leads.reduce((sum, l) => sum + l.value, 0);
-              let acc = 0;
-              return fakeStats.leads.map((lead, idx) => {
-                const start = (acc / total) * 100;
-                acc += lead.value;
-                const end = (acc / total) * 100;
-                const largeArc = end - start > 50 ? 1 : 0;
-                const r = 16;
-                const startAngle = (start / 100) * 2 * Math.PI - Math.PI / 2;
-                const endAngle = (end / 100) * 2 * Math.PI - Math.PI / 2;
-                const x1 = 18 + r * Math.cos(startAngle);
-                const y1 = 18 + r * Math.sin(startAngle);
-                const x2 = 18 + r * Math.cos(endAngle);
-                const y2 = 18 + r * Math.sin(endAngle);
-                return (
-                  <path
-                    key={lead.label}
-                    d={`M18,18 L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`}
-                    fill={lead.color}
-                    stroke="#fff"
-                    strokeWidth="0.7"
-                  />
-                );
-              });
-            })()}
-          </svg>
-          <div className="flex flex-wrap justify-center gap-2 mt-2">
-            {fakeStats.leads.map((lead) => (
-              <span key={lead.label} className="flex items-center gap-1 text-xs font-semibold" style={{ color: lead.color }}>
-                ● {lead.label} ({lead.value})
-              </span>
-            ))}
+      {/* StatTable - Bảng tổng hợp với real-time data */}
+      <div className="w-full flex flex-col items-center mb-8">
+        <div className="w-full">
+          <StatTable />
+        </div>
+      </div>
+
+      {/* User Distribution Pie Chart */}
+      <div className="w-full flex flex-col items-center mb-8">
+        <div className="w-full">
+          <div className="bg-white rounded-2xl p-6 shadow-lg flex flex-col items-center border border-[#e11d48]/10">
+            <h2 className="font-bold text-lg mb-4 text-[#e11d48]">User Distribution</h2>
+            {/* Pie chart SVG */}
+            <svg viewBox="0 0 36 36" className="w-32 h-32 mb-2">
+              {(() => {
+                let total = fakeStats.leads.reduce((sum, l) => sum + l.value, 0);
+                let acc = 0;
+                return fakeStats.leads.map((lead, idx) => {
+                  const start = (acc / total) * 100;
+                  acc += lead.value;
+                  const end = (acc / total) * 100;
+                  const largeArc = end - start > 50 ? 1 : 0;
+                  const r = 16;
+                  const startAngle = (start / 100) * 2 * Math.PI - Math.PI / 2;
+                  const endAngle = (end / 100) * 2 * Math.PI - Math.PI / 2;
+                  const x1 = 18 + r * Math.cos(startAngle);
+                  const y1 = 18 + r * Math.sin(startAngle);
+                  const x2 = 18 + r * Math.cos(endAngle);
+                  const y2 = 18 + r * Math.sin(endAngle);
+                  return (
+                    <path
+                      key={lead.label}
+                      d={`M18,18 L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`}
+                      fill={lead.color}
+                      stroke="#fff"
+                      strokeWidth="0.7"
+                    />
+                  );
+                });
+              })()}
+            </svg>
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              {fakeStats.leads.map((lead) => (
+                <span key={lead.label} className="flex items-center gap-1 text-xs font-semibold" style={{ color: lead.color }}>
+                  ● {lead.label} ({lead.value})
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -479,47 +619,14 @@ const Dashboard = () => {
       </div>
 
       {/* Consultant Analytics Bar Chart + info card */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg mt-8 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-8">
-        <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Consultant Analytics</h2>
-          {/* Giải thích biểu đồ bar */}
-          <div className="text-sm text-[#e11d48]/80 mb-2">
-            This bar chart shows the total number of consultations handled by all consultants each month. It highlights periods of high activity and helps identify trends in consultant engagement.
-          </div>
-          {/* Bar chart cho consultant activity (đẹp, số liệu rõ, vừa khung) */}
-          <ConsultantBarChart />
-          {/* Month labels for 12 months */}
-          <div className="flex gap-1 mt-2 ml-2 w-full" style={{ maxWidth: 720 }}>
-            {consultantMonths.map((m, i) => (
-              <span key={m} className="text-xs text-[#e11d48]/70 w-12 text-center" style={{ minWidth: 36 }}>{m}</span>
-            ))}
-          </div>
-          <div className="mt-2 text-xs text-[#e11d48]">Number of consultations per month (all consultants)</div>
-        </div>
-        {/* Info card mới bên phải bar chart */}
-        <div className="w-72 min-w-[220px] bg-gradient-to-br from-[#fff0f3] to-[#ffe3e8] rounded-2xl shadow-xl flex flex-col items-center justify-center p-7 gap-5 border border-[#e11d48]/20 ml-4 relative" style={{boxShadow:'0 4px 24px 0 #e11d4822'}}>
-          <div className="absolute left-0 top-0 h-full w-1 bg-[#e11d48]/20 rounded-l-2xl" />
-          <div className="flex flex-col items-center gap-1">
-            <FaUsers className="text-[#e11d48] text-3xl mb-1" />
-            <div className="text-3xl font-extrabold text-[#e11d48] leading-tight">{avgConsultant}</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Avg. per Consultant</div>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <FaUserPlus className="text-[#e11d48] text-2xl mb-1" />
-            <div className="text-lg font-bold text-[#e11d48]">{mostImprovedConsultant}</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Most Improved</div>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <FaUserCheck className="text-[#fbbf24] text-2xl mb-1" />
-            <div className="text-lg font-bold text-[#fbbf24]">{consultantDiversity}</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Diversity</div>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <FaUserClock className="text-[#e11d48] text-2xl mb-1" />
-            <div className="text-lg font-bold text-[#e11d48]">{longestActiveConsultant}</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Longest Active</div>
-          </div>
-        </div>
+      <div className="mt-10">
+        <BarChart
+          data={consultantActivity}
+          months={consultantMonths}
+          title="Consultant Analytics"
+          description="This bar chart shows the total number of consultations handled by all consultants each month. It highlights periods of high activity and helps identify trends in consultant engagement."
+          caption="Number of consultations per month (all consultants)"
+        />
       </div>
     </div>
   );
