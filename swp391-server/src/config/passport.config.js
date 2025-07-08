@@ -8,7 +8,6 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_REDIRECT_URI
 }, async (accessToken, refreshToken, profile, done) => {
-  console.log("Received refresh token:", refreshToken);
   const user = await authController.googleLoginConsultant(profile, accessToken, refreshToken);
   if (!user) return done(null, false);
   return done(null, user);

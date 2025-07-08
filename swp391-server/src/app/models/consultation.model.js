@@ -1,17 +1,24 @@
+const nodemailer = require('nodemailer');
 const db = require("../../config/db.config");
 const bcrypt = require('bcryptjs');
 
 const addAppointment = async (member_id, appointment_date, appointment_time, consultant_id) => {
-    const [rows] = await db.execute(`INSERT INTO Appointment (member_id, appointment_date, appointment_time, date_sent_request, consultant_id)
-VALUES(?, ?, ?, NOW(), ?)`, [member_id, appointment_date, appointment_time, consultant_id])
-    return rows.affectedRows > 0;
+    const [result] = await db.execute(`
+        INSERT INTO Appointment (member_id, appointment_date, appointment_time, date_sent_request, consultant_id)
+        VALUES (?, ?, ?, NOW(), ?)
+    `, [member_id, appointment_date, appointment_time, consultant_id]);
+
+    return result.insertId; 
 }
+
 
 const numberOfConsultant = async () => {
     const row = await db.execute(`SELECT COUNT(u.user_id) AS numberOfConsultant
 FROM Users u WHERE u.role = 'consultant' AND u.is_active = 1`);
     return row[0];
 }
+
+
 
 const numberOfRequestAppointment = async (appointment_date, appointment_time) => {
     const [rows] = await db.execute(`SELECT
@@ -27,7 +34,7 @@ FROM Appointment WHERE member_id = ? AND is_active = 1`, [member_id])
     return rows;
 }
 
-const getAllApointmentByConsultantId = async (consultant_id) => {
+const getAllAppointmentByConsultantId = async (consultant_id) => {
     const [rows] = await db.execute(`SELECT u.fullname, a.date_sent_request, a.appointment_date, a.appointment_time, a.status, a.meeting_link
 FROM Appointment a JOIN Users u ON a.member_id = u.user_id
 WHERE a.consultant_id = ? AND a.is_active = 1`, [consultant_id])
@@ -36,11 +43,40 @@ WHERE a.consultant_id = ? AND a.is_active = 1`, [consultant_id])
 }
 
 const createMeetLink = async (consultant_id, appointment_id, meetLink) => {
-    const [rows] = await db.execute('UPDATE Appointment SET meeting_link = ? WHERE consultant_id = ? AND appointment_id = ?',
+    const [rows] = await db.execute(
+        'UPDATE Appointment SET meeting_link = ? WHERE consultant_id = ? AND appointment_id = ?',
         [meetLink, consultant_id, appointment_id]
-    )
-    return rows;
-}
+    );
+    return rows.affectedRows > 0;
+};
+
+const sendAppointmentEmail = async (toEmail, appointmentInfo) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER, // Gmail của bạn
+      pass: process.env.EMAIL_PASS, // App password
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: toEmail,
+    subject: 'Appointment Confirmation',
+    html: `
+      <h3>Hello ${appointmentInfo.member_name},</h3>
+      <p>Your appointment has been successfully scheduled.</p>
+      <p><strong>Date:</strong> ${appointmentInfo.appointment_date}</p>
+      <p><strong>Time:</strong> ${appointmentInfo.appointment_time}</p>
+      <p><strong>Consultant:</strong> ${appointmentInfo.consultant_name}</p>
+      ${appointmentInfo.meeting_link ? `<p><strong>Google Meet:</strong> <a href="${appointmentInfo.meeting_link}">${appointmentInfo.meeting_link}</a></p>` : ''}
+      <br/>
+      <p>Thank you!</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
 
 
 
@@ -66,7 +102,8 @@ WHERE appointment_id = ?`, [appointment_id]);
 
 const getConsultantFreeTime = async (appointment_date, appointment_time) => {
     const [rows] = await db.execute(`SELECT 
-    u.user_id, 
+    u.user_id,
+    u.fullname, 
     COUNT(CASE 
         WHEN a.appointment_date = ? 
             AND a.appointment_time = ? 
@@ -119,9 +156,10 @@ module.exports = {
     numberOfConsultant,
     numberOfRequestAppointment,
     getAllAppointmentByMemberId,
-    getAllApointmentByConsultantId,
+    getAllAppointmentByConsultantId,
     createMeetLink,
     // getRequestAppointmentByMemberIdAndDate,
+    sendAppointmentEmail,
     rejectAppointment,
     checkAppointmentByMemberId,
     getConsultantFreeTime,
