@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../app/controllers/auth.controllers");
 const { authMiddleware } = require("../middleware/auth.middleware");
+const passport = require('passport');
 
 // Debug route
 router.get("/debug", (req, res) => {
@@ -26,5 +27,28 @@ router.put("/change-password", authMiddleware, auth.changePassword);
 router.get("/profile/courses", authMiddleware, auth.getUserCourses);
 router.get("/profile/certificates", authMiddleware, auth.getUserCertificates);
 router.get("/profile/surveys", authMiddleware, auth.getUserSurveys);
+// Google OAuth routes for consultants
+// Route: Login bằng Google
+router.get('/google',
+  passport.authenticate('google', {
+    scope: [
+      'profile',
+      'email',
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events'
+    ],
+    accessType: 'offline',
+    prompt: 'consent'
+  })
+);
+
+// Route: Google callback
+router.get('/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/auth/login?error=unauthorized',
+    session: true
+  }),
+  auth.googleCallback
+);
 
 module.exports = router;

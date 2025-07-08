@@ -165,7 +165,7 @@ const Navbar = () => {
                     <div className="flex items-center gap-1">
                       <span className="text-sm text-gray-600">Welcome,</span>
                       <span className="text-sm font-semibold text-[#E53935] max-w-[100px] truncate">
-                        {user.username || 'User'}
+                        {user.fullname || 'User'}
                       </span>
                     </div>
                   </div>
