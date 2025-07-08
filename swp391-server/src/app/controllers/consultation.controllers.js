@@ -35,7 +35,7 @@ exports.addAppointment = async (req, res) => {
         const memberInfo = await memberModel.findById(member_id);
         // create meet link
         const meetLink = await createMeetConfig.createMeetEvent(getConsultantFree.user_id, appointment_date, appointment_time, member_id);
-        console.log('meetLink:', meetLink);
+
         const isSuccess = await consultationModel.createMeetLink(getConsultantFree.user_id, appointment_id, meetLink);
         if (!isSuccess) return res.json('Fail to create meet link!');
         // if success, system will send email to member and consultant
