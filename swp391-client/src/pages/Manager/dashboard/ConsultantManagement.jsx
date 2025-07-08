@@ -5,6 +5,7 @@ import axios from 'axios';
 // API base URLs
 const API_BASE = 'http://localhost:3000/api';
 
+
 const ConsultantManagement = () => {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -57,6 +58,7 @@ const ConsultantManagement = () => {
       alert('Error fetching consultants: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
+
     }
   };
 
@@ -206,7 +208,7 @@ const ConsultantManagement = () => {
             <p className="text-white text-sm md:text-base max-w-xl font-normal">Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.</p>
           </div>
         </div>
-        <button 
+        <button
           className="flex items-center gap-2 bg-yellow-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl shadow transition-all duration-200 text-base font-sans"
           onClick={() => setShowCreateModal(true)}
         >
@@ -415,8 +417,8 @@ const ConsultantManagement = () => {
                 <div className="grid grid-cols-2 gap-4 text-black">
                   <div><b>Current Status:</b>
                     <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${viewConsultant.is_active
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-500'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
                       }`}>
                       {viewConsultant.is_active ? 'Active' : 'Inactive'}
                     </span>
@@ -609,7 +611,7 @@ const ConsultantManagement = () => {
           <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-[#e11d48]">Create New Consultant</h2>
-              <button 
+              <button
                 className="text-gray-400 hover:text-[#e11d48] text-2xl font-bold"
                 onClick={() => {
                   setShowCreateModal(false);
@@ -626,7 +628,7 @@ const ConsultantManagement = () => {
                 &times;
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
@@ -696,7 +698,7 @@ const ConsultantManagement = () => {
             </div>
 
             <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
-              <button 
+              <button
                 className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black font-medium"
                 onClick={() => {
                   setShowCreateModal(false);
@@ -712,7 +714,7 @@ const ConsultantManagement = () => {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="px-6 py-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white font-medium"
                 onClick={createConsultant}
               >
