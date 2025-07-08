@@ -6,21 +6,17 @@ const createMeetConfig = require('../../config/createMeet.config');
 
 exports.checkAppointment = async (req, res) => {
     const { member_id, appointment_date, appointment_time } = req.params;
-    console.log(member_id, appointment_date, appointment_time)
     // console.log(await consultationModel.checkAppointmentByMemberId(member_id, appointment_date, appointment_time))
     let status = false;
     let booked = false;
     try {
         const checkup = await consultationModel.checkAppointmentByMemberId(member_id, appointment_date, appointment_time)
-        console.log(checkup, typeof checkup)
         if (checkup) {
             booked = true;
         }
         else {
             const freetime = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time);
-            console.log("Type of obj: ",typeof freetime)
-            console.log("DtaD: ", freetime)
-            if (freetime.countByTime === 0 )
+            if (freetime.countByTime === 0)
                 status = true;
         }
         return res.json({ "status": status, "booked": booked })
@@ -32,14 +28,11 @@ exports.checkAppointment = async (req, res) => {
 
 exports.addAppointment = async (req, res) => {
     const { member_id, appointment_date, appointment_time } = req.body;
-    console.log(req.body )
     try {
         // const checkMemberRequestAppointment = await consultationModel.getRequestAppointmentByMemberIdAndDate(member_id, request_date, request_time);
         // if (checkMemberRequestAppointment === 1) return res.json('You cannot book multiple appointments at the same time!')
         const getConsultantFree = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time)
-        console.log("sss>> ", getConsultantFree)
         const isInsert = await consultationModel.addAppointment(member_id, appointment_date, appointment_time, getConsultantFree.user_id);
-        console.log("insert > ",isInsert)
         if (isInsert)
             res.json('Your request has been recorded by the system. Please wait for the latest notification.')
         else res.json('somethings wrong!')
@@ -103,10 +96,10 @@ exports.oAuth2CallBack = async (req, res) => {
 }
 
 
-exports.deleteAppointment = async (req, res) => {
+exports.rejectAppointment = async (req, res) => {
     const appointment_id = req.params.appointment_id;
     try {
-        if (await consultationModel.deleteRequestAppointment(appointment_id))
+        if (await consultationModel.rejectAppointment(appointment_id))
             return res.json('Your appointment has been cancelled!');
         else res.json('Your appointment cannot be canceled!')
     } catch (error) {
@@ -133,4 +126,30 @@ exports.createMeetLink = async (req, res) => {
         console.error('AcceptAppointmentRequest:', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
     }
+}
+
+exports.getAllAppointment = async (req, res) => {
+    let { appointment_date, appointment_time } = req.params;
+    if (!appointment_date || appointment_date.startsWith(':')) appointment_date = ''
+    if (!appointment_time || appointment_time.startsWith(':')) appointment_time = ''
+    try {
+        const listAppointment = await consultationModel.getAllAppointment(appointment_date, appointment_time);
+        return res.json(listAppointment);
+    } catch (error) {
+        console.error('getAllAppointment:', error)
+        res.status(500).json({ error: error.message || "Interenal Server Error" })
+    }
+}
+
+exports.completeAppointment = async (req, res) => {
+    const appointment_id = req.params.appointment_id;
+    try {
+        const isComplete = await consultationModel.completeAppointment(appointment_id);
+        if (isComplete) return res.json('Appointment completed!')
+        else return res.json('Appointment not yet completed!')
+    } catch (error) {
+        console.error('completeAppointment:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+
 }

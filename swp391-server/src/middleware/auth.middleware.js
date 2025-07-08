@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../app/models/member.model");
 const managerModel = require("../app/models/manager.model");
+const consultantModel = require("../app/models/consultant.model");
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -102,6 +103,59 @@ const protectManager = async (req, res, next) => {
   }
 };
 
+const protectConsultant = async (req, res, next) => {
+  try {
+    let token;
+
+    // Check for token in headers
+    if (req.headers.authorization?.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to access this route",
+      });
+    }
+
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Get user from token
+      const user = await consultantModel.findByUsername(decoded.username);
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+      // Check if user is active
+      if (user.is_active == 0 || user.is_active == false) {
+        return res.status(401).json({
+          success: false,
+          message: "Your account has been deactivated",
+        });
+      }
+
+      // Add user to request
+      req.user = user;
+      next();
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to access this route",
+      });
+    }
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 // Restrict to certain roles
 const restrictTo = (...roles) => {
   return (req, res, next) => {
@@ -119,5 +173,6 @@ const restrictTo = (...roles) => {
 module.exports = {
   authMiddleware,
   protectManager,
-  restrictTo
+  restrictTo,
+  protectConsultant
 };
