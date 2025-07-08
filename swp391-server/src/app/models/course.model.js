@@ -141,7 +141,6 @@ const getCourseByIdAndVersion = async (course_id, version) => {
 FROM Course c JOIN Course_version cv  ON c.course_id  = cv.course_id
 WHERE c.course_id = ? AND cv.version LIKE ? AND c.is_active = 1`,
         [course_id, version])
-
     return {
         course_id: rows[0].course_id,
         course_name: rows[0].course_name,
@@ -224,7 +223,7 @@ WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
     return rows;
 }
 const createCourse = async (course) => {
-    const connection = await db.getConnection(); // lấy connection từ pool
+    const connection = await db.getConnection(); 
     try {
         await connection.beginTransaction();
 
@@ -265,7 +264,6 @@ const createCourse = async (course) => {
 };
 
 const updateCourse = async (course) => {
-    console.log(JSON.stringify(course.content))
     const [rows] = await db.execute(
         'INSERT INTO Course_version (course_id, course_name, content, edited_at, edited_by, version, course_img) VALUES (?,?,?,NOW(),?,?, ?)',
         [
