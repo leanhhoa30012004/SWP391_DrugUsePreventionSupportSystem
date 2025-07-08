@@ -443,7 +443,7 @@ const CourseLearning = () => {
                 mooc_id: realMoocId,
                 answers: answers
             },
-            version: courseVersion || 1.0,
+            version: courseVersion == 1.0 ? 1 : courseVersion,
         };
 
         // Log chi tiết

@@ -54,16 +54,16 @@ const reportNumberOfAppointmentsDone = async (period, params = {}) => {
     let queryParams = [];
 
     if (period === "day" && params.date) {
-        query += "AND DATE(confirm_at) = ?";
+        query += "AND DATE(appointment_date) = ?";
         queryParams.push(params.date); // "YYYY-MM-DD"
     } else if (period === "week" && params.year && params.week) {
-        query += "AND YEAR(confirm_at) = ? AND WEEK(confirm_at, 1) = ?";
+        query += "AND YEAR(appointment_date) = ? AND WEEK(appointment_date, 1) = ?";
         queryParams.push(params.year, params.week); // year, week
     } else if (period === "month" && params.year && params.month) {
-        query += "AND YEAR(confirm_at) = ? AND MONTH(confirm_at) = ?";
+        query += "AND YEAR(appointment_date) = ? AND MONTH(appointment_date) = ?";
         queryParams.push(params.year, params.month); // year, month
     } else if (period === "year" && params.year) {
-        query += "AND YEAR(confirm_at) = ?";
+        query += "AND YEAR(appointment_date) = ?";
         queryParams.push(params.year); // year
     } else {
         return 0;
@@ -78,16 +78,16 @@ const reportNumberOfAppointmentsDoneByEachConsultant = async (consultantId, peri
     let queryParams = [consultantId];
     console.log(`Consultant ID: ${consultantId}, Period: ${period}, Params:`, params);
     if (period === "day" && params.date) {
-        query += "AND DATE(confirm_at) = ?";
+        query += "AND DATE(appointment_date) = ?";
         queryParams.push(params.date); // "YYYY-MM-DD"
     } else if (period === "week" && params.year && params.week) {
-        query += "AND YEAR(confirm_at) = ? AND WEEK(confirm_at, 1) = ?";
+        query += "AND YEAR(appointment_date) = ? AND WEEK(appointment_date, 1) = ?";
         queryParams.push(params.year, params.week); // year, week
     } else if (period === "month" && params.year && params.month) {
-        query += "AND YEAR(confirm_at) = ? AND MONTH(confirm_at) = ?";
+        query += "AND YEAR(appointment_date) = ? AND MONTH(appointment_date) = ?";
         queryParams.push(params.year, params.month); // year, month
     } else if (period === "year" && params.year) {
-        query += "AND YEAR(confirm_at) = ?";
+        query += "AND YEAR(appointment_date) = ?";
         queryParams.push(params.year); // year
     } else {
         return 0;
