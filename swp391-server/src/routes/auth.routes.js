@@ -45,7 +45,7 @@ router.get('/google',
 // Route: Google callback
 router.get('/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/auth/login?error=unauthorized',
+    failureRedirect: 'http://localhost:5173/manager-login',
     session: true
   }),
   auth.googleCallback
