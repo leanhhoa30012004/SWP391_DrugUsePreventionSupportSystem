@@ -132,6 +132,9 @@ WHERE user_id = ? AND is_active = 1`, [tokens, user_id]
   );
   return rows;
 }
+const saveGoogleToken = async (user_id, token) => {
+  await db.execute('UPDATE Users SET google_token = ? WHERE user_id = ?', [token, user_id]);
+};
 
 module.exports = {
   createMember,
@@ -142,7 +145,7 @@ module.exports = {
   updateResetToken,
   findByResetToken,
   updatePassword,
-
+  saveGoogleToken,
   getUserCourses,
   getUserCertificates,
   getUserSurveys,
