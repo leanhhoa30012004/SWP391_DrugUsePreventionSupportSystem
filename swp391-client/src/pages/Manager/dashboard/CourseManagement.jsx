@@ -391,48 +391,23 @@ const CourseManagement = () => {
   return (
     <div className="h-full w-full flex flex-col bg-gradient-to-br from-[#e0e7ff] via-[#fef6fb] to-[#f8fafc] p-0 rounded-2xl shadow-lg">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-gradient-to-r from-[#6366f1] via-[#22c55e] to-[#fbbf24] rounded-t-2xl shadow-lg">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow-lg">
-            <FaBookOpen className="text-4xl text-[#6366f1]" />
+          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+            <FaBookOpen className="text-4xl text-[#e11d48]" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1">Course Management</h1>
-            <p className="text-white text-sm md:text-base max-w-xl">Create, edit and manage drug prevention courses.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Course Management</h1>
+            <p className="text-[#be123c] text-sm md:text-base max-w-xl font-medium">
+              View, create, edit and manage courses for your community. All in one place.
+            </p>
           </div>
         </div>
-        <button
-          className="flex items-center gap-2 bg-[#6366f1] hover:bg-[#22c55e] text-white font-semibold px-6 py-3 rounded-xl shadow transition-all duration-200 text-base"
-          onClick={() => {
-            // Reset form to initial empty state when creating new course
-            setForm({
-              name: '',
-              description: '',
-              age_group: '',
-              course_img: '',
-              content: [
-                {
-                  id: 1,
-                  video: '',
-                  quiz: [
-                    {
-                      question: '',
-                      type: 'single_choice',
-                      options: [
-                        { text: '', score: 0 },
-                        { text: '', score: 0 },
-                        { text: '', score: 0 },
-                        { text: '', score: 0 }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            });
-            setShowCreate(true);
-          }}
+        <button 
+          className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
+          onClick={() => setShowCreate(true)}
         >
-          <FaPlus /> Create Course
+          <FaPlus /> Create New Course
         </button>
       </div>
       {/* Toolbar: Search */}
@@ -449,20 +424,14 @@ const CourseManagement = () => {
         </div>
       </div>
       {/* Table */}
-      <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1">
+      <div className="overflow-auto rounded-b-3xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
         <table className="min-w-full text-sm text-left">
-          <thead className="bg-gradient-to-r from-[#6366f1] via-[#22c55e] to-[#fbbf24] text-white">
+          <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
-              <th className="px-4 py-3 font-bold">No.</th>
-              <th className="px-4 py-3 font-bold">Name</th>
-              <th className="px-4 py-3 font-bold">Age Group</th>
-              <th className="px-4 py-3 font-bold">Created By</th>
-              <th className="px-4 py-3 font-bold">Created Date</th>
-              <th className="px-4 py-3 font-bold">Last Updated</th>
-              <th className="px-4 py-3 font-bold">Enrolled</th>
-              <th className="px-4 py-3 font-bold">Completed</th>
-              <th className="px-4 py-3 font-bold">Description</th>
-              <th className="px-4 py-3 font-bold">Version</th>
+              <th className="px-4 py-3 font-bold">Course Details</th>
+              <th className="px-4 py-3 font-bold">Progress</th>
+              <th className="px-4 py-3 font-bold">Statistics</th>
+              <th className="px-4 py-3 font-bold">Status</th>
               <th className="px-4 py-3 font-bold">Actions</th>
             </tr>
           </thead>
@@ -474,16 +443,10 @@ const CourseManagement = () => {
             ) : (
               filteredCourses.map((c, index) => (
                 <tr key={c.id} className="border-b last:border-b-0 hover:bg-[#e0e7ff] transition">
-                  <td className="px-4 py-3">{index + 1}</td>
                   <td className="px-4 py-3">{c.name}</td>
+                  <td className="px-4 py-3">{c.enrolled} enrolled</td>
+                  <td className="px-4 py-3">{c.completed} completed</td>
                   <td className="px-4 py-3">{c.age_group}</td>
-                  <td className="px-4 py-3">{c.created_by}</td>
-                  <td className="px-4 py-3">{new Date(c.createdAt).toLocaleString()}</td>
-                  <td className="px-4 py-3">{new Date(c.lastUpdated).toLocaleString()}</td>
-                  <td className="px-4 py-3">{c.enrolled}</td>
-                  <td className="px-4 py-3">{c.completed}</td>
-                  <td className="px-4 py-3">{c.description}</td>
-                  <td className="px-4 py-3">{Number(c.version).toFixed(1)}</td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
                       className="p-2 rounded-lg bg-[#fbbf24] hover:bg-[#eab308] text-white"

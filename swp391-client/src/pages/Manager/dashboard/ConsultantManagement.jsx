@@ -28,7 +28,6 @@ const ConsultantManagement = () => {
     birthday: '',
     role: 'consultant'
   });
-
   // Form state for creating new consultant
   const [createForm, setCreateForm] = useState({
     fullname: '',
@@ -150,6 +149,7 @@ const ConsultantManagement = () => {
       await axios.patch(`${API_BASE}/manager/users/${consultantId}/active`,
         { is_active: newStatus },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+
       );
       alert(`Consultant status updated successfully!`);
       fetchConsultants();
@@ -247,6 +247,7 @@ const ConsultantManagement = () => {
       <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 font-sans">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-gradient-to-r from-red-600 via-red-700 to-yellow-500 text-white">
+
             <tr>
               <th className="px-4 py-3 font-bold font-sans">Consultant</th>
               <th className="px-4 py-3 font-bold font-sans">Contact</th>
@@ -288,7 +289,9 @@ const ConsultantManagement = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3">
+
                     <span className="inline-block px-3 py-1 rounded-full bg-yellow-500 text-white font-bold text-xs shadow capitalize font-sans">{consultant.role}</span>
+
                   </td>
                   <td className="px-4 py-3 text-gray-900 font-medium font-sans">
                     {consultant.birthday ? formatDate(consultant.birthday) : 'N/A'}
@@ -324,6 +327,7 @@ const ConsultantManagement = () => {
                     </button>
                     <button
                       className="p-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white"
+
                       title="Edit"
                       onClick={() => {
                         setEditConsultant(consultant);
@@ -399,6 +403,7 @@ const ConsultantManagement = () => {
                   <div><b>Birthday:</b> {viewConsultant.birthday ? formatDate(viewConsultant.birthday) : 'N/A'}</div>
                   <div><b>Created:</b> {formatDate(viewConsultant.created_at)}</div>
                   <div><b>Last Updated:</b> {formatDate(viewConsultant.updated_at)}</div>
+
                 </div>
               </div>
             </div>

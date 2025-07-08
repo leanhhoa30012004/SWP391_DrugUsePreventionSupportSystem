@@ -57,7 +57,7 @@ FROM Appointment WHERE member_id = ? AND appointment_date = ? AND appointment_ti
     return rows.length > 0 ? true : false
 }
 
-const deleteRequestAppointment = async (appointment_id) => {
+const rejectAppointment = async (appointment_id) => {
     const [rows] = await db.execute(`UPDATE Appointment SET is_active = 0
 WHERE appointment_id = ?`, [appointment_id]);
     return rows.affectedRows > 0;
@@ -65,18 +65,28 @@ WHERE appointment_id = ?`, [appointment_id]);
 }
 
 const getConsultantFreeTime = async (appointment_date, appointment_time) => {
-    const [rows] = await db.execute(`SELECT u.user_id, COUNT(CASE 
-    WHEN a.appointment_date = ? AND a.appointment_time = ? THEN a.appointment_id 
+    const [rows] = await db.execute(`SELECT 
+    u.user_id, 
+    COUNT(CASE 
+        WHEN a.appointment_date = ? 
+            AND a.appointment_time = ? 
+            AND (a.status = 'pending' OR a.status IS NULL)
+        THEN a.appointment_id 
     END) AS countByTime,
-    COUNT(CASE
-    	WHEN a.appointment_date = ? THEN a.appointment_id
+
+    COUNT(CASE 
+        WHEN a.appointment_date = ? 
+            AND (a.status = 'pending' OR a.status IS NULL)
+        THEN a.appointment_id 
     END) AS countByDate
+
 FROM Users u
 LEFT JOIN Appointment a ON a.consultant_id = u.user_id
-WHERE u.role = 'consultant' AND a.is_active = 1
+WHERE u.role = 'consultant' 
+  AND (a.is_active = 1 OR a.is_active IS NULL)
 GROUP BY u.user_id
-ORDER BY countByTime , countByDate;`, [appointment_date, appointment_time, appointment_date])
-    console.log(rows[0])
+ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appointment_date])
+
     return rows[0];
 }
 
@@ -85,6 +95,22 @@ const getAppointmentById = async (appointment_id) => {
 FROM Appointment
 WHERE appointment_id = ? AND is_active = 1`, [appointment_id])
     return row[0];
+}
+
+const getAllAppointment = async (appointment_date, appointment_time) => {
+    const [row] = await db.execute(`SELECT *
+FROM Appointment
+WHERE appointment_date LIKE ? AND appointment_time LIKE ?
+ORDER BY appointment_date, appointment_time, consultant_id, status
+`, [`%${appointment_date}%`, `%${appointment_time}%`])
+    return row;
+}
+
+const completeAppointment = async (appointment_id) => {
+    const [row] = await db.execute(`UPDATE Appointment
+SET status = 'completed'
+WHERE appointment_id = ?`, [appointment_id])
+    return row.affectedRows > 0
 }
 
 
@@ -96,8 +122,10 @@ module.exports = {
     getAllApointmentByConsultantId,
     createMeetLink,
     // getRequestAppointmentByMemberIdAndDate,
-    deleteRequestAppointment,
+    rejectAppointment,
     checkAppointmentByMemberId,
     getConsultantFreeTime,
-    getAppointmentById
+    getAppointmentById,
+    getAllAppointment,
+    completeAppointment
 }
