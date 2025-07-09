@@ -1,4 +1,5 @@
 require("dotenv").config();
+require('./src/app/cron/updateProgramStatus')
 const express = require("express");
 const app = express();
 const authRoutes = require("./src/routes/auth.routes"); // đường dẫn đến routes bạn đã tạo
@@ -9,6 +10,7 @@ const courseRoutes = require("./src/routes/course.routes");
 const courseManageRoutes = require("./src/routes/course.manage.routes");
 const consultationRoutes = require("./src/routes/consultation.routes");
 const reportRoutes = require("./src/routes/report.routes");
+const programRoutes = require("./src/routes/program.routes");
 const cors = require("cors");
 app.use(express.json());
 app.use(cors());
@@ -31,6 +33,7 @@ app.use("/api/manager", managerRoutes);
 app.use("/api/manager/survey", surveyManageRoutes);
 app.use("/api/manager/course", courseManageRoutes);
 app.use("/api/manager/report", reportRoutes);
+app.use("/api/program", programRoutes);
 // Chạy server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
