@@ -426,11 +426,12 @@ exports.googleCallback = async (req, res) => {
     );
 
     // Gửi user info và token về frontend
-    res.status(200).json({
-      message: "Google login successful",
-      user,
-      token
-    });
+    // res.status(200).json({
+    //   message: "Google login successful",
+    //   user,
+    //   token
+    // });
+    res.redirect(`http://localhost:5173/onlyconsultant?token=${token}&user=${user.user_id}`)
   } catch (error) {
     console.error("Google login error:", error);
     res.status(500).json({ message: "Internal Server Error" });
