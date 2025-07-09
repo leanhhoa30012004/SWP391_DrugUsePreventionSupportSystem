@@ -1,5 +1,7 @@
 require("dotenv").config();
 require('./src/app/cron/updateProgramStatus')
+require('../swp391-server/src/config/passport.config');
+const session = require('express-session');
 const express = require("express");
 const app = express();
 const authRoutes = require("./src/routes/auth.routes"); // đường dẫn đến routes bạn đã tạo
@@ -14,6 +16,21 @@ const programRoutes = require("./src/routes/program.routes");
 const cors = require("cors");
 app.use(express.json());
 app.use(cors());
+const passport = require("passport");
+
+//config express-session
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000 
+  }
+}));
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Test route
 app.get("/api/test", (req, res) => {
