@@ -7,7 +7,6 @@ import FaceIcon from '@mui/icons-material/Face';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -127,21 +126,7 @@ const Navbar = () => {
             {/* Right side: Search, User/Auth, Hamburger */}
             <div className="flex items-center gap-4 flex-shrink-0">
               
-              {/* Search Bar (desktop) */}
-              <div className="relative hidden sm:block">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-32 sm:w-40 lg:w-48 h-9 border-2 border-[#ac302e] rounded-full 
-                           px-4 pr-10 text-sm focus:outline-none focus:border-[#e53535f2]
-                           transition-all duration-200 bg-white hover:bg-red-50 text-[#ff0400]"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E53935] hover:text-white cursor-pointer">
-                  <IoMdSearch className="w-4 h-4" />
-                </div>
-              </div>
+              
 
               {/* User Section */}
               {user ? (
@@ -211,23 +196,7 @@ const Navbar = () => {
               `}
             >
               <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-4 py-2">
-                {/* Mobile Search */}
-                <div className="py-4 border-b border-[#E53935]/20">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-10 px-4 pr-10 rounded-lg border-2 border-[#E53935] 
-                               focus:outline-none focus:border-[#E53935] bg-white text-[#E53935]"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <IoMdSearch className="w-5 h-5 text-[#E53935]" />
-                    </div>
-                  </div>
-                </div>
-
+               
                 {/* Mobile Menu Items */}
                 <div className="py-2 space-y-1">
                   {NavbarMenu.map((item) => (
