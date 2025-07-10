@@ -23,7 +23,6 @@ router.delete(
 );
 router.get(
   "/list",
-
   courseController.listOfCourse
 );
 router.get(

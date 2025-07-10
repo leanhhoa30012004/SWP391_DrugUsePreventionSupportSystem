@@ -252,27 +252,62 @@ const ConsultantBooking = () => {
       Swal.fire({ icon: 'error', title: 'Time Required', text: 'Please select a time' });
       return false;
     }
-    const selectedDate = new Date(formData.appointment_date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      Swal.fire({ icon: 'error', title: 'Invalid Date', text: 'Cannot book appointment in the past' });
+    // Check if selected date is in the past
+  const selectedDate = new Date(formData.appointment_date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selectedDate < today) {
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Invalid Date', 
+      text: 'Cannot book appointment in the past' 
+    });
+    return false;
+  }
+
+  // NEW: Check if selected time has already passed (for today's appointments)
+  const now = new Date();
+  const selectedDateTime = new Date(formData.appointment_date + 'T' + formData.appointment_time + ':00');
+  
+  if (selectedDateTime <= now) {
+    const currentTime = now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false 
+    });
+    
+    Swal.fire({ 
+      icon: 'warning', 
+      title: 'Time Has Passed', 
+      text: `Cannot book appointment for ${formData.appointment_time} as it's already ${currentTime}. Please select a future time slot.`,
+      confirmButtonColor: '#dc2626'
+    });
+    return false;
+  }
+
+  // Check availability status
+  const timeSlotData = timeSlotAvailability[formData.appointment_time];
+  if (timeSlotData) {
+    if (timeSlotData.status === false && timeSlotData.booked === false) {
+      Swal.fire({ 
+        icon: 'warning', 
+        title: 'Time Slot Unavailable', 
+        text: 'This time slot is fully booked. Please select another time.' 
+      });
       return false;
     }
-    const timeSlotData = timeSlotAvailability[formData.appointment_time];
-    if (timeSlotData) {
-      if (timeSlotData.status === false && timeSlotData.booked === false) {
-        Swal.fire({ icon: 'warning', title: 'Time Slot Unavailable', text: 'This time slot is fully booked. Please select another time.' });
-        return false;
-      }
-      if (timeSlotData.status === false && timeSlotData.booked === true) {
-        Swal.fire({ icon: 'info', title: 'Already Booked', text: 'You have already booked this time slot.' });
-        return false;
-      }
+    if (timeSlotData.status === false && timeSlotData.booked === true) {
+      Swal.fire({ 
+        icon: 'info', 
+        title: 'Already Booked', 
+        text: 'You have already booked this time slot.' 
+      });
+      return false;
     }
-    return true;
-  };
-
+  }
+  
+  return true;
+};
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -323,13 +358,13 @@ const ConsultantBooking = () => {
           }
         });
 
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          appointment_date: '',
-          appointment_time: ''
-        });
+        // // Reset form
+        // setFormData({
+        //   name: '',
+        //   email: '',
+        //   appointment_date: '',
+        //   appointment_time: ''
+        // });
         setTimeSlotAvailability({});
 
         if (formData.appointment_date) {

@@ -3,6 +3,8 @@ import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaTrash, FaCheckCircle, Fa
 import axiosInstance from '../../../config/axios/axiosInstance';
 import axios from 'axios';
 
+
+
 const ConsultantManagement = () => {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -87,6 +89,7 @@ const ConsultantManagement = () => {
       showNotification('Error fetching consultants: ' + (error.response?.data?.message || error.message), 'error');
     } finally {
       setLoading(false);
+
     }
   };
 
@@ -819,6 +822,7 @@ const ConsultantManagement = () => {
                 </div>
               </div>
 
+
               {/* Status Information */}
               <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 group">
                 <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -850,6 +854,20 @@ const ConsultantManagement = () => {
                       <p className="font-semibold text-xs text-purple-600 uppercase tracking-wide mb-1">User ID</p>
                       <p className="text-sm text-gray-700 font-mono bg-gray-100 px-2 py-1 rounded font-medium border">{viewConsultant.user_id}</p>
                     </div>
+
+            {/* Status Information */}
+            <div className="mt-6 space-y-4">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-2">Status Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-black">
+                  <div><b>Current Status:</b>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${viewConsultant.is_active
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
+                      }`}>
+                      {viewConsultant.is_active ? 'Active' : 'Inactive'}
+                    </span>
+
                   </div>
                 </div>
               </div>
@@ -1232,7 +1250,6 @@ const ConsultantManagement = () => {
             >
               <FaTimes className="text-lg" />
             </button>
-
             {/* Header */}
             <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 rounded-t-3xl p-8 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
@@ -1395,6 +1412,7 @@ const ConsultantManagement = () => {
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       )}

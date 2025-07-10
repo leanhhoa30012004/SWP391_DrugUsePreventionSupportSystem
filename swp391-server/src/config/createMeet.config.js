@@ -1,31 +1,63 @@
 const { google } = require('googleapis');
-const { getOAuth2Client } = require('./googleAuth.config');
 const db = require('./db.config')
+const consultantModel = require('../app/models/consultant.model');
+const memberModel = require('../app/models/member.model');
 
-async function createMeetEvent(consultant_id, date, time) {
-    const [rows] = await db.execute('SELECT google_token FROM Users WHERE user_id = ? AND is_active = 1',
-        [consultant_id]);
-    if (!rows[0] || !rows[0].google_token) throw new Error("Consultant doesn't connect Google Calendar")
-    const tokens = JSON.parse(rows[0].google_token);
+async function createMeetEvent(consultant_id, date, time, member_id) {
+  const consultant = await consultantModel.findById(consultant_id);
+  const member = await memberModel.findById(member_id);
+  console.log(`Creating meet event for consultant: ${consultant.fullname}, member: ${member.fullname}, date: ${date}, time: ${time}, google_token: ${consultant.google_token}`);
+  if (!consultant || !consultant.google_token) {
+    throw new Error("Consultant hasn't connected Google Calendar");
+  }
 
-    const oAuth2Client = getOAuth2Client();
-    oAuth2Client.setCredentials(tokens);
+  const tokens = {
+    access_token: consultant.google_token,
+    refresh_token: consultant.google_refresh_token || null
+  };
 
-    const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
-    const event = {
-        summary: "Consultation appointment",
-        start: { dateTime: `${date}T${time}:00+07:00` },
-        end: { dateTime: `${date}T${parseInt(time.split(':')[0]) + 1}:00:00+07:00` },
-        conferenceData: {
-            createRequest: { requestId: Math.random().toString(36).substring(2, 15) }
-        }
-    };
-    const response = await calendar.events.insert({
-        calendarId: 'primary',
-        resource: event,
-        conferenceDataVersion: 1,
-    })
-    return response.data.hangoutLink;
+  const oAuth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
+  oAuth2Client.setCredentials(tokens);
+
+
+  // Xử lý thời gian bắt đầu và kết thúc
+  const startDateTime = new Date(`${date}T${time}:00+07:00`);
+  const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // +1 giờ
+
+
+  const event = {
+    summary: "Consultation Appointment with " + member.fullname,
+    start: {
+      dateTime: startDateTime.toISOString(),
+      timeZone: 'Asia/Ho_Chi_Minh',
+    },
+    end: {
+      dateTime: endDateTime.toISOString(),
+      timeZone: 'Asia/Ho_Chi_Minh',
+    },
+    conferenceData: {
+      createRequest: {
+        requestId: `meet-${Date.now()}`,
+        conferenceSolutionKey: {
+          type: 'hangoutsMeet',
+        },
+      },
+    },
+  };
+
+  const response = await google
+    .calendar({ version: 'v3', auth: oAuth2Client })
+    .events.insert({
+      calendarId: 'primary',
+      resource: event,
+      conferenceDataVersion: 1,
+    });
+
+  return response.data.hangoutLink;
 }
 
 module.exports = { createMeetEvent };

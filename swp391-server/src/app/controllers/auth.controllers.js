@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 const memberModel = require("../models/member.model");
 const managerModels = require("../models/manager.model");
 const surveyModel = require("../models/survey.model");
+const consultantModel = require("../models/consultant.model");
 
 exports.register = async (req, res) => {
   const { username, password, email, fullname, birthday } = req.body;
@@ -393,3 +394,48 @@ exports.getUserSurveys = async (req, res) => {
     });
   }
 };
+exports.googleLoginConsultant = async (profile, accessToken, refreshToken) => {
+  const email = profile.emails[0].value;
+
+  const user = await consultantModel.findByEmail(email);
+  if (!user) return null;
+  await consultantModel.saveGoogleTokens(user.user_id, {
+    google_token: accessToken,
+    google_refresh_token: refreshToken
+  });
+
+  return user;
+};
+
+exports.findById = async (id) => {
+  const user = await consultantModel.findById(id);
+  return user;
+};
+exports.googleCallback = async (req, res) => {
+  try {
+    const user = req.user; // lấy từ passport
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Tạo JWT token
+    const token = jwt.sign(
+      { userId: user.user_id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7h" }
+    );
+
+    // Gửi user info và token về frontend
+    // res.status(200).json({
+    //   message: "Google login successful",
+    //   user,
+    //   token
+    // });
+    res.redirect(`http://localhost:5173/onlyconsultant?token=${token}&user=${user.user_id}&username=${user.username}`)
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
