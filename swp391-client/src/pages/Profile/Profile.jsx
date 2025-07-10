@@ -99,7 +99,7 @@ const Profile = () => {
     }
   };
 
-  // --- Booking logic ---
+ 
   const fetchUserBookings = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/consultation/get-all-appointment-by-member-id/${userInfo.member_id}`);
