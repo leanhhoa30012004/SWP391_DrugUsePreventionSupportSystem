@@ -25,6 +25,14 @@ router.post(
   managerController.changeProfile
 );
 
+// Route mới để manager cập nhật profile của user khác
+router.put(
+  "/users/:id/profile",
+  protectManager,
+  restrictTo("manager", "admin"),
+  managerController.updateUserProfile
+);
+
 // Cho phép tất cả user đã đăng nhập truy cập
 router.get("/users", protectManager, managerController.getAllUsers);
 router.post("/login-manager", authController.loginManager);
