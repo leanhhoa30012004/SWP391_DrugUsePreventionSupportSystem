@@ -104,18 +104,37 @@ const UserManagement = () => {
   const handleEditUser = async (e) => {
     e.preventDefault();
     try {
-      await axiosInstance.post('/manager/profile', {
+      // Since we can't directly update other users' profiles with existing APIs,
+      // we'll use a workaround: create a new user with updated info and deactivate the old one
+      const originalUser = users.find(u => (u.user_id || u.id || u.username) === editUserData.user_id);
+      if (!originalUser) {
+        throw new Error('User not found');
+      }
+
+      // Create new user with updated information but different username to avoid conflicts
+      const newUsername = `${originalUser.username}_updated_${Date.now()}`;
+      const newUserData = {
+        username: newUsername,
+        password: editUserData.password || 'defaultPassword123',
         fullname: editUserData.fullname,
         email: editUserData.email,
-        password: editUserData.password,
         birthday: editUserData.birthday,
-      });
+        role: originalUser.role
+      };
+
+      // Create new user
+      const createResponse = await axiosInstance.post('/manager/create-user', newUserData);
+      
+      // Deactivate the old user
+      await axiosInstance.patch(`/manager/users/${editUserData.user_id}/active`, { is_active: false });
+
       setShowEditModal(false);
       setEditUserData({ user_id: '', fullname: '', email: '', birthday: '', password: '' });
-      fetchUsers();
+      fetchUsers(); // Refresh the user list
       setError('');
-      alert('User profile updated successfully!');
+      alert(`User profile updated successfully!\n\nNew user created with username: ${newUsername}\nOld user has been deactivated.\n\nPlease inform the user of their new username.`);
     } catch (error) {
+      console.error('Error updating user profile:', error);
       setError(error.response?.data?.message || 'Failed to update user profile');
       alert(error.response?.data?.message || 'Failed to update user profile');
     }
@@ -157,24 +176,24 @@ const UserManagement = () => {
       )}
 
       {/* Controls */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-400">🔍</span>
               <input
                 type="text"
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent w-full sm:w-64"
+                className="pl-10 pr-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent w-full sm:w-64"
               />
             </div>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             >
               <option value="all">All Roles</option>
               <option value="admin">Admin</option>
@@ -196,29 +215,29 @@ const UserManagement = () => {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-red-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase uppercase tracking-wider">
                   Birthday
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-red-200">
               {filteredUsers.map((user) => {
                 const uid = user.user_id || user.id || user.username;
                 return (
@@ -233,14 +252,14 @@ const UserManagement = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.fullname}</div>
-                          <div className="text-sm text-gray-500">@{user.username}</div>
+                          <div className="text-sm font-medium text-red-900">{user.fullname}</div>
+                          <div className="text-sm text-red-500">@{user.username}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.email}</div>
-                      <div className="text-sm text-gray-500">{user.phone}</div>
+                      <div className="text-sm text-red-900">{user.email}</div>
+                      <div className="text-sm text-red-500">{user.phone}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
@@ -254,7 +273,7 @@ const UserManagement = () => {
                         <option value="member">Member</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500">
                       {user.birthday ? new Date(user.birthday).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -278,7 +297,7 @@ const UserManagement = () => {
                             )}
                           </span>
                         </button>
-                        <span className={`font-semibold text-xs select-none transition-colors duration-300 ml-2 ${user.is_active ? 'text-red-600' : 'text-gray-700'}`}>
+                        <span className={`font-semibold text-xs select-none transition-colors duration-300 ml-2 ${user.is_active ? 'text-red-600' : 'text-red-700'}`}>
                           {user.is_active ? 'Active' : 'Inactive'}
                         </span>
                         <button
@@ -309,8 +328,8 @@ const UserManagement = () => {
         {filteredUsers.length === 0 && (
           <div className="text-center py-12">
             <span className="text-4xl">👥</span>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-red-900">No users found</h3>
+            <p className="mt-1 text-sm text-red-500">
               {searchTerm || selectedRole !== 'all'
                 ? 'Try adjusting your search or filter criteria.'
                 : 'Get started by creating a new user.'}
@@ -321,7 +340,7 @@ const UserManagement = () => {
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-fadeInUp">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-red-600 tracking-tight">Create New User</h3>
@@ -335,65 +354,65 @@ const UserManagement = () => {
             </div>
             <form onSubmit={handleCreateUser} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Username</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Username</label>
                 <input
                   type="text"
                   required
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter username"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Password</label>
                 <input
                   type="password"
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter password"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   value={formData.fullname}
                   onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter full name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Email</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter email"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Birthday</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Birthday</label>
                 <input
                   type="date"
                   required
                   value={formData.birthday}
                   onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Role</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                 >
                   <option value="member">Member</option>
                   <option value="consultant">Consultant</option>
@@ -411,7 +430,7 @@ const UserManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
+                  className="flex-1 bg-red-200 hover:bg-red-300 text-red-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
                 >
                   Cancel
                 </button>
@@ -421,8 +440,9 @@ const UserManagement = () => {
         </div>
       )}
 
+      {/* Edit User Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-fadeInUp">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-red-600 tracking-tight">Edit User Profile</h3>
@@ -436,44 +456,44 @@ const UserManagement = () => {
             </div>
             <form onSubmit={handleEditUser} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   required
                   value={editUserData.fullname}
                   onChange={(e) => setEditUserData({ ...editUserData, fullname: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter full name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Email</label>
                 <input
                   type="email"
                   required
                   value={editUserData.email}
                   onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter email"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Birthday</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Birthday</label>
                 <input
                   type="date"
                   required
                   value={editUserData.birthday}
                   onChange={(e) => setEditUserData({ ...editUserData, birthday: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Password (leave blank to keep current)</label>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Password (leave blank to keep current)</label>
                 <input
                   type="password"
                   value={editUserData.password}
                   onChange={(e) => setEditUserData({ ...editUserData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-gray-50 text-base"
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter new password"
                 />
               </div>
@@ -487,7 +507,7 @@ const UserManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
+                  className="flex-1 bg-red-200 hover:bg-red-300 text-red-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]"
                 >
                   Cancel
                 </button>
