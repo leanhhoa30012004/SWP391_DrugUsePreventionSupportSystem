@@ -1,5 +1,6 @@
 const { json } = require('express');
 const programModel = require('../models/program.model');
+const { reportNumberOfUsersEachRole } = require('../models/report.models');
 
 exports.getAllCommunityProgram = async (req, res) => {
     try {
@@ -25,7 +26,7 @@ exports.numberOfParticipantProgram = async (req, res) => {
 exports.registeredProgram = async (req, res) => {
     const { program_id, member_id } = req.params
     try {
-        const isRegistered = programModel.registeredProgram(program_id, member_id);
+        const isRegistered = await programModel.registeredProgram(program_id, member_id);
         if (isRegistered) return res.json('Registered successfully!');
         return res.json('Register Failed!')
     } catch (error) {
@@ -37,7 +38,11 @@ exports.registeredProgram = async (req, res) => {
 exports.markParticipantAsPresent = async (req, res) => {
     const { program_id, member_id } = req.params;
     try {
-        const isMarked = programModel.markParticipantAsPresent(program_id, member_id);
+        const check = await programModel.getProgramById(program_id);
+        if (!check) return res.json("This program doesn't exist!")
+        if (check.status === 'closed')
+            return res.json('The program has ended!!!')
+        const isMarked = await programModel.markParticipantAsPresent(program_id, member_id);
         if (isMarked) return res.json('Marked succesfully!');
         return res.json('Mark Failed!')
     } catch (error) {
@@ -83,4 +88,32 @@ exports.submitResponse = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
+exports.updateProgram = async (req, res) => {
+    const program = req.body;
+    try {
+        const check = await programModel.getProgramById(program.program_id);
+        console.log(check)
+        if (!check) return res.json("This program doesn't exist!")
+        const isUpdate = await programModel.updateProgram(program);
+        if (isUpdate) return res.json('Updated program successfullly!')
+        return res.json('Update program failed!')
+    } catch (error) {
+        console.error("updateProgram: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.deleteProgram = async (req, res) => {
+    const program_id = req.params.program_id;
+    try {
+        const isDelete = programModel.deleteProgram(program_id);
+        if (isDelete)
+            return res.json('Deleted program successfully!')
+        return res.json('Delete program failed!')
+    } catch (error) {
+        console.error("deleteProgram: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
 

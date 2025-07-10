@@ -36,7 +36,7 @@ VALUES (?, ?, 'registered')`, [member_id, program_id])
 const markParticipantAsPresent = async (program_id, member_id) => {
     const [row] = await db.execute(`UPDATE Community_program_participant
 SET status = 'present'
-WHERE program_id = ? AND member_id = ?`, [program_id, member_id])
+WHERE program_id = ? AND member_id = ? AND status NOT LIKE 'present'`, [program_id, member_id])
     return row.affectedRows > 0
 }
 
@@ -62,6 +62,8 @@ const getProgramById = async (program_id) => {
     const [row] = await db.execute(`SELECT * FROM Community_programs WHERE program_id = ? AND is_active = 1`,
         [program_id]
     );
+    if (!row || row.length === 0)
+        return;
     return {
         program_id: row[0].program_id,
         title: row[0].title,
@@ -85,6 +87,28 @@ WHERE program_id = ? AND is_active = 1`, [response, program_id])
     return isUpdate.affectedRows > 0;
 }
 
+const updateProgram = async (program) => {
+    console.log('check>>', JSON.stringify(program.description))
+    const [isUpdate] = await db.execute(`UPDATE Community_programs
+SET title = ?, description = ?, start_date = ?, end_date = ?,  location = ?, detail = ?, age_group = ?
+WHERE program_id = ? AND is_active = 1`,
+        [program.title,
+        JSON.stringify(program.description),
+        program.start_date,
+        program.end_date,
+        JSON.stringify(program.location),
+        JSON.stringify(program.detail),
+        program.age_group,
+        program.program_id])
+    return isUpdate.affectedRows > 0;
+}
+
+const deleteProgram = async (program_id) => {
+    const [isDelete] = await db.execute(`UPDATE Community_programs
+SET is_active = 0
+WHERE program_id = ? AND is_active = 1`, [program_id])
+    return isDelete.affectedRows > 0;
+}
 module.exports = {
     getAllCommunityProgram,
     numberParticipantProgram,
@@ -92,5 +116,7 @@ module.exports = {
     markParticipantAsPresent,
     updateStatusProgram,
     getProgramById,
-    updateResponseProgram
+    updateResponseProgram,
+    updateProgram,
+    deleteProgram
 }
