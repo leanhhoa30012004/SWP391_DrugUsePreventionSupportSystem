@@ -10,6 +10,7 @@ import AboutUs from "./Aboutus";
 // Import AOS nếu bạn muốn dùng animations
 import AOS from 'aos';
 import SurveyIntroSection from "./Survey";
+import ProgramsSection from "./ViewCommunityProgram";
 // import 'aos/dist/aos.css';
 
 const SurveyPopup = ({ onClose }) => {
@@ -145,7 +146,9 @@ const Homepage = () => {
       {/* Uncomment if you want to use CoursesList */}
        <CoursesList />
        <SurveyIntroSection/>
+       <ProgramsSection/>
        <Footer/>
+       
     </div>
   );
 };
