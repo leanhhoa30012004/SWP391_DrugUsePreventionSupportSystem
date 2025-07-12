@@ -962,7 +962,7 @@ function ConsultantManagement() {
                           <td className="px-4 py-3 text-black">
                             {appointment.appointment_id || appointment.id || appointment.appointmentId || appointment.appointmentID || appointment.AppointmentID || appointment.APPOINTMENT_ID || 'N/A'}
                           </td>
-                          {console.log(appointment)}
+
                           <td className="px-4 py-3 text-black">
                             {appointment.member_id || appointment.memberId || appointment.memberID || appointment.MemberID || appointment.MEMBER_ID || 'N/A'}
                           </td>
