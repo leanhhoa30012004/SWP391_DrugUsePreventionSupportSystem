@@ -1,14 +1,13 @@
 const nodemailer = require('nodemailer');
 const db = require("../../config/db.config");
 const bcrypt = require('bcryptjs');
-
 const addAppointment = async (member_id, appointment_date, appointment_time, consultant_id) => {
     const [result] = await db.execute(`
         INSERT INTO Appointment (member_id, appointment_date, appointment_time, date_sent_request, consultant_id)
         VALUES (?, ?, ?, NOW(), ?)
     `, [member_id, appointment_date, appointment_time, consultant_id]);
 
-    return result.insertId; 
+    return result.insertId;
 }
 
 
@@ -51,19 +50,19 @@ const createMeetLink = async (consultant_id, appointment_id, meetLink) => {
 };
 
 const sendAppointmentEmail = async (toEmail, appointmentInfo) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER, // Gmail của bạn
-      pass: process.env.EMAIL_PASS, // App password
-    },
-  });
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER, // Gmail của bạn
+            pass: process.env.EMAIL_PASS, // App password
+        },
+    });
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: toEmail,
-    subject: 'Appointment Confirmation',
-    html: `
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: toEmail,
+        subject: 'Appointment Confirmation',
+        html: `
       <h3>Hello ${appointmentInfo.member_name},</h3>
       <p>Your appointment has been successfully scheduled.</p>
       <p><strong>Date:</strong> ${appointmentInfo.appointment_date}</p>
@@ -73,9 +72,9 @@ const sendAppointmentEmail = async (toEmail, appointmentInfo) => {
       <br/>
       <p>Thank you!</p>
     `,
-  };
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 };
 
 
@@ -130,7 +129,7 @@ ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appoin
 const getAppointmentById = async (appointment_id) => {
     const [row] = await db.execute(`SELECT consultant_id , appointment_date , appointment_time 
 FROM Appointment
-WHERE appointment_id = ? AND is_active = 1`, [appointment_id])
+WHERE appointment_id = ?`, [appointment_id])
     return row[0];
 }
 
