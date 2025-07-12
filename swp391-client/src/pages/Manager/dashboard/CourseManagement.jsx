@@ -413,7 +413,7 @@ const CourseManagement = () => {
       {/* Toolbar: Search */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-4 bg-white rounded-b-2xl shadow-md -mt-4 z-10 relative">
         <div className="flex items-center gap-2 bg-[#f1f5f9] rounded-xl px-3 py-2 shadow w-full md:w-1/3">
-          <FaSearch className="text-[#6366f1]" />
+          <FaSearch className="text-[#e11d48]" />
           <input
             type="text"
             placeholder="Search courses..."
@@ -443,13 +443,16 @@ const CourseManagement = () => {
             ) : (
               filteredCourses.map((c, index) => (
                 <tr key={c.id} className="border-b last:border-b-0 hover:bg-[#e0e7ff] transition">
-                  <td className="px-4 py-3">{c.name}</td>
+                  <td className="px-4 py-3 flex items-center gap-2">
+                    <FaBookOpen className="text-[#e11d48] text-lg" />
+                    <span className="font-bold text-[#1e293b]">{c.name}</span>
+                  </td>
                   <td className="px-4 py-3">{c.enrolled} enrolled</td>
                   <td className="px-4 py-3">{c.completed} completed</td>
                   <td className="px-4 py-3">{c.age_group}</td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
-                      className="p-2 rounded-lg bg-[#fbbf24] hover:bg-[#eab308] text-white"
+                      className="p-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white shadow transition"
                       title="Edit"
                       onClick={() => {
                         setShowEdit(c);
@@ -482,7 +485,7 @@ const CourseManagement = () => {
                       <FaEdit />
                     </button>
                     <button
-                      className="p-2 rounded-lg bg-gray-200 hover:bg-red-200 text-[#e11d48]"
+                      className="p-2 rounded-lg bg-gray-200 hover:bg-[#e11d48] text-[#e11d48] hover:text-white shadow transition"
                       title="Delete"
                       onClick={() => setShowDelete(c)}
                     >

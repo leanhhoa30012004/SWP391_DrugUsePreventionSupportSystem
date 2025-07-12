@@ -1,6 +1,9 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import './App.css'
+
+// Chatbot component
+import Chatbot from './components/Chatbot/Chatbot'
 
 // Homepage components
 import Homepage from './pages/Homepage/Homepage'
@@ -58,8 +61,12 @@ import ConsultantBooking from './pages/Consultant/Consultant.jsx'
 import OnlineConsultant from './pages/Homepage/Onlineconsultant'
 import OnlyConsultant from './pages/OnlyConsultant/OnlyConsultant.jsx'
 function App() {
+  const location = useLocation();
+  // Ẩn chatbot ở các trang manager và admin
+  const hideChatbot = location.pathname.startsWith('/manager') || location.pathname.startsWith('/admin');
   return (
-    <Routes>
+    <>
+      <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Homepage />} />
       {/* <Route path="/aboutus" element={<Aboutus />} /> */}
@@ -122,7 +129,10 @@ function App() {
         <Route path="consultant" element={<ConsultantManagement />} />
         
       </Route>
-    </Routes>
+      </Routes>
+      {/* Global Chatbot - appears on all pages except manager/admin */}
+      {!hideChatbot && <Chatbot />}
+    </>
   )
 }
 

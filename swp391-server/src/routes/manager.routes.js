@@ -37,4 +37,7 @@ router.patch('/users/:id/active', managerController.toggleUserActive);
 // Được sử dụng bởi frontend khi manager tạo user trong trang quản lý user
 router.post('/create-user', protectManager, restrictTo('manager', 'admin'), managerController.createUser);
 
+// Thêm route để update user profile
+router.put('/users/:id', protectManager, restrictTo('manager', 'admin'), managerController.updateUser);
+
 module.exports = router;

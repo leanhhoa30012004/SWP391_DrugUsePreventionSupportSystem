@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaChartPie, FaBookOpen, FaClipboardCheck, FaCalendarAlt, FaUsers, FaSignOutAlt, FaSyncAlt, FaExclamationTriangle, FaChartBar, FaChartLine, FaUserCheck, FaArrowUp, FaArrowDown, FaChevronDown, FaChevronRight, FaCheck, FaTimes, FaClipboardList, FaCalendar, FaGraduationCap, FaClock, FaStar, FaCrown, FaUserFriends, FaHeartbeat, FaMedal } from 'react-icons/fa';
+import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
+
 
 // Helper for animated numbers
 function AnimatedNumber({ value }) {
@@ -49,6 +51,51 @@ const surveyCompletionRate = Math.round((surveysData.reduce((a, b) => a + b, 0) 
 const lastMonthChange = consultationsData[consultationsData.length - 1] - consultationsData[consultationsData.length - 2];
 const lastMonthChangePercent = Math.round((lastMonthChange / consultationsData[consultationsData.length - 2]) * 100);
 const lastMonthChangeUp = lastMonthChange > 0;
+
+// Thêm hook cho số liệu động
+function useDynamicDashboardStats() {
+  const [stats, setStats] = useState({
+    avgConsultations: 0,
+    peakMonth: 'Jan',
+    surveyCompletionRate: 0,
+    lastMonthChangePercent: 0,
+    lastMonthChangeUp: false
+  });
+
+  useEffect(() => {
+    let interval;
+    async function fetchStats() {
+      try {
+        // TODO: Thay thế URL này bằng API thực tế nếu có
+        // const res = await axios.get('/api/manager/dashboard-stats');
+        // setStats(res.data);
+        // MOCK dữ liệu động:
+        setStats(prev => {
+          // Tạo số liệu động giả lập
+          const now = new Date();
+          const monthIdx = now.getMonth();
+          const avg = 400 + Math.floor(Math.random() * 100);
+          const peak = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.floor(Math.random()*12)];
+          const survey = 20 + Math.floor(Math.random() * 80);
+          const lastChange = Math.floor(Math.random() * 20 - 10);
+          return {
+            avgConsultations: avg,
+            peakMonth: peak,
+            surveyCompletionRate: survey,
+            lastMonthChangePercent: Math.abs(lastChange),
+            lastMonthChangeUp: lastChange >= 0
+          };
+        });
+      } catch (e) {
+        // Nếu lỗi, giữ nguyên số liệu cũ
+      }
+    }
+    fetchStats();
+    interval = setInterval(fetchStats, 10000); // 10s
+    return () => clearInterval(interval);
+  }, []);
+  return stats;
+}
 
 // Real-time Statistics Component
 const RealTimeStats = () => {
@@ -880,6 +927,59 @@ const SurveyReportManager = () => {
 // Main Dashboard Component
 const Dashboard = () => {
   const [managerInfo, setManagerInfo] = useState(null);
+  const dynamicStats = useDynamicDashboardStats();
+
+  // Survey chart state
+  const [surveyData, setSurveyData] = useState(Array(12).fill(0));
+  const [consultationData, setConsultationData] = useState(Array(12).fill(0));
+  const [chartLoading, setChartLoading] = useState(true);
+  const [chartError, setChartError] = useState('');
+
+  useEffect(() => {
+    // Hàm fetch dữ liệu cho cả survey và consultation (appointment)
+    const fetchChartData = async () => {
+      setChartLoading(true);
+      setChartError('');
+      const year = new Date().getFullYear();
+      const token = localStorage.getItem('token');
+      try {
+        // Gọi song song 12 tháng cho survey và consultation
+        const surveyPromises = months.map((_, idx) =>
+          axios.get(`/api/manager/report/survey-done/month/0/${year}/0/${idx + 1}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+        );
+        const consultationPromises = months.map((_, idx) =>
+          axios.get(`/api/manager/report/appointment-done/month/0/${year}/0/${idx + 1}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+        );
+        const surveyResults = await Promise.all(surveyPromises);
+        const consultationResults = await Promise.all(consultationPromises);
+        setSurveyData(surveyResults.map(res => res.data.count || 0));
+        setConsultationData(consultationResults.map(res => res.data.count || 0));
+      } catch (err) {
+        setChartError('Failed to load chart data.');
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    fetchChartData();
+  }, []);
+
+  // Chart options cho 2 line: Consultation (đỏ), Survey (vàng)
+  const chartOptions = {
+    chart: { type: 'line', height: 350, toolbar: { show: false }, zoom: { enabled: false }, foreColor: '#e11d48' },
+    colors: ['#e11d48', '#fbbf24'],
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 3 },
+    grid: { borderColor: '#f3f3f3', row: { colors: ['#fff', '#f9fafb'], opacity: 0.5 } },
+    xaxis: { categories: months, labels: { style: { colors: '#e11d48', fontWeight: 600 } } },
+    yaxis: { title: { text: 'Count', style: { color: '#e11d48' } }, labels: { style: { colors: '#e11d48' } } },
+    legend: { position: 'top', labels: { colors: ['#e11d48', '#fbbf24'] } },
+    title: { text: 'Consultations & Surveys per Month', align: 'left', style: { color: '#e11d48', fontWeight: 700, fontSize: '18px' } },
+    tooltip: { theme: 'light' },
+  };
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -950,60 +1050,29 @@ const Dashboard = () => {
             This chart visualizes the monthly number of consultations and surveys conducted throughout the year.
             It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
           </div>
-          <div className="w-full overflow-x-auto">
-            <LineChart />
-          </div>
-          <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-2 text-[#e11d48] font-semibold">
-              <span className="w-4 h-2 rounded bg-[#e11d48] inline-block"></span> Consultations
-            </div>
-            <div className="flex items-center gap-2 text-[#fbbf24] font-semibold">
-              <span className="w-4 h-2 rounded bg-[#fbbf24] inline-block"></span> Surveys
-            </div>
-          </div>
-          <div className="flex gap-4 mt-4 ml-2 w-full" style={{ maxWidth: 720 }}>
-            {months.map((m) => (
-              <span key={m} className="text-xs text-[#e11d48]/70 w-12 text-center" style={{ minWidth: 48 }}>
-                {m}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="w-72 min-w-[220px] bg-gradient-to-br from-[#fff0f3] to-[#ffe3e8] rounded-2xl shadow-xl flex flex-col items-center justify-center p-7 gap-5 border border-[#e11d48]/20 ml-4 relative">
-          <div className="absolute left-0 top-0 h-full w-1 bg-[#e11d48]/20 rounded-l-2xl" />
-          <div className="flex flex-col items-center gap-1">
-            <FaChartBar className="text-[#e11d48] text-3xl mb-1" />
-            <div className="text-3xl font-extrabold text-[#e11d48] leading-tight">{avgConsultations}</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Avg. Consultations/Month</div>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <FaChartLine className="text-[#e11d48] text-2xl mb-1" />
-            <div className="text-lg font-bold text-[#e11d48]">{peakMonth}</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Peak Month</div>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <FaUserCheck className="text-[#fbbf24] text-2xl mb-1" />
-            <div className="text-lg font-bold text-[#fbbf24]">{surveyCompletionRate}%</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Survey Completion</div>
-          </div>
-          <div className={`flex flex-col items-center gap-1 ${lastMonthChangeUp ? 'text-green-600' : 'text-red-500'}`}> 
-            {lastMonthChangeUp ? <FaArrowUp className="text-2xl mb-1" /> : <FaArrowDown className="text-2xl mb-1" />}
-            <div className="text-lg font-bold">{Math.abs(lastMonthChangePercent)}%</div>
-            <div className="text-xs text-[#e11d48]/70 font-medium tracking-wide">Last Month Change</div>
+          <div className="bg-white rounded-3xl shadow-lg p-6 border border-[#e11d48]/10">
+            {chartLoading ? (
+              <div className="text-[#e11d48] text-center py-8 font-semibold">Loading chart data...</div>
+            ) : chartError ? (
+              <div className="text-red-500 text-center py-8 font-semibold">{chartError}</div>
+            ) : (
+              <ReactApexChart
+                options={chartOptions}
+                series={[
+                  { name: 'Consultations', data: consultationData },
+                  { name: 'Surveys', data: surveyData }
+                ]}
+                type="line"
+                height={350}
+              />
+            )}
           </div>
         </div>
+        {/* Bỏ box số liệu trung bình trên tháng, chỉ giữ các số liệu động khác nếu cần */}
       </div>
 
       {/* Consultant Analytics Bar Chart */}
-      <div className="mt-10">
-        <BarChart
-          data={consultantActivity}
-          months={months}
-          title="Consultant Analytics"
-          description="This bar chart shows the total number of consultations handled by all consultants each month. It highlights periods of high activity and helps identify trends in consultant engagement."
-          caption="Number of consultations per month (all consultants)"
-        />
-      </div>
+      {/* Đã gộp vào ApexDashboardCharts, không cần BarChart riêng */}
     </div>
   );
 };

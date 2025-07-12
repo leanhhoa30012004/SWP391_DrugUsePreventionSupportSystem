@@ -50,14 +50,20 @@ exports.createUser = async (req, res) => {
 };
 
 exports.changeProfile = async (req, res) => {
-  const { fullname, email, password } = req.body;
+  const { fullname, email, password, birthday } = req.body;
+  let hashedPassword = null;
   const user_id = req.user.user_id; // Assuming userId is set in the request by authentication middleware
-
+  if(password){
+    hashedPassword = await bcrypt.hash(password, 10);
+  } else {
+    hashedPassword = (await managerModels.findById(user_id)).password;
+  }
   try {
     const result = await managerModels.changeProfile(user_id, {
       fullname,
       email,
-      password,
+      password: hashedPassword,
+      birthday,
     });
     res.json(result);
   } catch (error) {
@@ -118,5 +124,63 @@ exports.toggleUserActive = async (req, res) => {
   } catch (error) {
     console.error('Error toggling user active:', error);
     res.status(500).json({ message: 'Internal server error', error: error.sqlMessage });
+  }
+};
+
+// Thêm function để update user profile (cho UserManagement)
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { fullname, email, password, role, birthday } = req.body;
+  
+  try {
+    // Validate required fields
+    if (!fullname || !email || !birthday) {
+      return res.status(400).json({ 
+        message: "Fullname, email, and birthday are required" 
+      });
+    }
+
+    // Check if email is already used by another user
+    const existingUser = await managerModels.findByEmail(email);
+    if (existingUser && existingUser.user_id != id) {
+      return res.status(400).json({ message: "Email is already in use by another user" });
+    }
+
+    // Prepare update data
+    const updateData = {
+      fullname,
+      email,
+      birthday,
+      role: role || 'member'
+    };
+
+    // Hash password if provided
+    if (password && password.trim() !== '') {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    // Update user
+    await managerModels.updateUser(id, updateData);
+    
+    res.json({ 
+      message: "User updated successfully",
+      userId: id
+    });
+    
+  } catch (error) {
+    console.error("Error updating user:", error);
+    
+    // Handle duplicate entry errors
+    if (error.sqlMessage && error.sqlMessage.includes('Duplicate entry')) {
+      if (error.sqlMessage.includes('email')) {
+        return res.status(400).json({ message: "Email is already in use" });
+      }
+    }
+    
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error.sqlMessage || error.message 
+    });
   }
 };
