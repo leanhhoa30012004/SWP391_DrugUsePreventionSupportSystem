@@ -92,9 +92,9 @@ FROM Appointment WHERE member_id = ? AND appointment_date = ? AND appointment_ti
     return rows.length > 0 ? true : false
 }
 
-const rejectAppointment = async (appointment_id) => {
-    const [rows] = await db.execute(`UPDATE Appointment SET is_active = 0
-WHERE appointment_id = ?`, [appointment_id]);
+const rejectOrActiveAppointment = async (appointment_id, is_active) => {
+    const [rows] = await db.execute(`UPDATE Appointment SET is_active = ?
+WHERE appointment_id = ?`, [is_active, appointment_id]);
     return rows.affectedRows > 0;
 
 }
@@ -127,7 +127,7 @@ ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appoin
 }
 
 const getAppointmentById = async (appointment_id) => {
-    const [row] = await db.execute(`SELECT consultant_id , appointment_date , appointment_time 
+    const [row] = await db.execute(`SELECT * 
 FROM Appointment
 WHERE appointment_id = ?`, [appointment_id])
     return row[0];
@@ -159,7 +159,7 @@ module.exports = {
     createMeetLink,
     // getRequestAppointmentByMemberIdAndDate,
     sendAppointmentEmail,
-    rejectAppointment,
+    rejectOrActiveAppointment,
     checkAppointmentByMemberId,
     getConsultantFreeTime,
     getAppointmentById,

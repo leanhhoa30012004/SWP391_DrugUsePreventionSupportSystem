@@ -8,10 +8,8 @@ const getNoticeByUserId = async (userID) => {
     return rows
 }
 const isCreateNewNotice = async (userID, title, message, type, redirect_url) => {
-    let userIDNull = "NULL"
-    let isNullID = false
-    if (!userID) isNullID = true
-    const [result] = await db.execute(`INSERT INTO Notice(user_id, title, message, date, type, redirect_url) VALUES (?,?,?, now(),?,?)`, [isNullID ? userIDNull : userID, title, type, redirect_url])
+    console.log(`Creating new notice for userID: ${userID}, title: ${title}, type: ${type}, redirect_url: ${redirect_url} message: ${message}`);
+    const [result] = await db.execute(`INSERT INTO Notice(user_id, title, message, date, type, redirect_url) VALUES (?,?,?, now(),?,?)`, [userID, title, message, type, redirect_url])
     return result.affectedRows > 0
 }
 const isUpdateNoticeStatusIsRead = async (id) => {
