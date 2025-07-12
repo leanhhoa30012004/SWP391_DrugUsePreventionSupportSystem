@@ -81,11 +81,14 @@ function ProgramDetail() {
                     text: 'You have successfully registered for this program. You will now be redirected to complete the survey.',
                     confirmButtonColor: '#dc2626',
                     timer: 2000,
-                    timerProgressBar: true
-                }).then(() => {
-                    // Redirect to survey program page
-                    //navigate(`/surveyprogram/${program_id}`);
+                    timerProgressBar: true,
+                    showConfirmButton: false
                 });
+                
+                setTimeout(() => {
+                    navigate(`/surveyprogram/${program_id}`);
+                }, 2000);
+                
             } else {
                 throw new Error(response.data);
             }

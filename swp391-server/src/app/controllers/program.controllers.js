@@ -24,7 +24,7 @@ exports.numberOfParticipantProgram = async (req, res) => {
 }
 
 exports.registeredProgram = async (req, res) => {
-    const { program_id, member_id } = req.params
+    const { program_id, member_id } = req.params;
     try {
         const isRegistered = await programModel.registeredProgram(program_id, member_id);
         if (isRegistered) return res.json('Registered successfully!');
