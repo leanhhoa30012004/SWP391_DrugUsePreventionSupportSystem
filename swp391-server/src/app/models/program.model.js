@@ -109,6 +109,15 @@ SET is_active = 0
 WHERE program_id = ? AND is_active = 1`, [program_id])
     return isDelete.affectedRows > 0;
 }
+
+const getAllMemberByProgramId = async (program_id) => {
+    const [list] = await db.execute(`SELECT cp.program_id, u.fullname, cpp.status
+FROM Community_programs cp JOIN Community_program_participant cpp ON cp.program_id = cpp.program_id
+JOIN Users u ON cpp.member_id = u.user_id
+WHERE cp.program_id = ? AND cp.is_active = 1`, [program_id]);
+    return list;
+}
+
 module.exports = {
     getAllCommunityProgram,
     numberParticipantProgram,
@@ -118,5 +127,6 @@ module.exports = {
     getProgramById,
     updateResponseProgram,
     updateProgram,
-    deleteProgram
+    deleteProgram,
+    getAllMemberByProgramId
 }

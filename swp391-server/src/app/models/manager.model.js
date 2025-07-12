@@ -48,11 +48,19 @@ const toggleUserActive = async (id, is_active) => {
   await db.execute("UPDATE Users SET is_active = ? WHERE user_id = ?", [is_active ? 1 : 0, id]);
 };
 
+const getNameByUserId = async (user_id) => {
+  const [name] = await db.execute(`SELECT username
+FROM Users WHERE user_id = ? AND is_active = 1`, [user_id])
+  // console.log(name[0].username)
+  return name[0].username;
+}
+
 module.exports = {
   changeProfile,
   createUser,
   findByUsername,
   updateRole,
   getAllUsers,
-  toggleUserActive
+  toggleUserActive,
+  getNameByUserId
 };

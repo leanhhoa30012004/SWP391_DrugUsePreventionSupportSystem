@@ -13,7 +13,9 @@ const courseManageRoutes = require("./src/routes/course.manage.routes");
 const consultationRoutes = require("./src/routes/consultation.routes");
 const reportRoutes = require("./src/routes/report.routes");
 const programRoutes = require("./src/routes/program.routes");
+const blogRoutes = require("./src/routes/blog.routes");
 const cors = require("cors");
+const path = require('path');
 app.use(express.json());
 app.use(cors());
 const passport = require("passport");
@@ -25,7 +27,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: false,
-    maxAge: 24 * 60 * 60 * 1000 
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 // Initialize passport
@@ -51,6 +53,8 @@ app.use("/api/manager/survey", surveyManageRoutes);
 app.use("/api/manager/course", courseManageRoutes);
 app.use("/api/manager/report", reportRoutes);
 app.use("/api/program", programRoutes);
+app.use("/api/blog", blogRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "src/uploads")))
 // Chạy server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
