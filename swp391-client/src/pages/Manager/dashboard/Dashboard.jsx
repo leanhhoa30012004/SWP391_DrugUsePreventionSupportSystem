@@ -1,33 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaChartPie, FaBookOpen, FaUserFriends, FaHeartbeat, FaArrowUp, FaArrowDown, FaCircle, FaMedal, FaUser, FaCrown, FaUserCheck, FaChartLine, FaChartBar, FaUsers, FaUserClock, FaUserPlus, FaSignOutAlt } from 'react-icons/fa';
+import { FaChartPie, FaBookOpen, FaClipboardCheck, FaCalendarAlt, FaUsers, FaSignOutAlt, FaSyncAlt, FaExclamationTriangle, FaChartBar, FaChartLine, FaUserCheck, FaArrowUp, FaArrowDown, FaChevronDown, FaChevronRight, FaCheck, FaTimes, FaClipboardList, FaCalendar, FaGraduationCap, FaClock, FaStar, FaCrown, FaUserFriends, FaHeartbeat, FaMedal } from 'react-icons/fa';
 import axios from 'axios';
-
-const fakeStats = {
-  totalUsers: 11238,
-  totalSurveys: 238,
-  totalCourses: 56,
-  totalConsultants: 12,
-  totalConsultations: 1250,
-  totalAtRiskYouth: 320,
-  totalEvents: 24,
-  surveyCompletionRate: 82,
-  surveyCompletionChange: 8,
-  consultationsChange: 15,
-  atRiskYouthChange: 5,
-  eventsChange: 20,
-  leads: [
-    { label: 'Member', value: 400, color: '#e11d48' },
-    { label: 'Consultant', value: 300, color: '#f87171' },
-    { label: 'Manager', value: 200, color: '#fbbf24' },
-    { label: 'Admin', value: 100, color: '#be123c' },
-  ],
-  topUsers: [
-    { name: 'Nguyen Van A', email: 'a@gmail.com', score: 98, role: 'Member', lastActive: '2024-06-10' },
-    { name: 'Tran Thi B', email: 'b@gmail.com', score: 95, role: 'Consultant', lastActive: '2024-06-09' },
-    { name: 'Le Van C', email: 'c@gmail.com', score: 92, role: 'Manager', lastActive: '2024-06-08' },
-    { name: 'Pham Thi D', email: 'd@gmail.com', score: 90, role: 'Admin', lastActive: '2024-06-07' },
-  ],
-};
 
 // Helper for animated numbers
 function AnimatedNumber({ value }) {
@@ -52,16 +25,8 @@ function AnimatedNumber({ value }) {
   return <span>{display.toLocaleString()}</span>;
 }
 
-const roleColors = {
-  Member: 'bg-[#e11d48]',
-  Consultant: 'bg-[#f87171]',
-  Manager: 'bg-[#fbbf24]',
-  Admin: 'bg-[#be123c]',
-};
-
 // Helper to generate a unique color for each user based on their name
 function getAvatarColor(name) {
-  // Simple hash to pick a color from a palette
   const palette = ['#e11d48', '#fbbf24', '#f87171', '#be123c', '#6366f1', '#22c55e'];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -70,14 +35,13 @@ function getAvatarColor(name) {
   return palette[Math.abs(hash) % palette.length];
 }
 
-// Data for 12 months
+// Fake data for charts
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const consultationsData = [200, 350, 400, 300, 500, 450, 420, 480, 510, 530, 490, 470];
 const surveysData = [50, 80, 90, 70, 120, 110, 100, 130, 140, 120, 110, 115];
-const consultantMonths = months;
 const consultantActivity = [30, 45, 50, 40, 60, 55, 52, 58, 62, 65, 60, 59];
 
-// Helper cho info card mới
+// Helper calculations for fake data
 const avgConsultations = Math.round(consultationsData.reduce((a, b) => a + b, 0) / consultationsData.length);
 const peakMonthIdx = consultationsData.indexOf(Math.max(...consultationsData));
 const peakMonth = months[peakMonthIdx];
@@ -86,26 +50,297 @@ const lastMonthChange = consultationsData[consultationsData.length - 1] - consul
 const lastMonthChangePercent = Math.round((lastMonthChange / consultationsData[consultationsData.length - 2]) * 100);
 const lastMonthChangeUp = lastMonthChange > 0;
 
-const avgConsultant = Math.round(consultantActivity.reduce((a, b) => a + b, 0) / consultantActivity.length / 8); // giả lập 8 consultant
-const mostImprovedIdx = consultantActivity.slice(1).reduce((maxIdx, val, idx, arr) => {
-  const diff = val - consultantActivity[idx];
-  const maxDiff = arr[maxIdx] - consultantActivity[maxIdx];
-  return diff > maxDiff ? idx : maxIdx;
-}, 0) + 1;
-const mostImprovedConsultant = `Consultant #${mostImprovedIdx + 1}`;
-const consultantDiversity = `8/10`;
-const longestActiveConsultant = 'Consultant #3';
+// Real-time Statistics Component
+const RealTimeStats = () => {
+  const [stats, setStats] = useState({
+    activeUsers: 0,
+    surveysCompleted: 0,
+    coursesCompleted: 0,
+    appointments: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState('today'); // 'today', 'week', 'month', 'year'
+  const [totalStats, setTotalStats] = useState({
+    activeUsers: 0,
+    surveysCompleted: 0,
+    coursesCompleted: 0,
+    appointments: 0
+  });
 
+  const fetchTodayStats = async () => {
+    setLoading(true);
+    setError('');
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Token not found. Please login again.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const year = today.slice(0, 4);
+      
+      const [activeUsersRes, surveysRes, coursesRes, appointmentsRes] = await Promise.all([
+        axios.get(`http://localhost:3000/api/manager/report/active-members`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        axios.get(`http://localhost:3000/api/manager/report/survey-done/day/${today}/${year}/0/0`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        axios.get(`http://localhost:3000/api/manager/report/course-done/day/${today}/${year}/0/0`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        axios.get(`http://localhost:3000/api/manager/report/appointment-done/day/${today}/${year}/0/0`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
+
+      setStats({
+        activeUsers: activeUsersRes.data.active || 0,
+        surveysCompleted: surveysRes.data.count || 0,
+        coursesCompleted: coursesRes.data.count || 0,
+        appointments: appointmentsRes.data.count || 0
+      });
+
+    } catch (err) {
+      console.error('Error fetching today stats:', err);
+      setError('Failed to load today\'s statistics. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTotalStats = async (period) => {
+    setLoading(true);
+    setError('');
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Token not found. Please login again.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth() + 1;
+      const currentWeek = Math.ceil((new Date().getDate() + new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay()) / 7);
+      
+      let surveysUrl, coursesUrl, appointmentsUrl;
+      
+      switch (period) {
+        case 'week':
+          surveysUrl = `http://localhost:3000/api/manager/report/survey-done/week/0/${currentYear}/${currentWeek}/0`;
+          coursesUrl = `http://localhost:3000/api/manager/report/course-done/week/0/${currentYear}/${currentWeek}/0`;
+          appointmentsUrl = `http://localhost:3000/api/manager/report/appointment-done/week/0/${currentYear}/${currentWeek}/0`;
+          break;
+        case 'month':
+          surveysUrl = `http://localhost:3000/api/manager/report/survey-done/month/0/${currentYear}/0/${currentMonth}`;
+          coursesUrl = `http://localhost:3000/api/manager/report/course-done/month/0/${currentYear}/0/${currentMonth}`;
+          appointmentsUrl = `http://localhost:3000/api/manager/report/appointment-done/month/0/${currentYear}/0/${currentMonth}`;
+          break;
+        case 'year':
+          surveysUrl = `http://localhost:3000/api/manager/report/survey-done/year/0/${currentYear}/0/0`;
+          coursesUrl = `http://localhost:3000/api/manager/report/course-done/year/0/${currentYear}/0/0`;
+          appointmentsUrl = `http://localhost:3000/api/manager/report/appointment-done/year/0/${currentYear}/0/0`;
+          break;
+        default:
+          return;
+      }
+
+      const [activeUsersRes, surveysRes, coursesRes, appointmentsRes] = await Promise.all([
+        axios.get(`http://localhost:3000/api/manager/report/active-members`, { 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        }),
+        axios.get(surveysUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
+        axios.get(coursesUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
+        axios.get(appointmentsUrl, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      setTotalStats({
+        activeUsers: activeUsersRes.data.active || 0,
+        surveysCompleted: surveysRes.data.count || 0,
+        coursesCompleted: coursesRes.data.count || 0,
+        appointments: appointmentsRes.data.count || 0
+      });
+
+    } catch (err) {
+      console.error('Error fetching total stats:', err);
+      setError('Failed to load total statistics. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    if (mode === 'today') {
+      fetchTodayStats();
+    } else {
+      fetchTotalStats(mode);
+    }
+  };
+
+  useEffect(() => {
+    fetchTodayStats();
+  }, []);
+
+  const getCurrentData = () => {
+    return viewMode === 'today' ? stats : totalStats;
+  };
+
+  const getPeriodLabel = () => {
+    switch (viewMode) {
+      case 'today':
+        return 'Today';
+      case 'week':
+        return 'This Week';
+      case 'month':
+        return 'This Month';
+      case 'year':
+        return 'This Year';
+      default:
+        return 'Today';
+    }
+  };
+
+  const currentData = getCurrentData();
+
+  return (
+    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <FaChartPie className="text-2xl text-[#e11d48] flex-shrink-0" />
+          <h2 className="text-2xl font-bold text-[#e11d48]">Overview</h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-[#e11d48]/70">View:</span>
+            <select 
+              value={viewMode} 
+              onChange={(e) => handleViewModeChange(e.target.value)}
+              className="px-3 py-1 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50 text-sm"
+            >
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+                      <button
+              onClick={() => handleViewModeChange(viewMode)}
+              disabled={loading}
+              className="px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm flex items-center gap-2"
+            >
+              <FaSyncAlt className={`text-sm text-white ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-white">Refresh</span>
+            </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Active Users Card */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+              <FaUsers className="text-white text-xl" />
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-blue-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-blue-500">Active Users</div>
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-blue-700 mb-2">
+            {loading ? '...' : currentData.activeUsers}
+          </div>
+          <div className="text-sm text-blue-600">
+            Users currently active
+          </div>
+        </div>
+
+        {/* Surveys Completed Card */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+              <FaChartBar className="text-white text-xl" />
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-green-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-green-500">Surveys</div>
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-green-700 mb-2">
+            {loading ? '...' : currentData.surveysCompleted}
+          </div>
+          <div className="text-sm text-green-600">
+            Surveys completed
+          </div>
+        </div>
+
+        {/* Courses Completed Card */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+              <FaGraduationCap className="text-white text-xl" />
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-purple-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-purple-500">Courses</div>
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-purple-700 mb-2">
+            {loading ? '...' : currentData.coursesCompleted}
+          </div>
+          <div className="text-sm text-purple-600">
+            Courses completed
+          </div>
+        </div>
+
+        {/* Appointments Card */}
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+              <FaCalendarAlt className="text-white text-xl" />
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-orange-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-orange-500">Appointments</div>
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-orange-700 mb-2">
+            {loading ? '...' : currentData.appointments}
+          </div>
+          <div className="text-sm text-orange-600">
+            Appointments completed
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Chart Components
 const BarChart = ({ data, months, title, description, caption }) => {
   const chartHeight = 120;
   const barWidth = 20;
   const gap = 36;
-  const topMargin = 30; // Thêm khoảng trống phía trên
+  const topMargin = 30;
   const maxVal = Math.max(...data);
   return (
     <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center border border-[#e11d48]/10 w-full">
       <h2 className="font-bold text-2xl mb-2 text-[#e11d48] text-center">{title}</h2>
-      {description && <div className="text-sm text-[#e11d48]/80 mb-6 text-center max-w-xl">{description}</div>}
+      {description && (
+        <div className="text-sm text-[#e11d48]/80 mb-6 text-center max-w-xl">{description}</div>
+      )}
       <div className="w-full overflow-x-auto flex justify-center">
         <svg width={months.length * (barWidth + gap) + gap} height={chartHeight + 70} className="block">
           {months.map((m, i) => {
@@ -114,7 +349,6 @@ const BarChart = ({ data, months, title, description, caption }) => {
             const valueY = chartHeight - barH - 10 + topMargin;
             return (
               <g key={m}>
-                {/* Value label */}
                 <text
                   x={centerX}
                   y={valueY}
@@ -126,7 +360,6 @@ const BarChart = ({ data, months, title, description, caption }) => {
                 >
                   {data[i]}
                 </text>
-                {/* Bar */}
                 <rect
                   x={centerX - barWidth / 2}
                   y={chartHeight - barH + topMargin}
@@ -135,7 +368,6 @@ const BarChart = ({ data, months, title, description, caption }) => {
                   rx="12"
                   fill="#e11d48"
                 />
-                {/* Month label */}
                 <text
                   x={centerX}
                   y={chartHeight + 32 + topMargin}
@@ -156,65 +388,27 @@ const BarChart = ({ data, months, title, description, caption }) => {
   );
 };
 
-const Dashboard = () => {
-  const [managerInfo, setManagerInfo] = useState(null);
-  // State cho real-time survey count
-  const [surveyCount, setSurveyCount] = useState(0);
-  const [surveyLoading, setSurveyLoading] = useState(false);
-  const [surveyPeriod, setSurveyPeriod] = useState('month'); // day/week/month/year
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    setManagerInfo(user);
-  }, []);
-
-  useEffect(() => {
-    const fetchSurveyCount = async () => {
-      setSurveyLoading(true);
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth() + 1;
-      const week = Math.ceil((today.getDate() - today.getDay() + 1) / 7);
-      const date = today.toISOString().slice(0, 10);
-      const token = JSON.parse(localStorage.getItem('user'))?.token;
-      try {
-        const res = await axios.get(`/api/report/survey-done/${surveyPeriod}/${date}/${year}/${week}/${month}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setSurveyCount(res.data.count ?? 0);
-      } catch (err) {
-        setSurveyCount(0);
-      }
-      setSurveyLoading(false);
-    };
-    fetchSurveyCount();
-  }, [surveyPeriod]);
-
-  // Helper to render line chart for analytics (Consultations & Surveys)
   const LineChart = () => {
     const maxY = Math.max(...consultationsData, ...surveysData);
-    const chartWidth = 720; // Responsive width for 12 months
+  const chartWidth = 720;
     const chartHeight = 130;
     const xStep = chartWidth / (months.length - 1);
     const getPoints = (data) =>
       data.map((v, i) => `${i * xStep},${chartHeight - (v / maxY) * 100}`).join(' ');
     return (
       <svg width={chartWidth} height={chartHeight} className="mb-2 w-full max-w-full">
-        {/* Consultations line (red) */}
         <polyline
           fill="none"
           stroke="#e11d48"
           strokeWidth="3"
           points={getPoints(consultationsData)}
         />
-        {/* Surveys line (yellow) */}
         <polyline
           fill="none"
           stroke="#fbbf24"
           strokeWidth="3"
           points={getPoints(surveysData)}
         />
-        {/* Dots for consultations */}
         {consultationsData.map((v, i) => (
           <circle
             key={i}
@@ -226,7 +420,6 @@ const Dashboard = () => {
             strokeWidth="1"
           />
         ))}
-        {/* Dots for surveys */}
         {surveysData.map((v, i) => (
           <circle
             key={i}
@@ -242,203 +435,462 @@ const Dashboard = () => {
     );
   };
 
-  // Bar chart cho Consultant Analytics (đẹp, số liệu rõ, vừa khung)
-  const ConsultantBarChart = () => {
-    const chartWidth = 720;
-    const chartHeight = 120;
-    const barCount = consultantActivity.length;
-    const barWidth = 36; // Đủ rộng để số không bị chồng
-    const gap = (chartWidth - barCount * barWidth) / (barCount + 1); // spacing đều
-    const maxVal = Math.max(...consultantActivity);
-    return (
-      <svg width={chartWidth} height={chartHeight} className="mb-2 w-full max-w-full">
-        {consultantActivity.map((v, i) => {
-          const x = gap + i * (barWidth + gap);
-          const barH = (v / maxVal) * (chartHeight - 30); // chừa chỗ cho số
-          return (
-            <g key={i}>
-              {/* Bar */}
-              <rect
-                x={x}
-                y={chartHeight - barH}
-                width={barWidth}
-                height={barH}
-                rx="7"
-                fill="#e11d48"
-                className="transition-all duration-300"
-              />
-              {/* Value label: chỉ hiện nếu > 10 */}
-              {v > 10 && (
-                <text
-                  x={x + barWidth / 2}
-                  y={chartHeight - barH - 8}
-                  textAnchor="middle"
-                  fontSize="16"
-                  fill="#e11d48"
-                  fontWeight="bold"
-                  style={{ textShadow: '0 1px 2px #fff' }}
-                >
-                  {v}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-    );
+// Survey Report Manager Component
+const SurveyReportManager = () => {
+  const [reportType, setReportType] = useState('survey'); // 'survey', 'appointment', 'course', 'active-member'
+  const [period, setPeriod] = useState('day');
+  const [date, setDate] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+  const [week, setWeek] = useState('');
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [details, setDetails] = useState([]);
+
+  const handleFetch = async () => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+    setDetails([]);
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Token not found in localStorage. Please login again.');
+      setLoading(false);
+      return;
+    }
+    
+    let url = '';
+    let baseUrl = '';
+    
+    // Determine base URL based on report type
+    switch (reportType) {
+      case 'survey':
+        baseUrl = 'http://localhost:3000/api/manager/report/survey-done';
+        break;
+      case 'appointment':
+        baseUrl = 'http://localhost:3000/api/manager/report/appointment-done';
+        break;
+      case 'course':
+        baseUrl = 'http://localhost:3000/api/manager/report/course-done';
+        break;
+      case 'active-member':
+        baseUrl = 'http://localhost:3000/api/manager/report/active-member';
+        break;
+      default:
+        setError('Invalid report type selected');
+        setLoading(false);
+        return;
+    }
+    
+    if (period === 'day') {
+      if (!date) return setError('Please select a date!');
+      const y = date.slice(0, 4);
+      url = `${baseUrl}/day/${date}/${y}/0/0`;
+    } else if (period === 'week') {
+      if (!year || !week) return setError('Please enter year and week!');
+      url = `${baseUrl}/week/0/${year}/${week}/0`;
+    } else if (period === 'month') {
+      if (!year || !month) return setError('Please enter year and month!');
+      url = `${baseUrl}/month/0/${year}/0/${month}`;
+    } else if (period === 'year') {
+      if (!year) return setError('Please enter year!');
+      url = `${baseUrl}/year/0/${year}/0/0`;
+    }
+    
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      setResult(response.data.count);
+      
+      // If API returns detailed data, use it; otherwise show count only
+      if (response.data.data && Array.isArray(response.data.data)) {
+        setDetails(response.data.data);
+      }
+      
+    } catch (err) {
+      if (err.response) {
+        const status = err.response.status;
+        const message = err.response.data?.message || err.response.data?.error || 'Unknown error';
+        
+        if (status === 401) {
+          setError(`Authentication error (401): ${message}. Token may have expired, please login again.`);
+        } else if (status === 403) {
+          setError(`Access denied (403): ${message}. You need manager permissions to view this report.`);
+        } else if (status === 404) {
+          setError(`API not found (404): ${message}. Please check the API endpoint.`);
+        } else {
+          setError(`Error ${status}: ${message}`);
+        }
+      } else if (err.request) {
+        setError('Cannot connect to server. Please check your network connection.');
+      } else {
+        setError(`Error: ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Pie chart component cho tỷ lệ Consultations vs Surveys
-  const PieChart = () => {
-    const totalConsultations = consultationsData.reduce((a, b) => a + b, 0);
-    const totalSurveys = surveysData.reduce((a, b) => a + b, 0);
-    const total = totalConsultations + totalSurveys;
-    const consultationsPercent = Math.round((totalConsultations / total) * 100);
-    const surveysPercent = 100 - consultationsPercent;
-    // Pie chart geometry
-    const r = 70;
-    const cx = 90;
-    const cy = 90;
-    const circumference = 2 * Math.PI * r;
-    const consultationsArc = (consultationsPercent / 100) * circumference;
-    const surveysArc = circumference - consultationsArc;
+  const getReportTitle = () => {
+    switch (reportType) {
+      case 'survey':
+        return 'Survey Completion Report';
+      case 'appointment':
+        return 'Appointment Completion Report';
+      case 'course':
+        return 'Course Completion Report';
+      case 'active-member':
+        return 'Active Member Report';
+      default:
+        return 'Report';
+    }
+  };
+
+  const getReportIcon = () => {
+    switch (reportType) {
+      case 'survey':
+        return <FaChartBar className="text-2xl text-[#e11d48]" />;
+      case 'appointment':
+        return <FaCalendarAlt className="text-2xl text-[#e11d48]" />;
+      case 'course':
+        return <FaGraduationCap className="text-2xl text-[#e11d48]" />;
+      case 'active-member':
+        return <FaUsers className="text-2xl text-[#e11d48]" />;
+      default:
+        return <FaChartBar className="text-2xl text-[#e11d48]" />;
+    }
+  };
+
+  const getResultText = () => {
+    switch (reportType) {
+      case 'survey':
+        return `Result: ${result} surveys completed`;
+      case 'appointment':
+        return `Result: ${result} appointments completed`;
+      case 'course':
+        return `Result: ${result} courses completed`;
+      case 'active-member':
+        return `Result: ${result} active members`;
+      default:
+        return `Result: ${result}`;
+    }
+  };
+
+  const getDetailsTitle = () => {
+    switch (reportType) {
+      case 'survey':
+        return 'Details of completed surveys:';
+      case 'appointment':
+        return 'Details of completed appointments:';
+      case 'course':
+        return 'Details of completed courses:';
+      case 'active-member':
+        return 'Details of active members:';
+      default:
+        return 'Details:';
+    }
+  };
+
+  const getTableHeaders = () => {
+    switch (reportType) {
+      case 'survey':
+        return (
+          <tr className="bg-green-100">
+            <th className="px-3 py-2 text-left text-green-800">Survey Name</th>
+            <th className="px-3 py-2 text-left text-green-800">Completed By</th>
+            <th className="px-3 py-2 text-left text-green-800">Completion Date</th>
+            <th className="px-3 py-2 text-left text-green-800">Score</th>
+            <th className="px-3 py-2 text-left text-green-800">Status</th>
+          </tr>
+        );
+      case 'appointment':
+        return (
+          <tr className="bg-green-100">
+            <th className="px-3 py-2 text-left text-green-800">Appointment ID</th>
+            <th className="px-3 py-2 text-left text-green-800">Patient Name</th>
+            <th className="px-3 py-2 text-left text-green-800">Consultant</th>
+            <th className="px-3 py-2 text-left text-green-800">Date & Time</th>
+            <th className="px-3 py-2 text-left text-green-800">Status</th>
+          </tr>
+        );
+      case 'course':
+        return (
+          <tr className="bg-green-100">
+            <th className="px-3 py-2 text-left text-green-800">Course Name</th>
+            <th className="px-3 py-2 text-left text-green-800">Completed By</th>
+            <th className="px-3 py-2 text-left text-green-800">Completion Date</th>
+            <th className="px-3 py-2 text-left text-green-800">Progress</th>
+            <th className="px-3 py-2 text-left text-green-800">Status</th>
+          </tr>
+        );
+      case 'active-member':
+        return (
+          <tr className="bg-green-100">
+            <th className="px-3 py-2 text-left text-green-800">Member ID</th>
+            <th className="px-3 py-2 text-left text-green-800">Full Name</th>
+            <th className="px-3 py-2 text-left text-green-800">Email</th>
+            <th className="px-3 py-2 text-left text-green-800">Last Activity</th>
+            <th className="px-3 py-2 text-left text-green-800">Status</th>
+          </tr>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getTableRow = (item, index) => {
+    switch (reportType) {
+      case 'survey':
+        return (
+          <tr key={item.id || index} className="border-b border-green-200">
+            <td className="px-3 py-2 text-green-700">{item.title || `Survey ${index + 1}`}</td>
+            <td className="px-3 py-2 text-green-700">{item.completedBy || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">{item.completedDate || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">
+              <span className="bg-green-200 px-2 py-1 rounded text-green-800 font-medium">
+                {item.score || 'N/A'}
+              </span>
+            </td>
+            <td className="px-3 py-2 text-green-700">
+              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs">
+                Completed
+              </span>
+            </td>
+          </tr>
+        );
+      case 'appointment':
     return (
-      <div className="flex flex-col items-center justify-center w-full">
-        <svg width={180} height={180} className="mb-2">
-          {/* Consultations (red) */}
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke="#e11d48"
-            strokeWidth={28}
-            strokeDasharray={`${consultationsArc} ${circumference}`}
-            strokeDashoffset={0}
-            style={{ transition: 'stroke-dasharray 0.6s' }}
-          />
-          {/* Surveys (yellow) */}
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke="#fbbf24"
-            strokeWidth={28}
-            strokeDasharray={`${surveysArc} ${circumference}`}
-            strokeDashoffset={-consultationsArc}
-            style={{ transition: 'stroke-dasharray 0.6s' }}
-          />
-          {/* Center text: Consultations % */}
-          <text
-            x={cx}
-            y={cy - 8}
-            textAnchor="middle"
-            fontSize="2.2rem"
-            fontWeight="bold"
-            fill="#e11d48"
+          <tr key={item.id || index} className="border-b border-green-200">
+            <td className="px-3 py-2 text-green-700">{item.id || `APT-${index + 1}`}</td>
+            <td className="px-3 py-2 text-green-700">{item.patientName || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">{item.consultantName || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">{item.dateTime || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">
+              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs">
+                Completed
+              </span>
+            </td>
+          </tr>
+        );
+      case 'course':
+          return (
+          <tr key={item.id || index} className="border-b border-green-200">
+            <td className="px-3 py-2 text-green-700">{item.courseName || `Course ${index + 1}`}</td>
+            <td className="px-3 py-2 text-green-700">{item.completedBy || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">{item.completedDate || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">
+              <span className="bg-green-200 px-2 py-1 rounded text-green-800 font-medium">
+                {item.progress || '100%'}
+              </span>
+            </td>
+            <td className="px-3 py-2 text-green-700">
+              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs">
+                Completed
+              </span>
+            </td>
+          </tr>
+        );
+      case 'active-member':
+        return (
+          <tr key={item.id || index} className="border-b border-green-200">
+            <td className="px-3 py-2 text-green-700">{item.id || `M-${index + 1}`}</td>
+            <td className="px-3 py-2 text-green-700">{item.fullName || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">{item.email || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">{item.lastActivity || 'N/A'}</td>
+            <td className="px-3 py-2 text-green-700">
+              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs">
+                Active
+              </span>
+            </td>
+          </tr>
+        );
+      default:
+        return null;
+    }
+  };
+
+    return (
+    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10">
+      <div className="flex items-center gap-2 mb-4">
+        {getReportIcon()}
+        <h2 className="text-xl font-bold text-[#e11d48]">Report</h2>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-[#e11d48] mb-1">Report Type</label>
+          <select 
+            value={reportType} 
+            onChange={(e) => setReportType(e.target.value)}
+            className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
           >
-            {consultationsPercent}%
-          </text>
-          <text
-            x={cx}
-            y={cy + 22}
-            textAnchor="middle"
-            fontSize="1.1rem"
-            fill="#e11d48"
-            fontWeight="600"
+            <option value="survey">Survey</option>
+            <option value="appointment">Appointment</option>
+            <option value="course">Course</option>
+            <option value="active-member">Active Member</option>
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-[#e11d48] mb-1">Period</label>
+          <select 
+            value={period} 
+            onChange={(e) => setPeriod(e.target.value)}
+            className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
           >
-            Consultations
-          </text>
-        </svg>
-        <div className="flex flex-row gap-6 mt-2 items-center justify-center">
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-[#e11d48] inline-block border border-white shadow" />
-            <span className="text-[#e11d48] font-semibold">Consultations</span>
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+        </div>
+        
+        {period === 'day' && (
+          <div>
+            <label className="block text-sm font-medium text-[#e11d48] mb-1">Date</label>
+            <input 
+              type="date" 
+              value={date} 
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-[#fbbf24] inline-block border border-white shadow" />
-            <span className="text-[#fbbf24] font-semibold">Surveys</span>
+        )}
+        
+        {period === 'week' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-[#e11d48] mb-1">Year</label>
+              <input 
+                type="number" 
+                value={year} 
+                onChange={(e) => setYear(e.target.value)}
+                placeholder="2025"
+                className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#e11d48] mb-1">Week</label>
+              <input 
+                type="number" 
+                value={week} 
+                onChange={(e) => setWeek(e.target.value)}
+                placeholder="27"
+                min="1" 
+                max="53"
+                className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+              />
+            </div>
+          </>
+        )}
+        
+        {period === 'month' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-[#e11d48] mb-1">Year</label>
+              <input 
+                type="number" 
+                value={year} 
+                onChange={(e) => setYear(e.target.value)}
+                placeholder="2025"
+                className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#e11d48] mb-1">Month</label>
+              <input 
+                type="number" 
+                value={month} 
+                onChange={(e) => setMonth(e.target.value)}
+                placeholder="7"
+                min="1" 
+                max="12"
+                className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+              />
+            </div>
+          </>
+        )}
+        
+        {period === 'year' && (
+          <div>
+            <label className="block text-sm font-medium text-[#e11d48] mb-1">Year</label>
+            <input 
+              type="number" 
+              value={year} 
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="2025"
+              className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+            />
           </div>
+        )}
+        
+        <div className="flex items-end">
+          <button 
+            onClick={handleFetch}
+            disabled={loading}
+            className="w-full px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          >
+            <span className="font-semibold text-white">{loading ? 'Loading...' : 'Get Report'}</span>
+          </button>
         </div>
       </div>
-    );
-  };
-
-  // TopUsersTable mới (bỏ avatar, hiện đầy đủ tên/email/role, badge Top 1)
-  const TopUsersTable = ({ users }) => (
-    <div className="bg-white rounded-3xl shadow p-6 flex flex-col border border-[#e11d48]/10">
-      <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Top Active Users</h2>
-      <ul className="space-y-5">
-        {users.map((user, idx) => (
-          <li key={user.email} className="flex items-center gap-4 pb-2 border-b last:border-b-0 border-[#e11d48]/10">
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-lg md:text-xl text-[#e11d48] break-words whitespace-normal">{user.name}</span>
-                {idx === 0 && (
-                  <span className="ml-1 flex items-center gap-1 bg-[#e11d48] text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
-                    <FaCrown className="text-xs mr-1" />Top 1
-                  </span>
-                )}
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          {error}
+        </div>
+      )}
+      
+      {result !== null && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            {getReportIcon()}
+            <span className="font-medium">{getResultText()}</span>
+          </div>
+          
+          {/* Details Table - Only show if we have detailed data */}
+          {details.length > 0 && (
+            <div className="mt-4">
+              <h3 className="font-medium text-green-800 mb-2">{getDetailsTitle()}</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    {getTableHeaders()}
+                  </thead>
+                  <tbody>
+                    {details.map((item, index) => getTableRow(item, index))}
+                  </tbody>
+                </table>
               </div>
-              <div className="text-xs text-gray-400 break-words whitespace-normal">{user.email}</div>
-              <div className="text-xs text-gray-400 break-words whitespace-normal">{user.role} • Last active: {user.lastActive}</div>
             </div>
-            {/* Score */}
-            <div className="ml-2 flex flex-col items-end">
-              <div className="font-extrabold text-2xl text-[#e11d48] drop-shadow-sm">{user.score}</div>
-              <div className="text-xs text-gray-400 mt-0.5">Score</div>
+          )}
             </div>
-          </li>
-        ))}
-      </ul>
+      )}
     </div>
   );
+};
 
-  // StatTable tổng hợp 4 số liệu, Total Surveys lấy real-time
-  const StatTable = () => (
-    <div className="bg-white rounded-3xl shadow p-6 border border-[#e11d48]/10">
-      <table className="w-full text-left">
-        <tbody>
-          <tr className="border-b border-[#e11d48]/10">
-            <td className="py-3 pr-2"><FaUserFriends className="text-2xl text-[#e11d48]" /></td>
-            <td className="font-semibold text-[#e11d48]">Users</td>
-            <td className="text-2xl font-extrabold text-[#e11d48]">{fakeStats.totalUsers.toLocaleString()}</td>
-            <td className="text-green-500 text-sm font-bold pl-2">+{fakeStats.totalUsers}%</td>
-          </tr>
-          <tr className="border-b border-[#e11d48]/10">
-            <td className="py-3 pr-2"><FaBookOpen className="text-2xl text-[#e11d48]" /></td>
-            <td className="font-semibold text-[#e11d48] flex items-center gap-2">
-              Surveys
-              <select value={surveyPeriod} onChange={e => setSurveyPeriod(e.target.value)} className="ml-2 px-2 py-1 rounded border border-[#e11d48]/30 text-xs text-[#e11d48] bg-white focus:outline-none">
-                <option value="day">Today</option>
-                <option value="week">This week</option>
-                <option value="month">This month</option>
-                <option value="year">This year</option>
-              </select>
-            </td>
-            <td className="text-2xl font-extrabold text-[#e11d48]">
-              {surveyLoading ? <span className="text-base text-gray-400">Loading...</span> : surveyCount}
-            </td>
-            <td></td>
-          </tr>
-          <tr className="border-b border-[#e11d48]/10">
-            <td className="py-3 pr-2"><FaBookOpen className="text-2xl text-[#e11d48]" /></td>
-            <td className="font-semibold text-[#e11d48]">Courses</td>
-            <td className="text-2xl font-extrabold text-[#e11d48]">{fakeStats.totalCourses.toLocaleString()}</td>
-            <td className="text-green-500 text-sm font-bold pl-2">+{fakeStats.totalCourses}%</td>
-          </tr>
-          <tr>
-            <td className="py-3 pr-2"><FaHeartbeat className="text-2xl text-[#e11d48]" /></td>
-            <td className="font-semibold text-[#e11d48]">Consultants</td>
-            <td className="text-2xl font-extrabold text-[#e11d48]">{fakeStats.totalConsultants.toLocaleString()}</td>
-            <td className="text-green-500 text-sm font-bold pl-2">+{fakeStats.totalConsultants}%</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
+// Main Dashboard Component
+const Dashboard = () => {
+  const [managerInfo, setManagerInfo] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    setManagerInfo(user);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] text-[#e11d48] p-8">
@@ -446,134 +898,58 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-extrabold flex items-center gap-2 text-[#e11d48]">
-            <FaChartPie className="text-[#e11d48]" /> System Overview Statistics
+            <FaChartPie className="text-[#e11d48]" />
+            System Overview Statistics
           </h1>
           <p className="text-sm text-[#e11d48] italic mt-1">"Spreading Hope, Protecting the Future!"</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Auto-generated manager avatar with initials and unique color */}
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow ring-2 ring-[#e11d48] bg-gradient-to-br from-[#e11d48] to-[#be123c] text-white"
+            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow ring-2 ring-[#e11d48] text-white"
             style={{
-              background: `linear-gradient(135deg, ${getAvatarColor(managerInfo?.fullname || managerInfo?.username || 'Manager')} 60%, #fff 100%)`,
-              color: '#fff',
+              background: `linear-gradient(135deg, ${getAvatarColor(
+                managerInfo?.fullname || managerInfo?.username || 'Manager'
+              )} 60%, #fff 100%)`,
             }}
             title={managerInfo?.fullname || managerInfo?.username || 'Manager'}
           >
-            {((managerInfo?.fullname || managerInfo?.username || 'M').split(' ').map(w => w[0]).join('') || 'M').toUpperCase()}
+            {((managerInfo?.fullname || managerInfo?.username || 'M')
+              .split(' ')
+              .map((w) => w[0])
+              .join('') || 'M'
+            ).toUpperCase()}
           </div>
           <div>
-            <div className="font-bold text-[#e11d48]">Hello, {managerInfo?.fullname || managerInfo?.username || 'Manager'}!</div>
+            <div className="font-bold text-[#e11d48]">
+              Hello, {managerInfo?.fullname || managerInfo?.username || 'Manager'}!
+            </div>
             <span className="text-xs text-[#e11d48]/70">Manager</span>
           </div>
           <button
-            className="ml-2 px-4 py-2 rounded-2xl bg-[#e11d48] text-white font-bold shadow-lg hover:bg-[#be123c] transition-colors flex items-center gap-2 border-none text-base"
-            title="Đăng xuất"
-            onClick={() => {
-              localStorage.removeItem('user');
-              window.location.href = '/login';
-            }}
+            className="ml-2 px-4 py-2 rounded-2xl bg-[#e11d48] text-white font-bold shadow-lg hover:bg-[#be123c] transition-colors flex items-center gap-2 text-base"
+            title="Logout"
+            onClick={handleLogout}
           >
-            <FaSignOutAlt className="text-lg" style={{ color: 'white' }} />
+            <FaSignOutAlt className="text-lg text-white" />
             <span className="font-semibold text-white">Logout</span>
           </button>
         </div>
       </div>
 
-      {/* Top Active Users - Nằm ngang, ở trên StatTable */}
-      <div className="w-full flex flex-col items-center mb-8">
-        <div className="w-full">
-          <div className="flex flex-col items-center mb-4">
-            <div className="flex items-center gap-2">
-              <FaUserFriends className="text-2xl md:text-3xl text-[#e11d48] drop-shadow" />
-              <h2 className="font-extrabold text-2xl md:text-3xl text-[#e11d48] tracking-tight text-center">Top Active Users</h2>
-            </div>
-            <div className="w-32 h-1 mt-2 rounded-full bg-gradient-to-r from-[#e11d48] via-[#fbbf24] to-[#e11d48] opacity-70" />
-          </div>
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#e11d48]/10">
-            <div className="flex flex-row flex-wrap justify-center gap-6">
-              {fakeStats.topUsers.map((user, idx) => (
-                <div key={user.email} className="flex flex-col items-center justify-between p-4 min-w-[200px] max-w-[240px] flex-1 border-r last:border-r-0 border-[#e11d48]/10">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-lg md:text-xl text-[#e11d48] break-words whitespace-normal text-center">{user.name}</span>
-                    {idx === 0 && (
-                      <span className="ml-1 flex items-center gap-1 bg-[#e11d48] text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
-                        <FaCrown className="text-xs mr-1" />Top 1
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-400 break-words whitespace-normal text-center">{user.email}</div>
-                  <div className="text-xs text-gray-400 break-words whitespace-normal text-center">{user.role} • Last active: {user.lastActive}</div>
-                  <div className="font-extrabold text-2xl text-[#e11d48] drop-shadow-sm mt-2">{user.score}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">Score</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Overview */}
+      <RealTimeStats />
 
-      {/* StatTable - Bảng tổng hợp với real-time data */}
-      <div className="w-full flex flex-col items-center mb-8">
-        <div className="w-full">
-          <StatTable />
-        </div>
-      </div>
+      {/* Survey Report Manager */}
+      <SurveyReportManager />
 
-      {/* User Distribution Pie Chart */}
-      <div className="w-full flex flex-col items-center mb-8">
-        <div className="w-full">
-          <div className="bg-white rounded-2xl p-6 shadow-lg flex flex-col items-center border border-[#e11d48]/10">
-            <h2 className="font-bold text-lg mb-4 text-[#e11d48]">User Distribution</h2>
-            {/* Pie chart SVG */}
-            <svg viewBox="0 0 36 36" className="w-32 h-32 mb-2">
-              {(() => {
-                let total = fakeStats.leads.reduce((sum, l) => sum + l.value, 0);
-                let acc = 0;
-                return fakeStats.leads.map((lead, idx) => {
-                  const start = (acc / total) * 100;
-                  acc += lead.value;
-                  const end = (acc / total) * 100;
-                  const largeArc = end - start > 50 ? 1 : 0;
-                  const r = 16;
-                  const startAngle = (start / 100) * 2 * Math.PI - Math.PI / 2;
-                  const endAngle = (end / 100) * 2 * Math.PI - Math.PI / 2;
-                  const x1 = 18 + r * Math.cos(startAngle);
-                  const y1 = 18 + r * Math.sin(startAngle);
-                  const x2 = 18 + r * Math.cos(endAngle);
-                  const y2 = 18 + r * Math.sin(endAngle);
-                  return (
-                    <path
-                      key={lead.label}
-                      d={`M18,18 L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`}
-                      fill={lead.color}
-                      stroke="#fff"
-                      strokeWidth="0.7"
-                    />
-                  );
-                });
-              })()}
-            </svg>
-            <div className="flex flex-wrap justify-center gap-2 mt-2">
-              {fakeStats.leads.map((lead) => (
-                <span key={lead.label} className="flex items-center gap-1 text-xs font-semibold" style={{ color: lead.color }}>
-                  ● {lead.label} ({lead.value})
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Analytics with line chart + info card */}
+      {/* Consultation & Survey Analytics Chart */}
       <div className="bg-white rounded-2xl p-6 shadow-lg mt-8 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-8">
         <div className="flex-1 min-w-0">
           <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Consultation & Survey Analytics</h2>
-          {/* Giải thích biểu đồ line */}
           <div className="text-sm text-[#e11d48]/80 mb-2">
-            This chart visualizes the monthly number of consultations and surveys conducted throughout the year. It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
+            This chart visualizes the monthly number of consultations and surveys conducted throughout the year.
+            It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
           </div>
-          {/* Line chart for consultations and surveys */}
           <div className="w-full overflow-x-auto">
             <LineChart />
           </div>
@@ -585,15 +961,15 @@ const Dashboard = () => {
               <span className="w-4 h-2 rounded bg-[#fbbf24] inline-block"></span> Surveys
             </div>
           </div>
-          {/* Month labels for 12 months */}
           <div className="flex gap-4 mt-4 ml-2 w-full" style={{ maxWidth: 720 }}>
-            {months.map((m, i) => (
-              <span key={m} className="text-xs text-[#e11d48]/70 w-12 text-center" style={{ minWidth: 48 }}>{m}</span>
+            {months.map((m) => (
+              <span key={m} className="text-xs text-[#e11d48]/70 w-12 text-center" style={{ minWidth: 48 }}>
+                {m}
+              </span>
             ))}
           </div>
         </div>
-        {/* Info card mới bên phải line chart */}
-        <div className="w-72 min-w-[220px] bg-gradient-to-br from-[#fff0f3] to-[#ffe3e8] rounded-2xl shadow-xl flex flex-col items-center justify-center p-7 gap-5 border border-[#e11d48]/20 ml-4 relative" style={{boxShadow:'0 4px 24px 0 #e11d4822'}}>
+        <div className="w-72 min-w-[220px] bg-gradient-to-br from-[#fff0f3] to-[#ffe3e8] rounded-2xl shadow-xl flex flex-col items-center justify-center p-7 gap-5 border border-[#e11d48]/20 ml-4 relative">
           <div className="absolute left-0 top-0 h-full w-1 bg-[#e11d48]/20 rounded-l-2xl" />
           <div className="flex flex-col items-center gap-1">
             <FaChartBar className="text-[#e11d48] text-3xl mb-1" />
@@ -618,11 +994,11 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Consultant Analytics Bar Chart + info card */}
+      {/* Consultant Analytics Bar Chart */}
       <div className="mt-10">
         <BarChart
           data={consultantActivity}
-          months={consultantMonths}
+          months={months}
           title="Consultant Analytics"
           description="This bar chart shows the total number of consultations handled by all consultants each month. It highlights periods of high activity and helps identify trends in consultant engagement."
           caption="Number of consultations per month (all consultants)"

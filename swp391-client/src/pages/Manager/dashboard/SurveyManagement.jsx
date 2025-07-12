@@ -385,9 +385,9 @@ const SurveyManagement = () => {
   };
 
   const getCompletionColor = (rate) => {
-    if (rate >= 90) return 'bg-green-500';
-    if (rate >= 75) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (rate >= 90) return 'bg-red-500';
+    if (rate >= 75) return 'bg-red-400';
+    return 'bg-red-600';
   };
 
   const isLoading = activeTab === 'existing' ? loadingExisting : loadingManaged;
@@ -548,7 +548,7 @@ const SurveyManagement = () => {
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8b5cf6] mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e11d48] mx-auto"></div>
                   <p className="mt-2 text-gray-500">
                     {activeTab === 'existing' ? 'Loading existing surveys...' : 'Loading managed surveys...'}
                   </p>
@@ -561,7 +561,7 @@ const SurveyManagement = () => {
                   {activeTab === 'existing' && (
                     <button 
                       onClick={fetchExistingSurveys}
-                      className="mt-2 px-4 py-2 bg-[#8b5cf6] text-white rounded-lg hover:bg-[#a855f7]"
+                      className="mt-2 px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c]"
                     >
                       Retry
                     </button>
@@ -670,7 +670,7 @@ const SurveyManagement = () => {
 
       {/* Create Survey Modal */}
       {createSurveyModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white p-0 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden animate-fade-in border border-gray-100">
             {/* Header Section */}
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-8 py-6 flex justify-between items-center">
@@ -904,17 +904,17 @@ const SurveyManagement = () => {
 
       {/* Enhanced View Survey Modal */}
       {viewSurvey && (
-        <div className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-[#8b5cf6] text-xl" onClick={() => setViewSurvey(null)}>&times;</button>
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-[#e11d48] text-xl" onClick={() => setViewSurvey(null)}>&times;</button>
             
             {/* Header with icon and basic info */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 pb-6 border-b">
               <div className="flex flex-col items-center md:items-start col-span-1">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#8b5cf6] to-[#c084fc] flex items-center justify-center text-white text-3xl shadow-lg mb-2">
-                  <FaClipboardList />
+                <div className="w-16 h-16 rounded-full bg-[#e11d48] flex items-center justify-center text-white text-3xl shadow-lg mb-2">
+                  <FaClipboardList className="text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-[#8b5cf6] mb-1 text-center md:text-left">{viewSurvey.name || viewSurvey.survey_type}</h2>
+                <h2 className="text-xl font-bold text-[#e11d48] mb-1 text-center md:text-left">{viewSurvey.name || viewSurvey.survey_type}</h2>
                 <span className="text-xs text-gray-500">{viewSurvey.createdAt || viewSurvey.created_at}</span>
               </div>
               <div className="col-span-3 grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -930,7 +930,7 @@ const SurveyManagement = () => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-gray-500 font-medium">Type</span>
-                  <span className="inline-block px-2 py-1 rounded-full bg-[#c084fc] text-white font-bold text-xs">{viewSurvey.type || viewSurvey.survey_type}</span>
+                  <span className="inline-block px-2 py-1 rounded-full bg-[#e11d48] text-white font-bold text-xs">{viewSurvey.type || viewSurvey.survey_type}</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-gray-500 font-medium">Audience</span>
@@ -945,20 +945,20 @@ const SurveyManagement = () => {
 
             {/* Statistics Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-[#faf5ff] rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-[#8b5cf6]">{viewSurvey.participants || viewSurvey.total_participants || 0}</div>
+                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.participants || viewSurvey.total_participants || 0}</div>
                 <div className="text-xs text-black">Participants</div>
               </div>
-              <div className="bg-[#faf5ff] rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-[#a855f7]">{viewSurvey.responses || 0}</div>
+                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.responses || 0}</div>
                 <div className="text-xs text-black">Responses</div>
               </div>
-              <div className="bg-[#faf5ff] rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-[#c084fc]">{viewSurvey.completionRate || viewSurvey.completion_rate || 0}%</div>
+                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.completionRate || viewSurvey.completion_rate || 0}%</div>
                 <div className="text-xs text-black">Completion</div>
               </div>
-              <div className="bg-[#faf5ff] rounded-xl p-4 text-center">
-                <div className="text-2xl font-bold text-[#8b5cf6]">{viewSurvey.totalQuestions || viewSurvey.total_questions || 0}</div>
+                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.totalQuestions || viewSurvey.total_questions || 0}</div>
                 <div className="text-xs text-black">Questions</div>
               </div>
             </div>
@@ -967,18 +967,18 @@ const SurveyManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               {/* Survey Details */}
               <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-[#8b5cf6] mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-3 flex items-center gap-2">
                   <FaClipboardList /> Survey Details
                 </h3>
                 <div className="space-y-2 text-black">
-                  <div><b>Type:</b> <span className="inline-block px-2 py-1 rounded-full bg-[#c084fc] text-white font-bold text-xs">{viewSurvey.type || viewSurvey.survey_type}</span></div>
+                  <div><b>Type:</b> <span className="inline-block px-2 py-1 rounded-full bg-[#e11d48] text-white font-bold text-xs">{viewSurvey.type || viewSurvey.survey_type}</span></div>
                   <div><b>Target Audience:</b> {viewSurvey.targetAudience || viewSurvey.target_audience}</div>
                 </div>
               </div>
 
               {/* Progress Information */}
               <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-[#8b5cf6] mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-3 flex items-center gap-2">
                   <FaChartBar /> Progress Information
                 </h3>
                 <div className="space-y-3">
@@ -1004,7 +1004,7 @@ const SurveyManagement = () => {
 
             {/* Survey Content Display */}
             <div className="bg-gray-50 rounded-xl p-4">
-              <h3 className="text-lg font-bold text-[#8b5cf6] mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[#e11d48] mb-4 flex items-center gap-2">
                 <FaQuestionCircle /> Survey Content
               </h3>
               
@@ -1108,14 +1108,14 @@ const SurveyManagement = () => {
 
       {/* Delete Survey Modal */}
       {deleteSurvey && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm relative">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-[#8b5cf6] text-xl" onClick={() => setDeleteSurvey(null)}>&times;</button>
-            <h2 className="text-xl font-bold text-[#8b5cf6] mb-4">Delete Survey</h2>
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-[#e11d48] text-xl" onClick={() => setDeleteSurvey(null)}>&times;</button>
+            <h2 className="text-xl font-bold text-[#e11d48] mb-4">Delete Survey</h2>
             <p className="mb-4 text-black">Are you sure you want to delete <b>{deleteSurvey.name || deleteSurvey.survey_type}</b>?</p>
             <div className="flex gap-3 justify-end">
               <button className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black" onClick={() => setDeleteSurvey(null)}>Cancel</button>
-              <button className="px-4 py-2 rounded-lg bg-[#8b5cf6] hover:bg-[#a855f7] text-white" onClick={handleDeleteSurvey}>Delete</button>
+              <button className="px-4 py-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white" onClick={handleDeleteSurvey}>Delete</button>
             </div>
           </div>
         </div>
@@ -1123,12 +1123,12 @@ const SurveyManagement = () => {
 
       {/* Advanced Survey Content Editor Modal */}
       {showContentEditor && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-xl relative flex flex-col p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#8b5cf6]">Survey Content Management</h2>
+              <h2 className="text-xl font-bold text-[#e11d48]">Survey Content Management</h2>
               <button 
-                className="text-gray-400 hover:text-[#8b5cf6] text-2xl font-bold" 
+                className="text-gray-400 hover:text-[#e11d48] text-2xl font-bold" 
                 onClick={() => setShowContentEditor(false)}
               >
                 &times;
@@ -1144,9 +1144,9 @@ const SurveyManagement = () => {
               ) : (
                 <div className="space-y-3">
                   {contentData.map((item, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-[#8b5cf6] transition-colors bg-gray-50">
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-[#e11d48] transition-colors bg-gray-50">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="text-sm font-medium text-[#8b5cf6]">
+                        <span className="text-sm font-medium text-[#e11d48]">
                           {item.video ? 'Video Section' : 'Question'} #{index + 1}
                         </span>
                         <div className="flex gap-2">
@@ -1274,7 +1274,7 @@ const SurveyManagement = () => {
               </button>
               <button 
                 onClick={saveContentChanges}
-                className="px-6 py-2 rounded-lg bg-[#8b5cf6] hover:bg-[#a855f7] text-white flex items-center gap-2"
+                className="px-6 py-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white flex items-center gap-2"
               >
                 <FaSave /> Save Changes
               </button>
