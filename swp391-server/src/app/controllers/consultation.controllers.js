@@ -1,7 +1,7 @@
 const consultationModel = require('../models/consultation.model');
 const memberModel = require('../models/member.model');
 const createMeetConfig = require('../../config/createMeet.config');
-
+const { pushNotice } = require('../models/notice.helper.model');
 
 exports.checkAppointment = async (req, res) => {
     const { member_id, appointment_date, appointment_time } = req.params;
@@ -47,6 +47,22 @@ exports.addAppointment = async (req, res) => {
             consultant_name: getConsultantFree.fullname,
             meeting_link: meetLink
         });
+        //send notice to member
+        await pushNotice({
+            userID: member_id,
+            title: 'Appointment Booking Confirmation',
+            message: `Your appointment with ${getConsultantFree.fullname} on ${appointment_date} at ${appointment_time} has been successfully created. Check your email for the meeting link.`,
+            type: 'success',
+            redirect_url: `/appointments/${appointment_id}`
+        });
+        //send notice to consultant
+        await pushNotice({
+            userID: getConsultantFree.user_id,
+            title: 'New Appointment with Member' + memberInfo.fullname,
+            message: `You have a new appointment request from ${memberInfo.fullname} on ${appointment_date} at ${appointment_time}.`,
+            type: 'info',
+            redirect_url: `/appointments/${appointment_id}`
+        });
         res.json({ message: 'Appointment created successfully! Check your email to get meeting link', appointment_id });
     } catch (error) {
         console.log('addRequestAppointment error:', error);
@@ -84,8 +100,19 @@ exports.getAllAppointmentByConsultantId = async (req, res) => {
 exports.rejectAppointment = async (req, res) => {
     const appointment_id = req.params.appointment_id;
     try {
-        if (await consultationModel.rejectAppointment(appointment_id))
+        if (await consultationModel.rejectAppointment(appointment_id)) {
+            //send notice to member
+            const appointment = await consultationModel.getAppointmentById(appointment_id)
+            await pushNotice({
+                userID: appointment.member_id,
+                title: 'Appointment Rejected',
+                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been rejected by the consultant.`,
+                type: 'warning',
+                redirect_url: `/appointments/${appointment_id}`
+            });
+
             return res.json('Your appointment has been cancelled!');
+        }
         else res.json('Your appointment cannot be canceled!')
     } catch (error) {
         console.error('deleteRequestAppointment:', error)
@@ -131,7 +158,18 @@ exports.completeAppointment = async (req, res) => {
     const appointment_id = req.params.appointment_id;
     try {
         const isComplete = await consultationModel.completeAppointment(appointment_id);
-        if (isComplete) return res.json('Appointment completed!')
+        if (isComplete) {
+            //send notice to member
+            const appointment = await consultationModel.getAppointmentById(appointment_id)
+            await pushNotice({
+                userID: appointment.member_id,
+                title: 'Appointment Completed',
+                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been completed.`,
+                type: 'success',
+                redirect_url: `/appointments/${appointment_id}`
+            });
+            return res.json('Appointment completed!')
+        }
         else return res.json('Appointment not yet completed!')
     } catch (error) {
         console.error('completeAppointment:', error)

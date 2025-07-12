@@ -26,8 +26,8 @@ export const NavbarMenu = [
   },
   {
     id: 6,
-    title: "News",
-    link: "/news",
+    title: "Community Programme",
+    link: "/programs",
   },
   {
       id: 7,

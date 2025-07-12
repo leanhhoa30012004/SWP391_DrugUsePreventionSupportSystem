@@ -25,9 +25,30 @@ const createUser = async ({
 const changeProfile = async (id, { fullname, email, password, birthday }) => {
   await db.execute(
     "UPDATE Users SET fullname = ?, email = ?, password = ?, birthday = ? WHERE user_id = ?",
-    [fullname, email, password, id, birthday]
+    [fullname, email, password, birthday, id]
   );
   return { message: "Profile updated successfully" };
+};
+
+const updateUserProfile = async (id, { fullname, email, birthday }) => {
+  // Get current user data first to preserve other fields
+  const [currentUser] = await db.execute(
+    "SELECT username, password, email FROM Users WHERE user_id = ?",
+    [id]
+  );
+
+  if (currentUser.length === 0) {
+    throw new Error("User not found");
+  }
+
+  // Update only the provided fields, keep others unchanged
+  const updateEmail = email || currentUser[0].email;
+
+  await db.execute(
+    "UPDATE Users SET fullname = ?, email = ?, birthday = ? WHERE user_id = ?",
+    [fullname, updateEmail, birthday, id]
+  );
+  return { message: "User profile updated successfully" };
 };
 const findByUsername = async (username) => {
   const [rows] = await db.execute(
@@ -57,6 +78,7 @@ FROM Users WHERE user_id = ? AND is_active = 1`, [user_id])
 
 module.exports = {
   changeProfile,
+  updateUserProfile,
   createUser,
   findByUsername,
   updateRole,

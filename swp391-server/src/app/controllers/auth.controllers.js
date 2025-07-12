@@ -431,7 +431,7 @@ exports.googleCallback = async (req, res) => {
     //   user,
     //   token
     // });
-    res.redirect(`http://localhost:5173/onlyconsultant?token=${token}&user=${user.user_id}`)
+    res.redirect(`http://localhost:5173/onlyconsultant?token=${token}&user=${user.user_id}&username=${user.username}`)
   } catch (error) {
     console.error("Google login error:", error);
     res.status(500).json({ message: "Internal Server Error" });
