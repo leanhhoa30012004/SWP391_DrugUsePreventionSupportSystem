@@ -117,3 +117,14 @@ exports.deleteProgram = async (req, res) => {
     }
 }
 
+exports.getAllMemberByProgramId = async (req, res) => {
+    const program_id = req.params.program_id;
+    try {
+        const list = await programModel.getAllMemberByProgramId(program_id);
+        return res.json(list);
+    } catch (error) {
+        console.error("getAllMemberByProgramId: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+

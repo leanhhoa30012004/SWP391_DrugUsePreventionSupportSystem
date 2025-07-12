@@ -4,6 +4,8 @@ require('../swp391-server/src/config/passport.config');
 
 const session = require('express-session');
 const express = require("express");
+const blogRoutes = require("./src/routes/blog.routes");
+const path = require('path');
 const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
@@ -54,10 +56,13 @@ app.use("/api/manager/survey", surveyManageRoutes);
 app.use("/api/manager/course", courseManageRoutes);
 app.use("/api/manager/report", reportRoutes);
 app.use("/api/program", programRoutes);
+
+app.use("/api/blog", blogRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "src/uploads")))
+// Chạy server
 app.use("/api/notice", noticeRoutes);
 
 initSocket(server);
-
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
