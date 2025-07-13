@@ -91,6 +91,11 @@ const UserManagement = () => {
     }
   };
 
+  // NHỮNG THAY ĐỔI ĐÃ THỰC HIỆN: Thay thế chức năng delete bằng toggle active/inactive
+  // - Thêm soft delete sử dụng flag is_active thay vì hard delete
+  // - Thêm optimistic UI updates để cải thiện trải nghiệm người dùng
+  // - Thêm xử lý lỗi phù hợp
+  // - Duy trì tính toàn vẹn dữ liệu trong khi cho phép deactivate user
   const handleToggleActive = async (userId, currentActive) => {
     try {
       await axiosInstance.patch(`/manager/users/${userId}/active`, { is_active: !currentActive });
@@ -104,6 +109,12 @@ const UserManagement = () => {
     }
   };
 
+  // NHỮNG THAY ĐỔI ĐÃ THỰC HIỆN: Cập nhật chức năng edit user
+  // - Thêm validation cho các trường bắt buộc (fullname, email, birthday)
+  // - Thêm hỗ trợ cập nhật password tùy chọn
+  // - Thêm chức năng cập nhật role
+  // - Cải thiện xử lý lỗi với thông báo lỗi từ backend
+  // - Thêm reset form đúng cách sau khi cập nhật thành công
   const handleEditUser = async (e) => {
     e.preventDefault();
     // Kiểm tra các trường bắt buộc
@@ -303,6 +314,7 @@ const UserManagement = () => {
                               password: '',
                               role: user.role || '',
                             });
+                            console.log(user);
                             setShowEditModal(true);
                           }}
                         >

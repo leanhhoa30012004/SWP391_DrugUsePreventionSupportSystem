@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaChartPie, FaBookOpen, FaClipboardCheck, FaCalendarAlt, FaUsers, FaSignOutAlt, FaSyncAlt, FaExclamationTriangle, FaChartBar, FaChartLine, FaUserCheck, FaArrowUp, FaArrowDown, FaChevronDown, FaChevronRight, FaCheck, FaTimes, FaClipboardList, FaCalendar, FaGraduationCap, FaClock, FaStar, FaCrown, FaUserFriends, FaHeartbeat, FaMedal } from 'react-icons/fa';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
@@ -106,8 +106,9 @@ const RealTimeStats = () => {
     appointments: 0
   });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
-  const [viewMode, setViewMode] = useState('today'); // 'today', 'week', 'month', 'year'
+  const [viewMode, setViewMode] = useState('today');
   const [totalStats, setTotalStats] = useState({
     activeUsers: 0,
     surveysCompleted: 0,
@@ -115,20 +116,27 @@ const RealTimeStats = () => {
     appointments: 0
   });
 
-  const fetchTodayStats = async () => {
-    setLoading(true);
+  const fetchTodayStats = useCallback(async (isRefresh = false) => {
+    console.log('fetchTodayStats called, isRefresh:', isRefresh);
+    if (!isRefresh) {
+      setLoading(true);
+    }
+    // Không set refreshing ở đây nữa vì đã set trong handleRefresh
     setError('');
     
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Token not found. Please login again.');
       setLoading(false);
+      setRefreshing(false);
       return;
     }
 
     try {
       const today = new Date().toISOString().split('T')[0];
       const year = today.slice(0, 4);
+      
+      console.log('Fetching data for:', today, year);
       
       const [activeUsersRes, surveysRes, coursesRes, appointmentsRes] = await Promise.all([
         axios.get(`http://localhost:3000/api/manager/report/active-members`, {
@@ -145,6 +153,13 @@ const RealTimeStats = () => {
         })
       ]);
 
+      console.log('Data fetched successfully:', {
+        activeUsers: activeUsersRes.data.active || 0,
+        surveys: surveysRes.data.count || 0,
+        courses: coursesRes.data.count || 0,
+        appointments: appointmentsRes.data.count || 0
+      });
+
       setStats({
         activeUsers: activeUsersRes.data.active || 0,
         surveysCompleted: surveysRes.data.count || 0,
@@ -157,17 +172,22 @@ const RealTimeStats = () => {
       setError('Failed to load today\'s statistics. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  const fetchTotalStats = async (period) => {
-    setLoading(true);
+  const fetchTotalStats = useCallback(async (period, isRefresh = false) => {
+    if (!isRefresh) {
+      setLoading(true);
+    }
+    // Không set refreshing ở đây nữa vì đã set trong handleRefresh
     setError('');
     
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Token not found. Please login again.');
       setLoading(false);
+      setRefreshing(false);
       return;
     }
 
@@ -198,17 +218,14 @@ const RealTimeStats = () => {
           return;
       }
 
-      const [activeUsersRes, surveysRes, coursesRes, appointmentsRes] = await Promise.all([
-        axios.get(`http://localhost:3000/api/manager/report/active-members`, { 
-          headers: { 'Authorization': `Bearer ${token}` } 
-        }),
+      const [surveysRes, coursesRes, appointmentsRes] = await Promise.all([
         axios.get(surveysUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
         axios.get(coursesUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
         axios.get(appointmentsUrl, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
       setTotalStats({
-        activeUsers: activeUsersRes.data.active || 0,
+        activeUsers: 0,
         surveysCompleted: surveysRes.data.count || 0,
         coursesCompleted: coursesRes.data.count || 0,
         appointments: appointmentsRes.data.count || 0
@@ -216,30 +233,49 @@ const RealTimeStats = () => {
 
     } catch (err) {
       console.error('Error fetching total stats:', err);
-      setError('Failed to load total statistics. Please try again.');
+      setError('Failed to load statistics. Please try again.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  const handleViewModeChange = (mode) => {
+  const handleRefresh = useCallback(() => {
+    console.log('Refresh clicked, viewMode:', viewMode);
+    
+    // Hiển thị trạng thái refreshing ngay lập tức
+    setRefreshing(true);
+    
+    // Thêm delay nhỏ để tránh refresh quá nhanh
+    setTimeout(() => {
+      if (viewMode === 'today') {
+        console.log('Fetching today stats...');
+        fetchTodayStats(true);
+      } else {
+        console.log('Fetching total stats for:', viewMode);
+        fetchTotalStats(viewMode, true);
+      }
+    }, 500); // Delay 500ms để tạo cảm giác mượt mà hơn
+  }, [viewMode, fetchTodayStats, fetchTotalStats]);
+
+  const handleViewModeChange = useCallback((mode) => {
     setViewMode(mode);
     if (mode === 'today') {
       fetchTodayStats();
     } else {
       fetchTotalStats(mode);
     }
-  };
+  }, [fetchTodayStats, fetchTotalStats]);
 
   useEffect(() => {
     fetchTodayStats();
-  }, []);
+  }, [fetchTodayStats]);
 
-  const getCurrentData = () => {
+  const currentData = useMemo(() => {
     return viewMode === 'today' ? stats : totalStats;
-  };
+  }, [viewMode, stats, totalStats]);
 
-  const getPeriodLabel = () => {
+  const getPeriodLabel = useCallback(() => {
     switch (viewMode) {
       case 'today':
         return 'Today';
@@ -252,16 +288,21 @@ const RealTimeStats = () => {
       default:
         return 'Today';
     }
-  };
+  }, [viewMode]);
 
-  const currentData = getCurrentData();
+  const periodLabel = useMemo(() => getPeriodLabel(), [getPeriodLabel]);
 
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10">
+    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10" key={`stats-${viewMode}-${refreshing}`}>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <FaChartPie className="text-2xl text-[#e11d48] flex-shrink-0" />
           <h2 className="text-2xl font-bold text-[#e11d48]">Overview</h2>
+          {refreshing && (
+            <div className="ml-2 px-2 py-1 bg-[#e11d48]/10 rounded-full">
+              <span className="text-xs text-[#e11d48] font-medium">Refreshing...</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -277,14 +318,14 @@ const RealTimeStats = () => {
               <option value="year">This Year</option>
             </select>
           </div>
-                      <button
-              onClick={() => handleViewModeChange(viewMode)}
-              disabled={loading}
-              className="px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm flex items-center gap-2"
-            >
-              <FaSyncAlt className={`text-sm text-white ${loading ? 'animate-spin' : ''}`} />
-              <span className="text-white">Refresh</span>
-            </button>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm flex items-center gap-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
+          >
+            <FaSyncAlt className={`text-sm text-white ${refreshing ? 'animate-spin' : ''}`} />
+            <span className="text-white">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
         </div>
       </div>
 
@@ -302,12 +343,12 @@ const RealTimeStats = () => {
               <FaUsers className="text-white text-xl" />
             </div>
             <div className="text-right">
-              <div className="text-xs text-blue-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-blue-600 font-medium">{periodLabel}</div>
               <div className="text-xs text-blue-500">Active Users</div>
             </div>
           </div>
-          <div className="text-3xl font-bold text-blue-700 mb-2">
-            {loading ? '...' : currentData.activeUsers}
+          <div className="text-3xl font-bold text-blue-700 mb-2 transition-all duration-300 ease-in-out">
+            {loading && !refreshing ? '...' : currentData.activeUsers}
           </div>
           <div className="text-sm text-blue-600">
             Users currently active
@@ -321,12 +362,12 @@ const RealTimeStats = () => {
               <FaChartBar className="text-white text-xl" />
             </div>
             <div className="text-right">
-              <div className="text-xs text-green-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-green-600 font-medium">{periodLabel}</div>
               <div className="text-xs text-green-500">Surveys</div>
             </div>
           </div>
-          <div className="text-3xl font-bold text-green-700 mb-2">
-            {loading ? '...' : currentData.surveysCompleted}
+          <div className="text-3xl font-bold text-green-700 mb-2 transition-all duration-300 ease-in-out">
+            {loading && !refreshing ? '...' : currentData.surveysCompleted}
           </div>
           <div className="text-sm text-green-600">
             Surveys completed
@@ -340,12 +381,12 @@ const RealTimeStats = () => {
               <FaGraduationCap className="text-white text-xl" />
             </div>
             <div className="text-right">
-              <div className="text-xs text-purple-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-purple-600 font-medium">{periodLabel}</div>
               <div className="text-xs text-purple-500">Courses</div>
             </div>
           </div>
-          <div className="text-3xl font-bold text-purple-700 mb-2">
-            {loading ? '...' : currentData.coursesCompleted}
+          <div className="text-3xl font-bold text-purple-700 mb-2 transition-all duration-300 ease-in-out">
+            {loading && !refreshing ? '...' : currentData.coursesCompleted}
           </div>
           <div className="text-sm text-purple-600">
             Courses completed
@@ -359,12 +400,12 @@ const RealTimeStats = () => {
               <FaCalendarAlt className="text-white text-xl" />
             </div>
             <div className="text-right">
-              <div className="text-xs text-orange-600 font-medium">{getPeriodLabel()}</div>
+              <div className="text-xs text-orange-600 font-medium">{periodLabel}</div>
               <div className="text-xs text-orange-500">Appointments</div>
             </div>
           </div>
-          <div className="text-3xl font-bold text-orange-700 mb-2">
-            {loading ? '...' : currentData.appointments}
+          <div className="text-3xl font-bold text-orange-700 mb-2 transition-all duration-300 ease-in-out">
+            {loading && !refreshing ? '...' : currentData.appointments}
           </div>
           <div className="text-sm text-orange-600">
             Appointments completed
