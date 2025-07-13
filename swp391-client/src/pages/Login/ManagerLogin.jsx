@@ -123,7 +123,7 @@ const ManagerLogin = () => {
     setGoogleLoading(true);
     try {
       // Initialize Google OAuth
-      window.location.href = 'http://localhost:3000/api/auth/google/consultant';
+      window.location.href = 'http://localhost:3000/api/auth/google';
     } catch (error) {
       console.error("Google login error:", error);
       Swal.fire({

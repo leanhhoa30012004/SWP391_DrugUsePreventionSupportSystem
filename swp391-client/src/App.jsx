@@ -60,6 +60,12 @@ import ConsultantManagement from './pages/Manager/dashboard/ConsultantManagement
 import ConsultantBooking from './pages/Consultant/Consultant.jsx'
 import OnlineConsultant from './pages/Homepage/Onlineconsultant'
 import OnlyConsultant from './pages/OnlyConsultant/OnlyConsultant.jsx'
+
+
+import Programs from './pages/CommunityProgramme/ViewProgramme.jsx'
+import ProgramDetail from './pages/CommunityProgramme/DetailProgramme.jsx'
+import ProgramSurveyPage from './pages/CommunityProgramme/SurveyProgramme.jsx'
+
 function App() {
   const location = useLocation();
   // Ẩn chatbot ở các trang manager và admin
@@ -109,6 +115,10 @@ function App() {
       <Route path="/consultant" element={<ConsultantBooking/>} />
       <Route path="/onlyconsultant" element={<OnlyConsultant/>}/>
 
+
+      <Route path="/programs" element={<Programs/>} />
+      <Route path="/programs/:program_id" element={<ProgramDetail/>} />
+      <Route path="/surveyprogram/:program_id" element={<ProgramSurveyPage/>} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>

@@ -33,7 +33,26 @@ const changeProfile = async (id, { fullname, email, password, birthday }) => {
   return { message: "Profile updated successfully" };
 };
 
-// Tìm user theo username (chỉ manager/admin)
+const updateUserProfile = async (id, { fullname, email, birthday }) => {
+  // Get current user data first to preserve other fields
+  const [currentUser] = await db.execute(
+    "SELECT username, password, email FROM Users WHERE user_id = ?",
+    [id]
+  );
+
+  if (currentUser.length === 0) {
+    throw new Error("User not found");
+  }
+
+  // Update only the provided fields, keep others unchanged
+  const updateEmail = email || currentUser[0].email;
+
+  await db.execute(
+    "UPDATE Users SET fullname = ?, email = ?, birthday = ? WHERE user_id = ?",
+    [fullname, updateEmail, birthday, id]
+  );
+  return { message: "User profile updated successfully" };
+};
 const findByUsername = async (username) => {
   const [rows] = await db.execute(
     "SELECT user_id, username, password, email, fullname, role, birthday, is_active FROM Users WHERE username = ? AND is_active = 1 AND (role = 'manager' OR role = 'admin')",
@@ -89,8 +108,16 @@ const toggleUserActive = async (id, is_active) => {
   await db.execute("UPDATE Users SET is_active = ? WHERE user_id = ?", [is_active ? 1 : 0, id]);
 };
 
+const getNameByUserId = async (user_id) => {
+  const [name] = await db.execute(`SELECT username
+FROM Users WHERE user_id = ? AND is_active = 1`, [user_id])
+  // console.log(name[0].username)
+  return name[0].username;
+}
+
 module.exports = {
   changeProfile,
+  updateUserProfile,
   createUser,
   findByUsername,
   findById,
@@ -98,5 +125,6 @@ module.exports = {
   updateUser,
   updateRole,
   getAllUsers,
-  toggleUserActive
+  toggleUserActive,
+  getNameByUserId
 };

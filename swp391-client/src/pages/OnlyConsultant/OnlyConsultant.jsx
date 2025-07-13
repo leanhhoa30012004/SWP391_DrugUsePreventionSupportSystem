@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,  useLocation } from 'react-router-dom';
 import { Calendar, Clock, User, Link, AlertCircle, CheckCircle, XCircle, Search, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -9,17 +9,42 @@ const ConsultantAppointmentsDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [consultant_id, setconsultant_id] = useState('');
+
   const navigate = useNavigate();
+  const location = useLocation()
+  const queryParams = new URLSearchParams(location.search);
+  const [consultant_id, setconsultant_id] = useState(queryParams.get('user'));
+  const username = queryParams.get('username')
+  
+  console.log('Username value:', username);
 
   const handleLogout = () => {
     localStorage.clear();
     navigate('/');
   };
 
+  // Tự động lấy consultant_id từ localStorage hoặc một source khác
+  // useEffect(() => {
+  //   // Lấy consultant_id từ localStorage (hoặc từ context, props, etc.)
+  //   const savedConsultantId = localStorage.getItem('consultant_id') || 
+  //                            localStorage.getItem('userId') || 
+  //                            localStorage.getItem('user_id');
+    
+  //   if (savedConsultantId) {
+  //     setconsultant_id(savedConsultantId);
+  //   }
+  // }, []);
+
+  // Tự động gọi API khi component mount hoặc khi consultant_id thay đổi
+  useEffect(() => {
+    if (consultant_id) {
+      fetchAppointments(consultant_id);
+    }
+  }, [consultant_id]);
+
   const fetchAppointments = async (id) => {
-    if (!id.trim()) {
-      setError('Please enter consultant ID');
+    if (!id || !id.toString().trim()) {
+      setError('Consultant ID is required');
       return;
     }
     
@@ -29,9 +54,14 @@ const ConsultantAppointmentsDashboard = () => {
     try {
       // Using fetch instead of axios for artifact compatibility
       const response = await fetch(`http://localhost:3000/api/consultation/get-all-appointment-by-consultant-id/${consultant_id}`);
+      console.log(response)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       setAppointments(data);
-      console.log(data)
+      console.log(data);
     } catch (err) {
       setError('Unable to load appointment data. Please try again.');
       console.error('Error fetching appointments:', err);
@@ -40,9 +70,11 @@ const ConsultantAppointmentsDashboard = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    fetchAppointments(consultant_id);
+  // Thêm hàm refresh để có thể reload dữ liệu
+  const handleRefresh = () => {
+    if (consultant_id) {
+      fetchAppointments(consultant_id);
+    }
   };
 
   const getStatusIcon = (status) => {
@@ -103,7 +135,7 @@ const ConsultantAppointmentsDashboard = () => {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      hour: '2-digit',
+      key: '2-digit',
       minute: '2-digit'
     });
   };
@@ -130,61 +162,49 @@ const ConsultantAppointmentsDashboard = () => {
                 </h1>
               </div>
             </div>
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="ml-4 px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow"
-            >
-              Logout
-            </button>
+            {/* Refresh and Logout Buttons */}
+            <div className="flex items-center space-x-3">
+              <div className = "px-3">
+                      <span className="text-lglg text-gray-600 px-1">Welcome,</span>
+                      <span className="text-lg font-semibold text-[#E53935] max-w-[100px] truncate">
+                        {username}
+                      </span>
+              </div>     
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="px-4 py-2 mx-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Form */}
-        <div className="bg-white rounded-xl shadow-lg border border-red-100 mb-8 overflow-hidden">
-          <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Search className="w-5 h-5" />
-              Search Appointments
-            </h2>
-          </div>
-          <div className="p-6">
-            <div onSubmit={handleSubmit} className="flex gap-4">
-              <div className="flex-1">
-                <label htmlFor="consultant_id" className="block text-sm font-medium text-gray-700 mb-2">
-                  Consultant ID
-                </label>
-                <input
-                  type="text"
-                  id="consultant_id"
-                  value={consultant_id}
-                  onChange={(e) => setconsultant_id(e.target.value)}
-                  placeholder="Enter consultant ID..."
-                  className="w-full px-4 py-3 border-2 border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all duration-200 hover:border-red-300"
-                />
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-white rounded-xl shadow-lg border border-red-100 py-16">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <RefreshCw className="w-12 h-12 text-red-600 animate-spin" />
               </div>
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => fetchAppointments(consultant_id)}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
-                >
-                  {loading ? (
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Search className="w-5 h-5" />
-                  )}
-                  {loading ? 'Loading...' : 'Search'}
-                </button>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Loading appointments...
+              </h3>
+              <p className="text-gray-500">Please wait while we fetch your appointment data.</p>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -197,7 +217,7 @@ const ConsultantAppointmentsDashboard = () => {
         )}
 
         {/* Appointments List */}
-        {appointments.length > 0 && (
+        {!loading && appointments.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg border border-red-100 overflow-hidden">
             <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
               <h2 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -215,7 +235,7 @@ const ConsultantAppointmentsDashboard = () => {
                     <th className="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">
                       Request Sent Date
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">
+                    <th className="px-2 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">
                       Appointment Date
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-red-800 uppercase tracking-wider">
@@ -284,34 +304,34 @@ const ConsultantAppointmentsDashboard = () => {
         )}
 
         {/* Empty State */}
-        {appointments.length === 0 && !loading && !error && consultant_id && (
+        {!loading && appointments.length === 0 && !error && consultant_id && (
           <div className="bg-white rounded-xl shadow-lg border border-red-100 py-16">
             <div className="text-center">
               <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Calendar className="w-12 h-12 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibized text-gray-900 mb-2">
                 No appointments found
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                This consultant has no appointments or the ID does not exist. Please check the consultant ID and try again.
+                This consultant has no appointments scheduled. New appointments will appear here automatically.
               </p>
             </div>
           </div>
         )}
 
-        {/* Initial State */}
-        {!consultant_id && !loading && (
+        {/* No Consultant ID State */}
+        {!loading && !consultant_id && (
           <div className="bg-white rounded-xl shadow-lg border border-red-100 py-16">
             <div className="text-center">
               <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-12 h-12 text-red-600" />
+                <AlertCircle className="w-12 h-12 text-red-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Search for appointments
+                No consultant ID found
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                Enter a consultant ID above to view their appointment list and manage scheduled meetings.
+                Please ensure you are logged in properly. The consultant ID is required to load appointments.
               </p>
             </div>
           </div>
