@@ -1,0 +1,144 @@
+const { json } = require('express');
+const programModel = require('../models/program.model');
+const { reportNumberOfUsersEachRole } = require('../models/report.models');
+
+exports.getAllCommunityProgram = async (req, res) => {
+    try {
+        const listProgram = await programModel.getAllCommunityProgram();
+        if (!listProgram) return res.json('There are no programs in system!')
+        return res.json(listProgram);
+    } catch (error) {
+        console.error("Error getAllCommnunityProgram:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.numberOfParticipantProgram = async (req, res) => {
+    try {
+        const number = await programModel.numberParticipantProgram();
+        return res.json(number);
+    } catch (error) {
+        console.error("Error numberOfParticipantProgram:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.registeredProgram = async (req, res) => {
+    const { program_id, member_id } = req.params
+    try {
+        console.log(await programModel.checkMemberRegistered(program_id, member_id))
+        if (await programModel.checkMemberRegistered(program_id, member_id))
+            return res.json('You are already registered');
+        const isRegistered = await programModel.registeredProgram(program_id, member_id);
+        if (isRegistered) return res.json('Registered successfully!');
+        return res.json('Register Failed!')
+    } catch (error) {
+        console.error("Error registeredProgram:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.markParticipantAsPresent = async (req, res) => {
+    const { program_id, member_id } = req.params;
+    try {
+        const check = await programModel.getProgramById(program_id);
+        if (!check) return res.json("This program doesn't exist!")
+        if (check.status === 'closed')
+            return res.json('The program has ended!!!')
+        const isMarked = await programModel.markParticipantAsPresent(program_id, member_id);
+        if (isMarked) return res.json('Marked succesfully!');
+        return res.json('Mark Failed!')
+    } catch (error) {
+        console.error("markParticipantAsPresent: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.submitResponse = async (req, res) => {
+    const program_id = req.params.program_id;
+    const survey_response = req.body;
+
+    try {
+        const program = await programModel.getProgramById(program_id);
+        if (!program)
+            return res.json(`This program doesn't exist!`);
+
+        let responseData = program.response;
+        let i = 0;
+
+        if (survey_response.type === 'pre') {
+            responseData.pre_response.forEach(item => {
+                item.push(survey_response.answer[i]);
+                i++;
+            });
+        } else if (survey_response.type === 'post') {
+            responseData.post_response.forEach(item => {
+                item.push(survey_response.answer[i]);
+                i++;
+            });
+        }
+
+        // console.log(JSON.stringify(responseData))
+
+        const isUpdated = await programModel.updateResponseProgram(program_id, JSON.stringify(responseData));
+        console.log(isUpdated)
+        if (isUpdated)
+            return res.json('Submit successful!');
+        else
+            return res.json('Submit failed!');
+    } catch (error) {
+        console.error("submitResponse: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+exports.updateProgram = async (req, res) => {
+    const program = req.body;
+    try {
+        const check = await programModel.getProgramById(program.program_id);
+        console.log(check)
+        if (!check) return res.json("This program doesn't exist!")
+        const isUpdate = await programModel.updateProgram(program);
+        if (isUpdate) return res.json('Updated program successfullly!')
+        return res.json('Update program failed!')
+    } catch (error) {
+        console.error("updateProgram: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.deleteProgram = async (req, res) => {
+    const program_id = req.params.program_id;
+    try {
+        const isDelete = programModel.deleteProgram(program_id);
+        if (isDelete)
+            return res.json('Deleted program successfully!')
+        return res.json('Delete program failed!')
+    } catch (error) {
+        console.error("deleteProgram: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.getAllMemberByProgramId = async (req, res) => {
+    const program_id = req.params.program_id;
+    try {
+        const list = await programModel.getAllMemberByProgramId(program_id);
+        return res.json(list);
+    } catch (error) {
+        console.error("getAllMemberByProgramId: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.checkMemberRegistered = async (req, res) => {
+    const { program_id, member_id } = req.params;
+    try {
+        const check = await programModel.checkMemberRegistered(program_id, member_id);
+        return res.json(check);
+    } catch (error) {
+        console.log("checkMemberRegistered: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+

@@ -25,27 +25,22 @@ router.post(
   managerController.changeProfile
 );
 
-// Lấy danh sách users
+
+// Route mới để manager cập nhật profile của user khác
+
+// Cho phép tất cả user đã đăng nhập truy cập
+
 router.get("/users", protectManager, managerController.getAllUsers);
 
 // Đăng nhập manager
 router.post("/login-manager", authController.loginManager);
 
-// Bật/tắt trạng thái active
-// NHỮNG THAY ĐỔI ĐÃ THỰC HIỆN:
-// - Thêm route mới cho toggle trạng thái active của user
-// - Thay thế chức năng delete bằng soft delete
 // - Thêm middleware authentication và authorization phù hợp
 router.patch('/users/:id/active', protectManager, restrictTo('manager', 'admin'), managerController.toggleUserActive);
 
 // Tạo user mới
 router.post('/create-user', protectManager, restrictTo('manager', 'admin'), managerController.createUser);
 
-// Cập nhật thông tin user
-// NHỮNG THAY ĐỔI ĐÃ THỰC HIỆN:
-// - Thêm route mới cho cập nhật thông tin user
-// - Thêm middleware authentication và authorization phù hợp
-// - Hỗ trợ cập nhật toàn bộ profile user bao gồm thay đổi role
 router.put('/users/:id', protectManager, restrictTo('manager', 'admin'), managerController.updateUser);
 
 module.exports = router;

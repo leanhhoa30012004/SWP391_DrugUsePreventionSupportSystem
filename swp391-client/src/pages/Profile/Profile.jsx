@@ -11,6 +11,7 @@ const Profile = () => {
     email: "",
     fullname: "",
     birthday: "",
+    member_id: "",
   });
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,16 +23,21 @@ const Profile = () => {
   });
   const [activeTab, setActiveTab] = useState('info');
   const [courses, setCourses] = useState([]);
-  const [certificates, setCertificates] = useState([]);
   const [surveys, setSurveys] = useState([]);
+  const [bookings, setBookings] = useState([]);
 
-  // Lấy thông tin user khi component mount
   useEffect(() => {
     fetchUserProfile();
     fetchUserCourses();
-    fetchUserCertificates();
     fetchUserSurveys();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'booking' && userInfo.member_id) {
+      fetchUserBookings();
+    }
+    // eslint-disable-next-line
+  }, [activeTab, userInfo.member_id]);
 
   const fetchUserProfile = async () => {
     try {
@@ -40,13 +46,9 @@ const Profile = () => {
         navigate("/login");
         return;
       }
-
       const response = await axios.get("http://localhost:3000/api/auth/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (response.data.success) {
         setUserInfo(response.data.user);
         setFormData({
@@ -56,16 +58,11 @@ const Profile = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
         navigate("/login");
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to load profile information",
-        });
+        Swal.fire({ icon: "error", title: "Error", text: "Failed to load profile information" });
       }
     } finally {
       setLoading(false);
@@ -76,13 +73,9 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-
       const response = await axios.get("http://localhost:3000/api/auth/profile/courses", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (response.data.success) {
         setCourses(response.data.courses);
       }
@@ -91,41 +84,48 @@ const Profile = () => {
     }
   };
 
-  const fetchUserCertificates = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const response = await axios.get("http://localhost:3000/api/auth/profile/certificates", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.success) {
-        setCertificates(response.data.certificates);
-      }
-    } catch (error) {
-      console.error("Error fetching certificates:", error);
-    }
-  };
-
   const fetchUserSurveys = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-
       const response = await axios.get("http://localhost:3000/api/auth/profile/surveys", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (response.data.success) {
         setSurveys(response.data.surveys);
       }
     } catch (error) {
       console.error("Error fetching surveys:", error);
+    }
+  };
+
+ 
+  const fetchUserBookings = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/consultation/get-all-appointment-by-member-id/${userInfo.member_id}`);
+      setBookings(response.data || []);
+    } catch (error) {
+      setBookings([]);
+    }
+  };
+
+  const handleCancelBooking = async (appointmentId) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to cancel this booking?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, cancel it!',
+      });
+      if (!result.isConfirmed) return;
+      await axios.delete(`http://localhost:3000/api/consultation/reject-appointment/${appointment_id}`);
+      setBookings((prev) => prev.filter(b => b.appointment_id !== appointmentId));
+      Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
+    } catch (error) {
+      Swal.fire('Error', 'Failed to cancel booking.', 'error');
     }
   };
 
@@ -251,7 +251,7 @@ const Profile = () => {
                     {courses.length} Courses
                   </span>
                   <span className="px-3 py-1 bg-white/20 text-white text-sm rounded-full font-medium">
-                    {certificates.length} Certificates
+                    {surveys.length} Surveys
                   </span>
                 </div>
               </div>
@@ -334,41 +334,6 @@ const Profile = () => {
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('certificates')}
-                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'certificates'
-                      ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:scale-105'
-                    }`}
-                >
-                  <div className={`p-2 rounded-lg ${activeTab === 'certificates'
-                      ? 'bg-white/20'
-                      : 'bg-gray-200 group-hover:bg-red-100'
-                    }`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">Certificates</div>
-                    <div className={`text-xs ${activeTab === 'certificates' ? 'text-red-100' : 'text-gray-500'
-                      }`}>
-                      View your achievements
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${activeTab === 'certificates'
-                        ? 'bg-white/20 text-white'
-                        : 'bg-yellow-100 text-yellow-600'
-                      }`}>
-                      {certificates.length}
-                    </span>
-                    {activeTab === 'certificates' && (
-                      <div className="w-2 h-8 bg-white rounded-full"></div>
-                    )}
-                  </div>
-                </button>
-
-                <button
                   onClick={() => setActiveTab('surveys')}
                   className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'surveys'
                       ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
@@ -398,6 +363,41 @@ const Profile = () => {
                       {surveys.length}
                     </span>
                     {activeTab === 'surveys' && (
+                      <div className="w-2 h-8 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('booking')}
+                  className={`w-full flex items-center space-x-4 px-4 py-4 rounded-xl text-left font-medium transition-all duration-200 group ${activeTab === 'booking'
+                      ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:scale-105'
+                    }`}
+                >
+                  <div className={`p-2 rounded-lg ${activeTab === 'booking'
+                      ? 'bg-white/20'
+                      : 'bg-gray-200 group-hover:bg-red-100'
+                    }`}>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold">My Booking Consultant</div>
+                    <div className={`text-xs ${activeTab === 'booking' ? 'text-red-100' : 'text-gray-500'
+                      }`}>
+                      View your booked appointments
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${activeTab === 'booking'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-purple-100 text-purple-600'
+                      }`}>
+                      {bookings.length}
+                    </span>
+                    {activeTab === 'booking' && (
                       <div className="w-2 h-8 bg-white rounded-full"></div>
                     )}
                   </div>
@@ -675,56 +675,6 @@ const Profile = () => {
                 </div>
               )}
 
-              {/* Certificates Tab */}
-              {activeTab === 'certificates' && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold text-gray-900">My Certificates</h2>
-                  {certificates.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
-                        <svg fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M9,10H12A1,1 0 0,1 13,11V12A1,1 0 0,1 12,13H9V11M9,15H12A1,1 0 0,1 13,16V17A1,1 0 0,1 12,18H9V16M12,3A1,1 0 0,1 13,4V8A1,1 0 0,1 12,9H11V7H9V9H8A1,1 0 0,1 7,8V4A1,1 0 0,1 8,3H12M21,6V8H19V6H21M21,10V12H19V10H21M21,14V16H19V14H21Z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Certificates Yet</h3>
-                      <p className="text-gray-500">Complete courses and surveys to earn certificates.</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {certificates.map((certificate) => (
-                        <div key={certificate.certificate_id} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-lg p-6 shadow-sm">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center">
-                              <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mr-4">
-                                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M9,10H12A1,1 0 0,1 13,11V12A1,1 0 0,1 12,13H9V11M9,15H12A1,1 0 0,1 13,16V17A1,1 0 0,1 12,18H9V16M12,3A1,1 0 0,1 13,4V8A1,1 0 0,1 12,9H11V7H9V9H8A1,1 0 0,1 7,8V4A1,1 0 0,1 8,3H12Z" />
-                                </svg>
-                              </div>
-                              <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{certificate.title}</h3>
-                                <p className="text-sm text-gray-600">{certificate.type}</p>
-                              </div>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {new Date(certificate.earned_date).toLocaleDateString('vi-VN')}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-700 mb-4">{certificate.description}</p>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium text-yellow-700">
-                              Certificate ID: {certificate.certificate_id}
-                            </span>
-                            <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
-                              Download
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Surveys Tab */}
               {activeTab === 'surveys' && (
                 <div className="space-y-6">
@@ -791,6 +741,51 @@ const Profile = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Booking Tab */}
+              {activeTab === 'booking' && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900">My Booking Consultant</h2>
+                  {bookings.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z"/></svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Bookings Yet</h3>
+                      <p className="text-gray-500">You have not booked any consultant appointments yet.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {bookings.map((b) => (
+                            <tr key={b.appointment_id}>
+                              <td className="px-6 py-4 whitespace-nowrap">{b.appointment_date}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{b.appointment_time}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{b.email}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{b.member_id}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">{b.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                <button onClick={() => handleCancelBooking(b.appointment_id)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium">Cancel</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </div>

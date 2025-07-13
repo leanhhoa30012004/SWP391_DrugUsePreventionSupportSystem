@@ -4,11 +4,11 @@ const bcrypt = require("bcryptjs");
 // Tạo user mới
 exports.createUser = async (req, res) => {
   const { username, password, email, fullname, role, birthday } = req.body;
-  
+
   try {
     if (!username || !password || !email || !fullname || !birthday) {
-      return res.status(400).json({ 
-        message: "All fields are required: username, password, email, fullname, birthday" 
+      return res.status(400).json({
+        message: "All fields are required: username, password, email, fullname, birthday"
       });
     }
     
@@ -27,13 +27,14 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ message: result.message });
     }
 
-    res.status(201).json({ 
-      message: "User created successfully", 
-      userId: result.userId 
+    res.status(201).json({
+      message: "User created successfully",
+      userId: result.userId
     });
   } catch (error) {
     console.error("Error creating User:", error);
-    
+
+
     if (error.sqlMessage && error.sqlMessage.includes('Duplicate entry')) {
       if (error.sqlMessage.includes('username')) {
         return res.status(400).json({ message: "Username already exists" });
@@ -42,10 +43,10 @@ exports.createUser = async (req, res) => {
         return res.status(400).json({ message: "Email already exists" });
       }
     }
-    
-    res.status(500).json({ 
-      message: "Internal server error", 
-      error: error.sqlMessage || error.message 
+
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.sqlMessage || error.message
     });
   }
 };
@@ -79,7 +80,31 @@ exports.changeProfile = async (req, res) => {
   }
 };
 
-// Lấy danh sách tất cả users
+
+exports.updateUserProfile = async (req, res) => {
+  const { id } = req.params;
+  const { fullname, email, birthday } = req.body;
+
+  try {
+    // Validate required fields
+    if (!fullname) {
+      return res.status(400).json({ message: "Full name is required" });
+    }
+
+    const result = await managerModels.updateUserProfile(id, {
+      fullname,
+      email,
+      birthday,
+    });
+    res.json(result);
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.sqlMessage });
+  }
+};
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await managerModels.getAllUsers();
@@ -105,6 +130,20 @@ exports.updateRole = async (req, res) => {
       .json({ message: "Internal server error", error: error.sqlMessage });
   }
 };
+
+exports.deleteUser = async (req, res) => {
+  const id = req.params.id; // Assuming user_id is passed as a URL parameter
+  try {
+    await managerModels.deleteUser(id);
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.sqlMessage });
+  }
+};
+
 
 exports.toggleUserActive = async (req, res) => {
   const id = req.params.id;
