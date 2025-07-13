@@ -34,7 +34,7 @@ exports.createUser = async (req, res) => {
   } catch (error) {
     console.error("Error creating User:", error);
 
-    // Xử lý lỗi trùng unique từ DB (phòng trường hợp model không bắt được)
+
     if (error.sqlMessage && error.sqlMessage.includes('Duplicate entry')) {
       if (error.sqlMessage.includes('username')) {
         return res.status(400).json({ message: "Username already exists" });
@@ -79,6 +79,7 @@ exports.changeProfile = async (req, res) => {
       .json({ message: "Internal server error", error: error.sqlMessage });
   }
 };
+
 
 exports.updateUserProfile = async (req, res) => {
   const { id } = req.params;
@@ -142,6 +143,7 @@ exports.deleteUser = async (req, res) => {
       .json({ message: "Internal server error", error: error.sqlMessage });
   }
 };
+
 
 exports.toggleUserActive = async (req, res) => {
   const id = req.params.id;

@@ -26,6 +26,9 @@ exports.numberOfParticipantProgram = async (req, res) => {
 exports.registeredProgram = async (req, res) => {
     const { program_id, member_id } = req.params
     try {
+        console.log(await programModel.checkMemberRegistered(program_id, member_id))
+        if (await programModel.checkMemberRegistered(program_id, member_id))
+            return res.json('You are already registered');
         const isRegistered = await programModel.registeredProgram(program_id, member_id);
         if (isRegistered) return res.json('Registered successfully!');
         return res.json('Register Failed!')
@@ -124,6 +127,17 @@ exports.getAllMemberByProgramId = async (req, res) => {
         return res.json(list);
     } catch (error) {
         console.error("getAllMemberByProgramId: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.checkMemberRegistered = async (req, res) => {
+    const { program_id, member_id } = req.params;
+    try {
+        const check = await programModel.checkMemberRegistered(program_id, member_id);
+        return res.json(check);
+    } catch (error) {
+        console.log("checkMemberRegistered: ", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
