@@ -26,10 +26,6 @@ router.post(
 );
 
 
-// Route mới để manager cập nhật profile của user khác
-
-// Cho phép tất cả user đã đăng nhập truy cập
-
 router.get("/users", protectManager, managerController.getAllUsers);
 
 // Đăng nhập manager

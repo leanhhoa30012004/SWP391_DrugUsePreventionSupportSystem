@@ -33,7 +33,6 @@ const changeProfile = async (id, { fullname, email, password, birthday }) => {
   return { message: "Profile updated successfully" };
 };
 
-
 const updateUserProfile = async (id, { fullname, email, birthday }) => {
   // Get current user data first to preserve other fields
   const [currentUser] = await db.execute(
