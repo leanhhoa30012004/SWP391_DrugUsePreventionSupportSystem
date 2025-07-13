@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaUserMd, FaPhone, FaEnvelope, FaUserTie, FaStar, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaGraduationCap, FaAward, FaComments, FaTimes, FaInfo, FaSave, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
 import axiosInstance from '../../../config/axios/axiosInstance';
 import axios from 'axios';
-import { redirect } from 'react-router-dom';
 function ConsultantManagement() {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
