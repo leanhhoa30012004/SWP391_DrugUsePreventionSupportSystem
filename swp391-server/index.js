@@ -58,7 +58,7 @@ app.use("/api/manager/report", reportRoutes);
 app.use("/api/program", programRoutes);
 
 app.use("/api/blog", blogRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "src/uploads")))
+app.use("/api/uploads", express.static(path.join(__dirname, "src/uploads")))
 // Chạy server
 app.use("/api/notice", noticeRoutes);
 
