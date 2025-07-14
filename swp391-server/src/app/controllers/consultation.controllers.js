@@ -94,9 +94,6 @@ exports.getAllAppointmentByConsultantId = async (req, res) => {
     }
 }
 
-
-
-
 exports.rejectAppointment = async (req, res) => {
     const appointment_id = req.params.appointment_id;
     const is_active = req.params.is_active

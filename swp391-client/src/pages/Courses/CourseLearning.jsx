@@ -326,37 +326,40 @@ const CourseLearning = () => {
             const result = await response.json();
             console.log('🔄 SERVER RESPONSE:', JSON.stringify(result, null, 2));
 
-            // Tính tổng điểm
-            const calculateTotalScore = (moocResults) => {
-                let total = 0;
-                console.log("📊 CALCULATING SCORE FROM RESPONSE:");
+            // // Tính tổng điểm
+            // const calculateTotalScore = (moocResults) => {
+            //     let total = 0;
+            //     console.log("📊 CALCULATING SCORE FROM RESPONSE:", response.score);
 
-                if (Array.isArray(moocResults)) {
-                    moocResults.forEach((mooc, moocIndex) => {
-                        console.log(`MOOC ${moocIndex + 1} (ID: ${mooc.mooc_id}):`);
-                        console.log(`- Total Score: ${mooc.totalScore}`);
+            //     if (Array.isArray(moocResults)) {
+            //         moocResults.forEach((mooc, moocIndex) => {
+            //             console.log(`MOOC ${moocIndex + 1} (ID: ${mooc.mooc_id}):`);
+            //             console.log(`- Total Score: ${mooc.totalScore}`);
 
-                        Object.entries(mooc.details).forEach(([questionNum, questionData]) => {
-                            console.log(`  Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
-                            total += questionData.score || 0;
-                        });
-                    });
-                } else if (moocResults && typeof moocResults === 'object') {
-                    console.log("Single MOOC result:", moocResults);
-                    if (moocResults.details) {
-                        Object.entries(moocResults.details).forEach(([questionNum, questionData]) => {
-                            console.log(`Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
-                            total += questionData.score || 0;
-                        });
-                    }
-                }
+            //             Object.entries(mooc.details).forEach(([questionNum, questionData]) => {
+            //                 console.log(`  Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
+            //                 total += questionData.score || 0;
+            //             });
+            //         });
+            //     } else if (moocResults && typeof moocResults === 'object') {
+            //         console.log("Single MOOC result:", moocResults);
+            //         if (moocResults.details) {
+            //             Object.entries(moocResults.details).forEach(([questionNum, questionData]) => {
+            //                 console.log(`Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
+            //                 total += questionData.score || 0;
+            //             });
+            //         }
+            //     }
 
-                console.log(`🎯 TOTAL CALCULATED SCORE: ${total}`);
-                return total;
-            };
+            //     console.log(`🎯 TOTAL CALCULATED SCORE: ${total}`);
+            //     return total;
+            // };
 
-            const totalScore = calculateTotalScore(result.courseResult || result);
+            // const totalScore = calculateTotalScore(result);
+            const totalScore = result.score;
+            console.log("Result", result)
             setQuizScore(totalScore);
+            console.log("total", totalScore)
 
             // Kiểm tra kết quả
             if (totalScore < 8) {
