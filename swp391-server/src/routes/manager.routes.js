@@ -4,12 +4,12 @@ const managerController = require("../app/controllers/manager.controllers");
 const { protectManager, restrictTo } = require("../middleware/auth.middleware");
 const authController = require("../app/controllers/auth.controllers");
 
-// Test route without authentication
+// Test route
 router.get("/test", (req, res) => {
   res.json({ message: "Manager routes are working!" });
 });
 
-// Protected manager routes
+// Cập nhật role user
 router.put(
   "/update-role/:id/:role",
   protectManager,
@@ -17,7 +17,7 @@ router.put(
   managerController.updateRole
 );
 
-// Chỉ cho phép manager truy cập
+// Cập nhật profile manager
 router.post(
   "/profile",
   protectManager,
@@ -25,24 +25,18 @@ router.post(
   managerController.changeProfile
 );
 
-// Route mới để manager cập nhật profile của user khác
-router.put(
-  "/users/:id/profile",
-  protectManager,
-  restrictTo("manager", "admin"),
-  managerController.updateUserProfile
-);
 
-// Cho phép tất cả user đã đăng nhập truy cập
 router.get("/users", protectManager, managerController.getAllUsers);
+
+// Đăng nhập manager
 router.post("/login-manager", authController.loginManager);
 
-// Thêm route cập nhật trạng thái active/inactive
-router.patch('/users/:id/active', managerController.toggleUserActive);
+// - Thêm middleware authentication và authorization phù hợp
+router.patch('/users/:id/active', protectManager, restrictTo('manager', 'admin'), managerController.toggleUserActive);
 
-// Thêm route tạo user mới chuẩn RESTful
-// Route này cho phép manager hoặc admin tạo user mới qua endpoint POST /api/manager/users
-// Được sử dụng bởi frontend khi manager tạo user trong trang quản lý user
+// Tạo user mới
 router.post('/create-user', protectManager, restrictTo('manager', 'admin'), managerController.createUser);
+
+router.put('/users/:id', protectManager, restrictTo('manager', 'admin'), managerController.updateUser);
 
 module.exports = router;

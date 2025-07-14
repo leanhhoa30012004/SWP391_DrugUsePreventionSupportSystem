@@ -10,5 +10,6 @@ router.get('/mark-participant/:program_id/:member_id', programController.markPar
 router.post('/update-program', programController.updateProgram);
 router.get('/delete-program/:program_id', programController.deleteProgram);
 router.get('/get-all-member-by-program-id/:program_id', programController.getAllMemberByProgramId);
+router.get('/check-member-registered/:program_id/:member_id', programController.checkMemberRegistered);
 
 module.exports = router;

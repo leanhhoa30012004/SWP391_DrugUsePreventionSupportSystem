@@ -12,7 +12,7 @@ const UserManagement = () => {
   const [selectedRole, setSelectedRole] = useState('all');
   const [error, setError] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editUserData, setEditUserData] = useState({ user_id: '', fullname: '', email: '', birthday: '', password: '' });
+  const [editUserData, setEditUserData] = useState({ user_id: '', fullname: '', email: '', birthday: '', password: '', role: '' });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -24,6 +24,9 @@ const UserManagement = () => {
     birthday: '',
     role: 'member'
   });
+
+  // Lấy user hiện tại từ localStorage
+  const currentUser = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     fetchUsers();
@@ -88,6 +91,11 @@ const UserManagement = () => {
     }
   };
 
+  // NHỮNG THAY ĐỔI ĐÃ THỰC HIỆN: Thay thế chức năng delete bằng toggle active/inactive
+  // - Thêm soft delete sử dụng flag is_active thay vì hard delete
+  // - Thêm optimistic UI updates để cải thiện trải nghiệm người dùng
+  // - Thêm xử lý lỗi phù hợp
+  // - Duy trì tính toàn vẹn dữ liệu trong khi cho phép deactivate user
   const handleToggleActive = async (userId, currentActive) => {
     try {
       await axiosInstance.patch(`/manager/users/${userId}/active`, { is_active: !currentActive });
@@ -101,42 +109,35 @@ const UserManagement = () => {
     }
   };
 
+  // NHỮNG THAY ĐỔI ĐÃ THỰC HIỆN: Cập nhật chức năng edit user
+  // - Thêm validation cho các trường bắt buộc (fullname, email, birthday)
+  // - Thêm hỗ trợ cập nhật password tùy chọn
+  // - Thêm chức năng cập nhật role
+  // - Cải thiện xử lý lỗi với thông báo lỗi từ backend
+  // - Thêm reset form đúng cách sau khi cập nhật thành công
   const handleEditUser = async (e) => {
     e.preventDefault();
+    // Kiểm tra các trường bắt buộc
+    if (!editUserData.fullname || !editUserData.email || !editUserData.birthday) {
+      alert('Fullname, Email, and Birthday are required!');
+      return;
+    }
     try {
-      // Since we can't directly update other users' profiles with existing APIs,
-      // we'll use a workaround: create a new user with updated info and deactivate the old one
-      const originalUser = users.find(u => (u.user_id || u.id || u.username) === editUserData.user_id);
-      if (!originalUser) {
-        throw new Error('User not found');
-      }
-
-      // Create new user with updated information but different username to avoid conflicts
-      const newUsername = `${originalUser.username}_updated_${Date.now()}`;
-      const newUserData = {
-        username: newUsername,
-        password: editUserData.password || 'defaultPassword123',
+      const res = await axiosInstance.put(`/manager/users/${editUserData.user_id}`, {
         fullname: editUserData.fullname,
         email: editUserData.email,
+        password: editUserData.password || '', // truyền chuỗi rỗng nếu không đổi
+        role: editUserData.role,
         birthday: editUserData.birthday,
-        role: originalUser.role
-      };
-
-      // Create new user
-      const createResponse = await axiosInstance.post('/manager/create-user', newUserData);
-      
-      // Deactivate the old user
-      await axiosInstance.patch(`/manager/users/${editUserData.user_id}/active`, { is_active: false });
-
+      });
       setShowEditModal(false);
-      setEditUserData({ user_id: '', fullname: '', email: '', birthday: '', password: '' });
-      fetchUsers(); // Refresh the user list
+      setEditUserData({ user_id: '', fullname: '', email: '', birthday: '', password: '', role: '' });
       setError('');
-      alert(`User profile updated successfully!\n\nNew user created with username: ${newUsername}\nOld user has been deactivated.\n\nPlease inform the user of their new username.`);
+      alert(res.data.message || 'User updated successfully!');
+      fetchUsers();
     } catch (error) {
-      console.error('Error updating user profile:', error);
-      setError(error.response?.data?.message || 'Failed to update user profile');
-      alert(error.response?.data?.message || 'Failed to update user profile');
+      setError(error.response?.data?.message || 'Failed to update user');
+      alert(error.response?.data?.message || 'Failed to update user');
     }
   };
 
@@ -306,11 +307,14 @@ const UserManagement = () => {
                           onClick={() => {
                             setEditUserData({
                               user_id: uid,
-                              fullname: user.fullname,
-                              email: user.email,
+                              username: user.username, // thêm dòng này!
+                              fullname: user.fullname || '',
+                              email: user.email || '',
                               birthday: user.birthday ? new Date(user.birthday).toISOString().split('T')[0] : '',
                               password: '',
+                              role: user.role || '',
                             });
+                            console.log(user);
                             setShowEditModal(true);
                           }}
                         >
@@ -496,6 +500,19 @@ const UserManagement = () => {
                   className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                   placeholder="Enter new password"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-red-700 mb-1">Role</label>
+                <select
+                  value={editUserData.role}
+                  onChange={(e) => setEditUserData({ ...editUserData, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
+                >
+                  <option value="member">Member</option>
+                  <option value="consultant">Consultant</option>
+                  <option value="manager">Manager</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
               <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-3 sm:space-y-0 pt-4 justify-center items-center">
                 <button

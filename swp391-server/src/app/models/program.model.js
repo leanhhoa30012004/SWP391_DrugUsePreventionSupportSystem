@@ -118,6 +118,14 @@ WHERE cp.program_id = ? AND cp.is_active = 1`, [program_id]);
     return list;
 }
 
+const checkMemberRegistered = async (program_id, member_id) => {
+    const [member] = await db.execute(`SELECT *
+FROM Community_program_participant WHERE member_id = ? AND program_id = ?`, [member_id, program_id]);
+    if (!member[0])
+        return false;
+    return true;
+}
+
 module.exports = {
     getAllCommunityProgram,
     numberParticipantProgram,
@@ -128,5 +136,6 @@ module.exports = {
     updateResponseProgram,
     updateProgram,
     deleteProgram,
-    getAllMemberByProgramId
+    getAllMemberByProgramId,
+    checkMemberRegistered
 }

@@ -127,6 +127,11 @@ const SurveyPage = () => {
         setScore(data.totalScore); // Save score from backend
         setIsSubmitted(true); // Mark as submitted
         setLoading(false);
+
+        // [Realtime Dashboard] Thông báo cho dashboard manager cập nhật lại số liệu
+        // Ghi 1 giá trị mới vào localStorage (key 'surveyCompleted')
+        // Dashboard manager sẽ lắng nghe sự kiện này để tự động fetch lại số liệu
+        localStorage.setItem('surveyCompleted', Date.now());
       })
       .catch(err => {
         console.error("Error:", err);

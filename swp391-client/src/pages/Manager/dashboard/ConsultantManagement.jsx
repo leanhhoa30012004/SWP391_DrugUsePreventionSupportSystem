@@ -1,11 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaUserMd, FaPhone, FaEnvelope, FaUserTie, FaStar, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaGraduationCap, FaAward, FaComments, FaTimes, FaInfo, FaSave, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
 import axiosInstance from '../../../config/axios/axiosInstance';
 import axios from 'axios';
 
-
-
-const ConsultantManagement = () => {
+function ConsultantManagement() {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,10 +157,10 @@ const ConsultantManagement = () => {
       };      // Use the get-all-appointment endpoint to get complete data including appointment_id
       // Then filter by consultant_id on frontend
       const response = await axios.get(`http://localhost:3000/api/consultation/get-all-appointment/:/:`, { headers });
-      
+
       console.log('=== APPOINTMENT FETCH DEBUG ===');
       console.log('Raw API response:', response.data);
-      
+
       let allAppointmentsData = response.data;
       if (response.data && response.data.data) {
         allAppointmentsData = response.data.data;
@@ -181,14 +180,15 @@ const ConsultantManagement = () => {
       // Filter for this specific consultant - use strict comparison and handle type conversion
       const consultantAppointments = allAppointmentsData.filter(appointment => {
         console.log('Checking appointment:', appointment.appointment_id, 'consultant_id:', appointment.consultant_id, typeof appointment.consultant_id);
-        
+
+
         // Convert both to same type for comparison
         const appointmentConsultantId = parseInt(appointment.consultant_id);
         const targetConsultantId = parseInt(consultantId);
 
         const matches = appointmentConsultantId === targetConsultantId;
         console.log('Match result:', matches, '(', appointmentConsultantId, '===', targetConsultantId, ')');
-        
+
         return matches;
       });
 
@@ -221,7 +221,8 @@ const ConsultantManagement = () => {
     }
   };
 
-  const deleteAppointment = async (appointmentId) => {
+  const deleteAppointment = async (appointmentId, is_active) => {
+
     try {
       // Check if appointmentId is valid
       if (!appointmentId || appointmentId === 'undefined') {
@@ -229,25 +230,30 @@ const ConsultantManagement = () => {
         return;
       }
 
+
       console.log('Attempting to reject appointment:', appointmentId); // Debug log
 
       let response;
       try {
         // Try with axiosInstance first
-        response = await axiosInstance.get(`/consultation/reject-appointment/${appointmentId}`);
+
+        response = await axiosInstance.get(`/consultation/reject-appointment/${appointmentId}/${is_active}`);
         console.log('AxiosInstance response:', response.data); // Debug log
       } catch (axiosError) {
         console.log('AxiosInstance failed, trying manual axios:', axiosError.message); // Debug log
-        
+
+
         // Fallback to manual axios with headers
         const token = localStorage.getItem('token');
         const headers = {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         };
-        
+
+
         try {
-          response = await axios.get(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}`, { headers });
+          response = await axios.get(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/${is_active}`, { headers });
+
           console.log('Manual axios response:', response.data); // Debug log
         } catch (manualError) {
           console.error('Both axios methods failed:', manualError); // Debug log
@@ -259,13 +265,15 @@ const ConsultantManagement = () => {
       console.log('Response status:', response.status); // Debug log
       console.log('Response data type:', typeof response.data); // Debug log
       console.log('Response data content:', response.data); // Debug log
-      
+
+
       if (response.status === 200) {
         // Check the response message to determine if it was successful
-        if (response.data && typeof response.data === 'string' && 
-            (response.data.includes('cancelled') || response.data.includes('canceled'))) {
+        if (response.data && typeof response.data === 'string' &&
+          (response.data.includes('cancelled') || response.data.includes('canceled'))) {
           showNotification('Appointment rejected successfully!', 'success');
-          
+
+
           // Refresh appointments list
           if (selectedConsultantId) {
             fetchAppointmentsByConsultant(selectedConsultantId);
@@ -441,7 +449,7 @@ const ConsultantManagement = () => {
       };
 
       console.log('=== FETCH ALL APPOINTMENTS DEBUG ===');
-      
+
       // Call the API with colon placeholders for empty parameters
       const response = await axios.get(`http://localhost:3000/api/consultation/get-all-appointment/:/:`, { headers });
 
@@ -480,7 +488,7 @@ const ConsultantManagement = () => {
             consultant_email: consultantInfo?.email || null
           };
         });
-        
+
         console.log('Final enriched appointments:', allAppointments);
       }
 
@@ -939,6 +947,7 @@ const ConsultantManagement = () => {
                     <th className="px-4 py-3 text-left">Consultant</th>
                     <th className="px-4 py-3 text-left">Meet Link</th>
                     <th className="px-4 py-3 text-left">Actions</th>
+                    <th className="px-4 py-3 text-left">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -961,6 +970,7 @@ const ConsultantManagement = () => {
                           <td className="px-4 py-3 text-black">
                             {appointment.appointment_id || appointment.id || appointment.appointmentId || appointment.appointmentID || appointment.AppointmentID || appointment.APPOINTMENT_ID || 'N/A'}
                           </td>
+
                           <td className="px-4 py-3 text-black">
                             {appointment.member_id || appointment.memberId || appointment.memberID || appointment.MemberID || appointment.MEMBER_ID || 'N/A'}
                           </td>
@@ -980,44 +990,75 @@ const ConsultantManagement = () => {
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            {appointment.meet_link ? (
-                              <a
-                                href={appointment.meet_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline"
+                            {appointment.meeting_link ? (
+                              <button
+                                className="bg-blue-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+                                onClick={() => {
+                                  window.open(appointment.meeting_link, "_blank", "noopener,noreferrer");
+                                }}
                               >
                                 Join Meeting
-                              </a>
+                              </button>
                             ) : (
                               <span className="text-gray-400">No link</span>
                             )}
                           </td>
                           <td className="px-4 py-3">
                             <button
-                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+                              className={`${appointment.is_active === 0
+                                ? "bg-green-500 hover:bg-green-600"
+                                : "bg-red-500 hover:bg-red-600"
+                                } text-white px-3 py-1 rounded text-xs`}
                               onClick={() => {
-                                // Debug: Log the entire appointment object
-                                console.log('Full appointment object:', appointment);
-                                
-                                // Try multiple possible ID fields
-                                const appointmentId = appointment.appointment_id || appointment.id || appointment.appointmentId || appointment.appointmentID || appointment.AppointmentID || appointment.APPOINTMENT_ID;
+                                console.log("Full appointment object:", appointment);
 
-                                console.log('Extracted appointment ID:', appointmentId); // Debug log
+                                const appointmentId =
+                                  appointment.appointment_id ||
+                                  appointment.id ||
+                                  appointment.appointmentId ||
+                                  appointment.appointmentID ||
+                                  appointment.AppointmentID ||
+                                  appointment.APPOINTMENT_ID;
 
-                                if (!appointmentId || appointmentId === 'undefined' || appointmentId === 'N/A') {
-                                  showNotification('Invalid appointment ID. Cannot reject appointment.', 'error');
-                                  console.error('No valid appointment ID found in:', appointment); // Debug log
+                                console.log("Extracted appointment ID:", appointmentId);
+
+                                if (
+                                  !appointmentId ||
+                                  appointmentId === "undefined" ||
+                                  appointmentId === "N/A"
+                                ) {
+                                  showNotification(
+                                    "Invalid appointment ID. Cannot proceed.",
+                                    "error"
+                                  );
+                                  console.error("No valid appointment ID found in:", appointment);
                                   return;
                                 }
 
-                                if (window.confirm('Are you sure you want to reject this appointment?')) {
-                                  console.log('Calling deleteAppointment with ID:', appointmentId); // Debug log
-                                  deleteAppointment(appointmentId);
+                                const is_active = appointment.is_active === 0 ? 1 : 0;
+                                const actionText = is_active === 1 ? "accept" : "reject";
+
+                                if (
+                                  window.confirm(`Are you sure you want to ${actionText} this appointment?`)
+                                ) {
+                                  console.log("Calling deleteAppointment with:", {
+                                    appointmentId,
+                                    is_active,
+                                  });
+                                  deleteAppointment(appointmentId, is_active);
                                 }
                               }}
                             >
-                              Reject
+                              {appointment.is_active === 0 ? "Accept" : "Reject"}
+                            </button>
+
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              className={`${appointment.is_active ? "bg-green-500" : "bg-red-500 "
+                                } text-white px-3 py-1 rounded text-xs`}
+                            >
+                              {appointment.is_active ? "Accepted" : "Rejected"}
                             </button>
                           </td>
                         </tr>
@@ -1430,4 +1471,6 @@ const ConsultantManagement = () => {
   );
 };
 
+
 export default ConsultantManagement;
+
