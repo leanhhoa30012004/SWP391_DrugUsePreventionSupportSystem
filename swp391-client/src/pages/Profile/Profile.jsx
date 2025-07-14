@@ -58,7 +58,10 @@ const Profile = () => {
       console.log('Profile Response:', response.data); // Debug log
       
       if (response.data.success) {
-        setUserInfo(response.data.user);
+        setUserInfo({
+          ...response.data.user,
+          member_id: response.data.user.member_id || response.data.user.user_id
+        });
         setFormData({
           fullname: response.data.user.fullname,
           email: response.data.user.email,
@@ -82,23 +85,29 @@ const Profile = () => {
     }
   };
 
+  // Thêm debug log để kiểm tra member_id
+  console.log('Current userInfo.member_id:', userInfo.member_id);
+
   const fetchUserCourses = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      
-      console.log('Fetching courses for member_id:', userInfo.member_id); // Debug log
-      
+      console.log('Fetching courses for member_id:', userInfo.member_id);
       const response = await axios.get(
-        `http://localhost:3000/api/course/get-all-course-follow-course-enrollment-by-member-id/${userInfo.member_id}`, 
+        `http://localhost:3000/api/course/get-all-course-follow-course-enrollment-by-member-id/${userInfo.member_id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
-      console.log('Courses API Response:', response.data); // Debug log
-      
-      setCourses(Array.isArray(response.data) ? response.data : []);
+      console.log('Courses API Response:', response.data);
+      // Kiểm tra structure của response
+      if (Array.isArray(response.data)) {
+        console.log('Sample course object:', response.data[0]);
+        setCourses(response.data);
+      } else {
+        console.log('Response is not an array:', response.data);
+        setCourses([]);
+      }
     } catch (error) {
       console.error("Error fetching courses:", error);
       console.error("Error response:", error.response?.data);
@@ -134,7 +143,7 @@ const Profile = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       
-      console.log('Fetching bookings for member_id:', userInfo.member_id); // Debug log
+      console.log('Fetching bookings for member_id:', userInfo.member_id);
       
       const response = await axios.get(
         `http://localhost:3000/api/consultation/get-all-appointment-by-id/${userInfo.member_id}`, 
@@ -143,18 +152,24 @@ const Profile = () => {
         }
       );
       
-      console.log('Bookings API Response:', response.data); // Debug log
+      console.log('Bookings API Response:', response.data);
+      console.log('Response status:', response.status);
       
-      // Kiểm tra cấu trúc response
-      setBookings(Array.isArray(response.data) ? response.data : []);
+      // Check if response.data is an array
+      if (Array.isArray(response.data)) {
+        setBookings(response.data);
+      } else {
+        console.log('Response is not an array:', response.data);
+        setBookings([]);
+      }
     } catch (error) {
       console.error("Error fetching bookings:", error);
       console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
       setBookings([]);
     }
   };
 
-  // Fixed: Use the correct appointmentId parameter
   const handleCancelBooking = async (appointmentId) => {
     try {
       const result = await Swal.fire({
@@ -170,7 +185,7 @@ const Profile = () => {
       if (!result.isConfirmed) return;
       
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/0`, {
+      await axios.get(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/0`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -687,40 +702,47 @@ const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {courses.map((course) => (
                         <div key={course.course_id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                          {/* Hiển thị course image nếu có */}
+                          {course.course_img && (
+                            <div className="h-48 bg-gray-200 overflow-hidden">
+                              <img 
+                                src={course.course_img} 
+                                alt={course.course_name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
                           <div className="p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{course.title}</h3>
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-3">{course.description}</p>
+                            {/* Sử dụng course_name thay vì title */}
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              {course.course_name || 'Untitled Course'}
+                            </h3>
+                            {/* Hiển thị thông tin course */}
+                            <div className="space-y-2 mb-4">
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Age Group:</span> {course.age_group || 'Not specified'}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Version:</span> {course.version || course.enroll_version}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-medium">Enrolled:</span> {course.created_at ? new Date(course.created_at).toLocaleDateString('vi-VN') : 'N/A'}
+                              </p>
+                            </div>
                             <div className="flex items-center justify-between">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${course.status === 'completed'
-                                  ? 'bg-green-100 text-green-800'
-                                  : course.status === 'in_progress'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {course.status === 'completed' ? 'Completed' :
-                                  course.status === 'in_progress' ? 'In Progress' : 'Not Started'}
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Enrolled
                               </span>
                               <button
-                                onClick={() => navigate(`/courses/${course.course_id}`)}
+                                onClick={() => navigate(`/course-learning/${course.member_id || userInfo.member_id}/${course.course_id}`)}
                                 className="text-red-600 hover:text-red-700 text-sm font-medium"
                               >
-                                View Course
+                                Continue Learning
                               </button>
                             </div>
-                            {course.progress && (
-                              <div className="mt-4">
-                                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                  <span>Progress</span>
-                                  <span>{Math.round(course.progress)}%</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-red-500 h-2 rounded-full transition-all duration-300"
-                                    style={{ width: `${course.progress}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))}
