@@ -9,7 +9,8 @@ cron.schedule('*/15 * * * *', async () => {
     if (isUpdate) console.log(`[CRON] Updated program statuses at ${new Date().toLocaleString()}`)
 });
 
-cron.schedule('*/15 * * * *', async () => {
-    const isUpdate = await programModel.updateStatusProgramParticipants();
-    if (isUpdate) console.log(`[CRON] Updated program participant statuses at ${new Date().toLocaleString()}`)
-});
+// cron.schedule('*/10 * * * * *', async () => {
+//     const isUpdate = await programModel.updateStatusProgramParticipants();
+//     console.log(isUpdate)
+//     if (isUpdate) console.log(`[CRON] Updated program participant statuses at ${new Date().toLocaleString()}`)
+// });
