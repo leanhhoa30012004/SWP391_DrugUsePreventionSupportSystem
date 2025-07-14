@@ -28,10 +28,8 @@ GROUP BY program_id`)
 }
 
 const registeredProgram = async (program_id, member_id) => {
-    console.log("Reg >>>")
     const [row] = await db.execute(`INSERT INTO Community_program_participant(member_id, program_id, status)
 VALUES (?, ?, 'registered')`, [member_id, program_id])
-        console.log(row.affectedRows)
     return row.affectedRows > 0;
 }
 

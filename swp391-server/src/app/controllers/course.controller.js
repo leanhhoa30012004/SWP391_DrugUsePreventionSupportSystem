@@ -20,7 +20,7 @@ exports.getCourseByName = async (req, res) => {
         return res.json(courses)
     } catch (error) {
         console.log('getCourseByName error: ', error)
-       return res.status(500).json({ error: error.message || 'Internal Server Error' })
+        return res.status(500).json({ error: error.message || 'Internal Server Error' })
     }
 }
 exports.checkEnrollmentCourse = async (req, res) => {
@@ -99,7 +99,7 @@ exports.submitCourse = async (req, res) => {
     const { member_id, course_id, member_answer, version } = req.body;
     console.log('1st log: ', req.body)
     try {
-        const course = await courseModel.getCourseByIdAndVersion(course_id, version );
+        const course = await courseModel.getCourseByIdAndVersion(course_id, version);
 
         if (!course) {
             return res.status(404).json({ error: "Course not found" });

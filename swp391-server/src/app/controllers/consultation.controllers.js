@@ -99,14 +99,15 @@ exports.getAllAppointmentByConsultantId = async (req, res) => {
 
 exports.rejectAppointment = async (req, res) => {
     const appointment_id = req.params.appointment_id;
+    const is_active = req.params.is_active
     try {
-        if (await consultationModel.rejectAppointment(appointment_id)) {
+        const appointment = await consultationModel.getAppointmentById(appointment_id)
+        if (await consultationModel.rejectOrActiveAppointment(appointment_id, is_active)) {
             //send notice to member
-            const appointment = await consultationModel.getAppointmentById(appointment_id)
             await pushNotice({
                 userID: appointment.member_id,
-                title: 'Appointment Rejected',
-                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been rejected by the consultant.`,
+                title: `Appointment ${is_active ? 'Accepted' : 'Rejected'}`,
+                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been ${is_active ? 'Accepted' : 'Rejected'} by the consultant.`,
                 type: 'warning',
                 redirect_url: `/appointments/${appointment_id}`
             });
