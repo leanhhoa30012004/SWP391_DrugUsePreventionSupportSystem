@@ -14,7 +14,6 @@ const ConsultantBooking = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [timeSlotAvailability, setTimeSlotAvailability] = useState({});
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
 
   const API_BASE = 'http://localhost:3000/api/consultation';
 
@@ -164,7 +163,7 @@ const ConsultantBooking = () => {
     if (!dateStr || !timeStr) return false;
     const today = new Date();
     const selectedDate = new Date(dateStr);
-    // Only check for today
+    // Nếu là ngày hôm nay thì so sánh giờ phút
     if (
       selectedDate.getFullYear() === today.getFullYear() &&
       selectedDate.getMonth() === today.getMonth() &&
@@ -173,8 +172,11 @@ const ConsultantBooking = () => {
       const [hour, minute] = timeStr.split(":").map(Number);
       const slotDate = new Date(dateStr);
       slotDate.setHours(hour, minute, 0, 0);
+      // So sánh với local time hiện tại
       return slotDate <= today;
     }
+    // Nếu là ngày trong quá khứ thì cũng làm mờ
+    if (selectedDate < today.setHours(0,0,0,0)) return true;
     return false;
   };
 
@@ -194,7 +196,7 @@ const ConsultantBooking = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.user) {
-            setUserInfo(data.user);
+            // setUserInfo(data.user); // This line was removed
             // Auto-fill form with user info
             setFormData(prev => ({
               ...prev,
