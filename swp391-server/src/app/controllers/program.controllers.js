@@ -154,6 +154,16 @@ exports.getProgramById = async (req, res) => {
         return res.json(program);
     } catch (error) {
         console.error("getProgramById: ", error);
+
+exports.createProgram = async (req, res) => {
+    const { program } = req.body;
+    console.log(program)
+    try {
+        const isCreate = await programModel.createProgram(program)
+        if (isCreate) return res.json('Created program successfully!');
+        return res.json('Creation program failed!')
+    } catch (error) {
+        console.log("createProgram: ", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
