@@ -203,7 +203,7 @@ function Courses() {
                             <div className="mb-6">
                                 <h3 className="text-red-600 font-medium mb-3">Age Group</h3>
                                 <div className="space-y-2 text-sm text-gray-700">
-                                    {['Teenager', 'Young Adult', 'Adult'].map(ageGroup => (
+                                    {['Teenagers', 'Young Adult', 'Adult'].map(ageGroup => (
                                         <label key={ageGroup} className="flex items-center cursor-pointer">
                                             <input
                                                 type="radio"
@@ -213,7 +213,7 @@ function Courses() {
                                                 onChange={(e) => handleFilterChange('ageGroup', e.target.value)}
                                                 className="mr-2 text-red-600"
                                             />
-                                            {ageGroup === 'Teenager' && 'Teenager (13-18)'}
+                                            {ageGroup === 'Teenagers' && 'Teenagers (13-18)'}
                                             {ageGroup === 'Young Adult' && 'Young Adult (19-25)'}
                                             {ageGroup === 'Adult' && 'Adult (Parents, Teachers)'}
                                         </label>
