@@ -165,9 +165,30 @@ const CommunityProgramManagement = () => {
     setShowForm(true);
   };
 
+  // Khi bấm Add Program, setForm với 3 ô preSurvey/postSurvey mặc định
   const handleAdd = () => {
     setEditData(null);
-    setForm({ program_id: '', title: '', host: '', detailShort: '', date: '', end_date: '', location: '', age_group: '', detail: [], preSurvey: [], postSurvey: [] });
+    setForm({
+      program_id: '',
+      title: '',
+      host: '',
+      detailShort: '',
+      date: '',
+      end_date: '',
+      location: '',
+      age_group: '',
+      detail: [],
+      preSurvey: [
+        { id: 'pre1', text: '' },
+        { id: 'pre2', text: '' },
+        { id: 'pre3', text: '' }
+      ],
+      postSurvey: [
+        { id: 'post1', text: '' },
+        { id: 'post2', text: '' },
+        { id: 'post3', text: '' }
+      ]
+    });
     setOriginalLocation('');
     setShowForm(true);
   };
@@ -228,12 +249,12 @@ const CommunityProgramManagement = () => {
     });
   };
 
+  // Khi submit chỉ lấy đúng 3 câu hỏi mỗi loại
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Lấy danh sách câu hỏi mới
-      const preSurveyQuestions = form.preSurvey.filter(q => q.text.trim() && q.active !== false);
-      const postSurveyQuestions = form.postSurvey.filter(q => q.text.trim() && q.active !== false);
+      const preSurveyQuestions = form.preSurvey.slice(0, 3).map(q => ({ id: q.id, text: q.text }));
+      const postSurveyQuestions = form.postSurvey.slice(0, 3).map(q => ({ id: q.id, text: q.text }));
 
       // Lấy response cũ
       let newResponse = { pre_response: {}, post_response: {} };
@@ -520,102 +541,42 @@ const CommunityProgramManagement = () => {
                   <label className="block font-semibold mb-1">Pre-survey Questions</label>
                   <div className="bg-gray-50 rounded-lg p-3 mb-3">
                     <div className="text-sm text-gray-600 mb-2">These questions will be asked before the program starts</div>
-                    {form.preSurvey.filter(q => q.active !== false).map((q, idx) => (
+                    {form.preSurvey.map((q, idx) => (
                       <div key={q.id} className="flex gap-2 mb-2 items-center">
                         <div className="flex-shrink-0 w-6 h-6 bg-[#e11d48] text-white rounded-full flex items-center justify-center text-xs font-bold">
                           {idx + 1}
                         </div>
-                        <input 
-                          type="text" 
-                          className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#e11d48]" 
+                        <input
+                          type="text"
+                          className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#e11d48]"
                           placeholder={`Question ${idx + 1} (e.g., Have you ever used drugs?)`}
-                          value={q.text} 
-                          onChange={e => handleSurveyChange('preSurvey', form.preSurvey.findIndex(x => x.id === q.id), e.target.value)} 
-                          required 
+                          value={q.text}
+                          onChange={e => handleSurveyChange('preSurvey', idx, e.target.value)}
+                          required
                         />
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveSurvey('preSurvey', form.preSurvey.findIndex(x => x.id === q.id))} 
-                          className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 font-semibold text-sm"
-                          disabled={form.preSurvey.filter(q => q.active !== false).length === 1}
-                        >
-                          Remove
-                        </button>
                       </div>
                     ))}
-                    {/* Nút show inactive */}
-                    {form.preSurvey.some(q => q.active === false) && (
-                      <div className="mt-2">
-                        <div className="text-xs text-gray-500 mb-1">Inactive questions:</div>
-                        {form.preSurvey.map((q, idx) => q.active === false && (
-                          <div key={q.id} className="flex gap-2 mb-2 items-center opacity-60">
-                            <div className="flex-shrink-0 w-6 h-6 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                              {idx + 1}
-                            </div>
-                            <input type="text" className="flex-1 p-2 border rounded bg-gray-100" value={q.text} disabled />
-                            <button type="button" onClick={() => handleActivateSurvey('preSurvey', idx)} className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-semibold text-sm">Activate</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <button 
-                      type="button" 
-                      onClick={() => handleAddSurvey('preSurvey')} 
-                      className="bg-[#e11d48] text-white px-4 py-2 rounded font-semibold hover:bg-[#be123c] text-sm mt-2"
-                    >
-                      + Add Pre-survey Question
-                    </button>
                   </div>
                 </div>
                 <div className="mb-4">
                   <label className="block font-semibold mb-1">Post-survey Questions</label>
                   <div className="bg-gray-50 rounded-lg p-3 mb-3">
                     <div className="text-sm text-gray-600 mb-2">These questions will be asked after the program ends</div>
-                    {form.postSurvey.filter(q => q.active !== false).map((q, idx) => (
+                    {form.postSurvey.map((q, idx) => (
                       <div key={q.id} className="flex gap-2 mb-2 items-center">
                         <div className="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                           {idx + 1}
                         </div>
-                        <input 
-                          type="text" 
-                          className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#e11d48]" 
+                        <input
+                          type="text"
+                          className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#e11d48]"
                           placeholder={`Question ${idx + 1} (e.g., Did this program help you?)`}
-                          value={q.text} 
-                          onChange={e => handleSurveyChange('postSurvey', form.postSurvey.findIndex(x => x.id === q.id), e.target.value)} 
-                          required 
+                          value={q.text}
+                          onChange={e => handleSurveyChange('postSurvey', idx, e.target.value)}
+                          required
                         />
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveSurvey('postSurvey', form.postSurvey.findIndex(x => x.id === q.id))} 
-                          className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 font-semibold text-sm"
-                          disabled={form.postSurvey.filter(q => q.active !== false).length === 1}
-                        >
-                          Remove
-                        </button>
                       </div>
                     ))}
-                    {/* Nút show inactive */}
-                    {form.postSurvey.some(q => q.active === false) && (
-                      <div className="mt-2">
-                        <div className="text-xs text-gray-500 mb-1">Inactive questions:</div>
-                        {form.postSurvey.map((q, idx) => q.active === false && (
-                          <div key={q.id} className="flex gap-2 mb-2 items-center opacity-60">
-                            <div className="flex-shrink-0 w-6 h-6 bg-gray-300 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                              {idx + 1}
-                            </div>
-                            <input type="text" className="flex-1 p-2 border rounded bg-gray-100" value={q.text} disabled />
-                            <button type="button" onClick={() => handleActivateSurvey('postSurvey', idx)} className="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-semibold text-sm">Activate</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <button 
-                      type="button" 
-                      onClick={() => handleAddSurvey('postSurvey')} 
-                      className="bg-[#e11d48] text-white px-4 py-2 rounded font-semibold hover:bg-[#be123c] text-sm mt-2"
-                    >
-                      + Add Post-survey Question
-                    </button>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 mt-6">
