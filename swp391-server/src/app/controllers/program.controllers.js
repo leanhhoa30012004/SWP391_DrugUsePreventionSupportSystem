@@ -154,7 +154,8 @@ exports.getProgramById = async (req, res) => {
         return res.json(program);
     } catch (error) {
         console.error("getProgramById: ", error);
-
+    }
+}
 exports.createProgram = async (req, res) => {
     const { program } = req.body;
     console.log(program)
