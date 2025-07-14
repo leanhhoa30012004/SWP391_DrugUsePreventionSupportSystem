@@ -119,7 +119,7 @@ const RealTimeStats = () => {
   const fetchTodayStats = useCallback(async (isRefresh = false) => {
     console.log('fetchTodayStats called, isRefresh:', isRefresh);
     if (!isRefresh) {
-      setLoading(true);
+    setLoading(true);
     }
     // Không set refreshing ở đây nữa vì đã set trong handleRefresh
     setError('');
@@ -178,7 +178,7 @@ const RealTimeStats = () => {
 
   const fetchTotalStats = useCallback(async (period, isRefresh = false) => {
     if (!isRefresh) {
-      setLoading(true);
+    setLoading(true);
     }
     // Không set refreshing ở đây nữa vì đã set trong handleRefresh
     setError('');
@@ -318,14 +318,14 @@ const RealTimeStats = () => {
               <option value="year">This Year</option>
             </select>
           </div>
-          <button
+                      <button
             onClick={handleRefresh}
             disabled={refreshing}
             className="px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm flex items-center gap-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
-          >
+            >
             <FaSyncAlt className={`text-sm text-white ${refreshing ? 'animate-spin' : ''}`} />
             <span className="text-white">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
+            </button>
         </div>
       </div>
 
@@ -1035,55 +1035,42 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] text-[#e11d48] p-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold flex items-center gap-2 text-[#e11d48]">
-            <FaChartPie className="text-[#e11d48]" />
+      {/* Header fixed trong main content */}
+      <div
+        className="fixed left-64 right-8 top-8 z-30 bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] py-6 shadow-md flex flex-col items-center justify-center text-center rounded-2xl"
+        style={{
+          maxWidth: 'calc(100vw - 18rem - 4rem)',
+          marginLeft: 'auto',
+          marginRight: 'auto'
+        }}
+      >
+        <h1
+          className="text-5xl font-extrabold uppercase tracking-widest text-[#e11d48] drop-shadow-lg mb-2 border-b-4 border-[#e11d48] pb-2"
+          style={{
+            fontFamily: "'Bungee', cursive",
+            letterSpacing: '0.15em',
+            textShadow: '0 2px 12px #e11d4844'
+          }}
+        >
+          <FaChartPie className="inline-block mr-3 text-5xl align-middle -mt-2" />
             System Overview Statistics
           </h1>
-          <p className="text-sm text-[#e11d48] italic mt-1">"Spreading Hope, Protecting the Future!"</p>
+        <p className="text-lg md:text-xl italic font-semibold text-[#e11d48] px-4 py-2 rounded-xl shadow-sm inline-block font-serif tracking-wide mt-2">
+          "Spreading Hope, Protecting the Future!"
+        </p>
         </div>
-        <div className="flex items-center gap-3">
+      {/* Nội dung cuộn độc lập, có padding-top để không bị che */}
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow ring-2 ring-[#e11d48] text-white"
             style={{
-              background: `linear-gradient(135deg, ${getAvatarColor(
-                managerInfo?.fullname || managerInfo?.username || 'Manager'
-              )} 60%, #fff 100%)`,
-            }}
-            title={managerInfo?.fullname || managerInfo?.username || 'Manager'}
-          >
-            {((managerInfo?.fullname || managerInfo?.username || 'M')
-              .split(' ')
-              .map((w) => w[0])
-              .join('') || 'M'
-            ).toUpperCase()}
-          </div>
-          <div>
-            <div className="font-bold text-[#e11d48]">
-              Hello, {managerInfo?.fullname || managerInfo?.username || 'Manager'}!
-            </div>
-            <span className="text-xs text-[#e11d48]/70">Manager</span>
-          </div>
-          <button
-            className="ml-2 px-4 py-2 rounded-2xl bg-[#e11d48] text-white font-bold shadow-lg hover:bg-[#be123c] transition-colors flex items-center gap-2 text-base"
-            title="Logout"
-            onClick={handleLogout}
-          >
-            <FaSignOutAlt className="text-lg text-white" />
-            <span className="font-semibold text-white">Logout</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Overview */}
+          marginTop: '180px',
+          height: 'calc(100vh - 180px - 2rem)',
+          overflowY: 'auto',
+          paddingTop: '24px'
+        }}
+        className="pr-2"
+      >
       <RealTimeStats />
-
-      {/* Survey Report Manager */}
       <SurveyReportManager />
-
-      {/* Consultation & Survey Analytics Chart */}
       <div className="bg-white rounded-2xl p-6 shadow-lg mt-8 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-8">
         <div className="flex-1 min-w-0">
           <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Consultation & Survey Analytics</h2>
@@ -1091,29 +1078,29 @@ const Dashboard = () => {
             This chart visualizes the monthly number of consultations and surveys conducted throughout the year.
             It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
           </div>
-          <div className="bg-white rounded-3xl shadow-lg p-6 border border-[#e11d48]/10">
-            {chartLoading ? (
-              <div className="text-[#e11d48] text-center py-8 font-semibold">Loading chart data...</div>
-            ) : chartError ? (
-              <div className="text-red-500 text-center py-8 font-semibold">{chartError}</div>
-            ) : (
-              <ReactApexChart
-                options={chartOptions}
-                series={[
-                  { name: 'Consultations', data: consultationData },
-                  { name: 'Surveys', data: surveyData }
-                ]}
-                type="line"
-                height={350}
-              />
-            )}
+            <div className="bg-white rounded-3xl shadow-lg p-6 border border-[#e11d48]/10">
+              {chartLoading ? (
+                <div className="text-[#e11d48] text-center py-8 font-semibold">Loading chart data...</div>
+              ) : chartError ? (
+                <div className="text-red-500 text-center py-8 font-semibold">{chartError}</div>
+              ) : (
+                <ReactApexChart
+                  options={chartOptions}
+                  series={[
+                    { name: 'Consultations', data: consultationData },
+                    { name: 'Surveys', data: surveyData }
+                  ]}
+                  type="line"
+                  height={350}
+                />
+              )}
           </div>
-        </div>
-        {/* Bỏ box số liệu trung bình trên tháng, chỉ giữ các số liệu động khác nếu cần */}
-      </div>
-
+            </div>
+          {/* Bỏ box số liệu trung bình trên tháng, chỉ giữ các số liệu động khác nếu cần */}
+            </div>
       {/* Consultant Analytics Bar Chart */}
-      {/* Đã gộp vào ApexDashboardCharts, không cần BarChart riêng */}
+        {/* Đã gộp vào ApexDashboardCharts, không cần BarChart riêng */}
+      </div>
     </div>
   );
 };

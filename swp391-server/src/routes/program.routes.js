@@ -11,5 +11,6 @@ router.post('/update-program', programController.updateProgram);
 router.get('/delete-program/:program_id', programController.deleteProgram);
 router.get('/get-all-member-by-program-id/:program_id', programController.getAllMemberByProgramId);
 router.get('/check-member-registered/:program_id/:member_id', programController.checkMemberRegistered);
+router.get('/get-program/:program_id', programController.getProgramById);
 
 module.exports = router;

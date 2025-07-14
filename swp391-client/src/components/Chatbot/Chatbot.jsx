@@ -10,8 +10,8 @@ const Chatbot = () => {
   const [language, setLanguage] = useState('en');
   const messagesEndRef = useRef(null);
 
-  // Fake AI responses based on drug prevention themes
-  const aiResponses = {
+  // Fallback responses khi AI không hoạt động
+  const fallbackResponses = {
     en: {
       greetings: [
         "Hello! I'm here to help you with drug prevention and support. How can I assist you today?",
@@ -58,7 +58,7 @@ const Chatbot = () => {
       prevention: [
         "Các chiến lược phòng ngừa bao gồm xây dựng các mối quan hệ mạnh mẽ, phát triển kỹ năng đối phó lành mạnh và duy trì kết nối với cộng đồng hỗ trợ.",
         "Thiết lập ranh giới rõ ràng, thực hành quản lý căng thẳng và có giao tiếp cởi mở với gia đình và bạn bè là những công cụ phòng ngừa chính.",
-        "Giáo dục, nhận thức và can thiệp sớm là những cách tốt nhất để ngăn chặn việc sử dụng ma túy và thúc đẩy lối sống lành mạnh."
+        "Giáo dục, awareness và can thiệp sớm là những cách tốt nhất để ngăn chặn việc sử dụng ma túy và thúc đẩy lối sống lành mạnh."
       ],
       default: [
         "Đó là một câu hỏi thú vị về phòng chống ma túy. Hãy để tôi giúp bạn tìm thông tin bạn cần.",
@@ -73,7 +73,7 @@ const Chatbot = () => {
     if (isOpen && messages.length === 0) {
       const welcomeMsg = {
         id: 1,
-        text: aiResponses[language].greetings[Math.floor(Math.random() * aiResponses[language].greetings.length)],
+        text: fallbackResponses[language].greetings[Math.floor(Math.random() * fallbackResponses[language].greetings.length)],
         sender: 'bot',
         timestamp: new Date()
       };
@@ -86,27 +86,110 @@ const Chatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const getAIResponse = (userMessage) => {
-    const lowerMessage = userMessage.toLowerCase();
-    const responses = aiResponses[language];
-    
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('xin chào') || lowerMessage.includes('chào')) {
-      return responses.greetings[Math.floor(Math.random() * responses.greetings.length)];
+  // Hàm gọi AI thực thụ từ Hugging Face
+  const getAIResponse = async (userMessage) => {
+    // 1. Custom answer cho các từ khóa quan trọng
+    const lowerMsg = userMessage.toLowerCase();
+    if (lowerMsg.includes('survey') || lowerMsg.includes('khảo sát')) {
+      return language === 'en'
+        ? "The survey feature helps you assess your risk and knowledge about drug use. After completing the survey, you receive instant feedback and recommendations. All results are confidential."
+        : "Chức năng khảo sát giúp bạn tự đánh giá nguy cơ và hiểu biết về ma túy. Sau khi hoàn thành, bạn sẽ nhận được kết quả và khuyến nghị phù hợp. Mọi thông tin đều được bảo mật.";
     }
-    
-    if (lowerMessage.includes('drug') || lowerMessage.includes('ma túy') || lowerMessage.includes('substance')) {
-      return responses.drug_info[Math.floor(Math.random() * responses.drug_info.length)];
+    if (lowerMsg.includes('project') || lowerMsg.includes('dự án')) {
+      return language === 'en'
+        ? "This project is a drug use prevention support system. It provides online surveys, consultation, courses, and news to help users stay informed and healthy."
+        : "Đây là dự án hệ thống hỗ trợ phòng chống ma túy. Hệ thống cung cấp khảo sát, tư vấn trực tuyến, khóa học và tin tức giúp người dùng nâng cao hiểu biết và bảo vệ sức khỏe.";
     }
-    
-    if (lowerMessage.includes('help') || lowerMessage.includes('support') || lowerMessage.includes('giúp') || lowerMessage.includes('hỗ trợ')) {
-      return responses.support[Math.floor(Math.random() * responses.support.length)];
+    if (lowerMsg.includes('course') || lowerMsg.includes('khóa học')) {
+      return language === 'en'
+        ? "The course feature offers educational content about drug prevention, health, and wellness. You can enroll, learn, and track your progress."
+        : "Chức năng khóa học cung cấp nội dung giáo dục về phòng chống ma túy, sức khỏe và lối sống lành mạnh. Bạn có thể đăng ký, học và theo dõi tiến trình của mình.";
     }
-    
-    if (lowerMessage.includes('prevent') || lowerMessage.includes('avoid') || lowerMessage.includes('phòng') || lowerMessage.includes('tránh')) {
-      return responses.prevention[Math.floor(Math.random() * responses.prevention.length)];
+    if (lowerMsg.includes('consultation') || lowerMsg.includes('tư vấn')) {
+      return language === 'en'
+        ? "The online consultation feature allows you to connect with experts for advice and support regarding drug prevention and health."
+        : "Chức năng tư vấn trực tuyến giúp bạn kết nối với chuyên gia để nhận lời khuyên và hỗ trợ về phòng chống ma túy và sức khỏe.";
     }
-    
-    return responses.default[Math.floor(Math.random() * responses.default.length)];
+
+    try {
+      // 2. Tối ưu system prompt với mô tả dự án
+      const systemPrompt = language === 'en'
+        ? `You are WeHope AI Assistant, an expert in drug prevention and a support bot for the WeHope Drug Use Prevention Support System project.\n\nProject details:\n- The system provides online surveys to help users assess their risk and knowledge about drug use.\n- Users can take surveys, view results, and receive recommendations.\n- The project also includes online consultation, course management, and news about drug prevention.\nIf the user asks about the project, survey, or any feature, answer in detail based on the above information.\nAnswer in English.`
+        : `Bạn là WeHope AI Assistant, một trợ lý AI chuyên về phòng chống ma túy và hỗ trợ cho dự án Hệ thống Hỗ trợ Phòng chống Ma túy WeHope.\n\nChi tiết dự án:\n- Hệ thống cung cấp khảo sát trực tuyến giúp người dùng tự đánh giá nguy cơ và hiểu biết về ma túy.\n- Người dùng có thể làm khảo sát, xem kết quả và nhận khuyến nghị.\n- Dự án còn có tư vấn trực tuyến, quản lý khóa học và tin tức về phòng chống ma túy.\nNếu người dùng hỏi về dự án, khảo sát hoặc chức năng nào, hãy trả lời chi tiết dựa trên thông tin trên.\nTrả lời bằng tiếng Việt.`;
+
+      // 3. Few-shot examples
+      const fewShot = language === 'en'
+        ? `User: What is the survey feature?\nAssistant: The survey feature helps users assess their risk and knowledge about drug use. After completing the survey, users receive instant feedback and recommendations.\nUser: What is this project about?\nAssistant: This project is a drug use prevention support system. It provides surveys, online consultation, courses, and news to help users stay informed and healthy.\nUser: How can I get advice?\nAssistant: You can use the online consultation feature to connect with experts for advice and support regarding drug prevention and health.`
+        : `User: Khảo sát là gì?\nAssistant: Chức năng khảo sát giúp bạn tự đánh giá nguy cơ và hiểu biết về ma túy. Sau khi hoàn thành, bạn sẽ nhận được kết quả và khuyến nghị phù hợp.\nUser: Dự án này là gì?\nAssistant: Đây là dự án hệ thống hỗ trợ phòng chống ma túy. Hệ thống cung cấp khảo sát, tư vấn trực tuyến, khóa học và tin tức giúp người dùng nâng cao hiểu biết và bảo vệ sức khỏe.\nUser: Làm sao để nhận tư vấn?\nAssistant: Bạn có thể sử dụng chức năng tư vấn trực tuyến để kết nối với chuyên gia và nhận hỗ trợ về phòng chống ma túy và sức khỏe.`;
+
+      // 4. Context conversation
+      const conversationHistory = messages
+        .filter(msg => msg.sender === 'user')
+        .slice(-3)
+        .map(msg => `User: ${msg.text}`)
+        .join('\n');
+
+      const fullPrompt = conversationHistory
+        ? `${systemPrompt}\n\n${fewShot}\n${conversationHistory}\nUser: ${userMessage}\nAssistant:`
+        : `${systemPrompt}\n\n${fewShot}\nUser: ${userMessage}\nAssistant:`;
+
+      // Gọi Hugging Face Inference API - Sử dụng model tốt cho conversation
+      const response = await fetch('https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: fullPrompt,
+          parameters: {
+            max_length: 100,
+            temperature: 0.8,
+            do_sample: true,
+            top_p: 0.9,
+            repetition_penalty: 1.1
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('AI service not available');
+      }
+
+      const data = await response.json();
+      
+      if (data && data[0] && data[0].generated_text) {
+        let assistantResponse = data[0].generated_text.split('Assistant:').pop()?.trim();
+        if (!assistantResponse || assistantResponse.length < 5) {
+          assistantResponse = data[0].generated_text.trim();
+        }
+        assistantResponse = assistantResponse
+          .replace(/^[^a-zA-ZÀ-ỹ]*/, '')
+          .replace(/[^a-zA-ZÀ-ỹ0-9\s.,!?-]*$/, '')
+          .trim();
+        if (assistantResponse && assistantResponse.length > 5) {
+          return assistantResponse;
+        }
+      }
+      throw new Error('Invalid AI response');
+    } catch (error) {
+      console.log('AI Error:', error.message);
+      // Fallback responses như cũ
+      const responses = fallbackResponses[language];
+      const lowerMessage = userMessage.toLowerCase();
+      if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('xin chào') || lowerMessage.includes('chào')) {
+        return responses.greetings[Math.floor(Math.random() * responses.greetings.length)];
+      }
+      if (lowerMessage.includes('drug') || lowerMessage.includes('ma túy') || lowerMessage.includes('substance')) {
+        return responses.drug_info[Math.floor(Math.random() * responses.drug_info.length)];
+      }
+      if (lowerMessage.includes('help') || lowerMessage.includes('support') || lowerMessage.includes('giúp') || lowerMessage.includes('hỗ trợ')) {
+        return responses.support[Math.floor(Math.random() * responses.support.length)];
+      }
+      if (lowerMessage.includes('prevent') || lowerMessage.includes('avoid') || lowerMessage.includes('phòng') || lowerMessage.includes('tránh')) {
+        return responses.prevention[Math.floor(Math.random() * responses.prevention.length)];
+      }
+      return responses.default[Math.floor(Math.random() * responses.default.length)];
+    }
   };
 
   const handleSendMessage = async () => {
@@ -123,17 +206,37 @@ const Chatbot = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI thinking
-    setTimeout(() => {
+    try {
+      // Gọi AI thực thụ
+      const aiResponseText = await getAIResponse(inputMessage);
+      
       const aiResponse = {
         id: messages.length + 2,
-        text: getAIResponse(inputMessage),
+        text: aiResponseText,
         sender: 'bot',
         timestamp: new Date()
       };
+      
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      // Fallback response nếu có lỗi
+      const fallbackText = language === 'en' 
+        ? "I'm having trouble connecting to my AI service right now. Please try again in a moment, or feel free to ask me about drug prevention topics."
+        : "Tôi đang gặp khó khăn kết nối với dịch vụ AI ngay bây giờ. Vui lòng thử lại sau, hoặc hỏi tôi về các chủ đề phòng chống ma túy.";
+      
+      const fallbackResponse = {
+        id: messages.length + 2,
+        text: fallbackText,
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, fallbackResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000);
+    }
   };
 
   const handleKeyPress = (e) => {

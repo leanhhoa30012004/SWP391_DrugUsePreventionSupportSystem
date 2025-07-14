@@ -88,17 +88,19 @@ WHERE program_id = ? AND is_active = 1`, [response, program_id])
 }
 
 const updateProgram = async (program) => {
-    console.log('check>>', JSON.stringify(program.description))
+   
     const [isUpdate] = await db.execute(`UPDATE Community_programs
-SET title = ?, description = ?, start_date = ?, end_date = ?,  location = ?, detail = ?, age_group = ?
+SET title = ?, description = ?, start_date = ?, end_date = ?,  location = ?, detail = ?, age_group = ?, survey_question = ?, response = ?
 WHERE program_id = ? AND is_active = 1`,
         [program.title,
         JSON.stringify(program.description),
         program.start_date,
         program.end_date,
-        JSON.stringify(program.location),
+        program.location,
         JSON.stringify(program.detail),
         program.age_group,
+        JSON.stringify(program.survey_question),
+        JSON.stringify(program.response || { pre_response: [], post_response: [] }),
         program.program_id])
     return isUpdate.affectedRows > 0;
 }
