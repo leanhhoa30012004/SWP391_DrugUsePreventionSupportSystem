@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaCalendarAlt, FaUser, FaEye, FaHeart, FaShareAlt, FaBookmark, FaTags, FaClock, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
-import Footer from '../../components/Footer/Footer';
+import Footer from '../../components/Footer/footer';
 import CreateBlogForm from './CreateBlogForm';
 
 const Blogs = () => {
@@ -251,7 +251,7 @@ const Blogs = () => {
                                     <div className="text-2xl font-semibold text-gray-900 mb-2">{blog.title}</div>
                                     <div className="text-gray-700 text-base mb-4 whitespace-pre-line">{blog.content}</div>
                                     {blog.image && (
-                                        <img src={blog.image} alt="cover" className="w-full rounded-xl mb-4 object-cover max-h-96 border" onError={e => {e.target.src='https://via.placeholder.com/600x400?text=Blog+Image'}} />
+                                        <img src={blog.image} alt="cover" className="w-full rounded-xl mb-4 object-cover max-h-96 border" onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }} />
                                     )}
                                     {blog.tags && blog.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mb-3">

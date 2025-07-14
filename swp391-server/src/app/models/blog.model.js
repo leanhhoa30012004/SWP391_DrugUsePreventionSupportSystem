@@ -40,7 +40,8 @@ FROM Blog WHERE blog_id = ? AND is_active =1`, [blog_id])
 
 const getAllBlogAprroved = async () => {
     const [list] = await db.execute(`SELECT b.blog_id, b.post_date, u.fullname, b.title, b.tags, b.cover_img, b.content
-FROM Blog b JOIN Users u ON b.author = u.user_id`)
+FROM Blog b JOIN Users u ON b.author = u.user_id
+WHERE b.status = 'Approved'`)
     return list;
 }
 
