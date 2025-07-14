@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from '../../../assets/logo-WeHope.png';
 import { FaSignOutAlt } from 'react-icons/fa';
+import { FaBlog } from 'react-icons/fa';
 
 const navItems = [
   { label: 'Home', path: '/manager/dashboard' },
@@ -10,6 +11,7 @@ const navItems = [
   { label: 'Course', path: '/manager/dashboard/course' },
   { label: 'Consultant', path: '/manager/dashboard/consultant' },
   { label: 'Community Program', path: '/manager/dashboard/community-program' },
+  { label: 'Blogs', path: '/manager/dashboard/blogs'},
 ];
 
 const SidebarLayout = () => {

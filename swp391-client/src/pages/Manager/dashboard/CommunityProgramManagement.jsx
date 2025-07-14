@@ -246,8 +246,8 @@ const CommunityProgramManagement = () => {
         };
       }
 
+      // Chuẩn bị dữ liệu gửi đi
       const submitData = {
-        program_id: form.program_id,
         title: form.title,
         description: { host: form.host, detail: form.detailShort },
         start_date: form.date,
@@ -260,9 +260,18 @@ const CommunityProgramManagement = () => {
           'post-survey': postSurveyQuestions.map(q => ({ id: q.id, text: q.text }))
         },
         response: newResponse,
-        status: 'Not started'
+        status: 'not started',
+        manager_id: JSON.parse(localStorage.getItem('user'))?.user_id // thêm dòng này khi tạo mới
       };
-      await axios.post(`${API_BASE}/update-program`, submitData);
+
+      if (!form.program_id) {
+        // TẠO MỚI
+        await axios.post(`${API_BASE}/create-program`, { program: submitData });
+      } else {
+        // CẬP NHẬT
+        await axios.post(`${API_BASE}/update-program`, { ...submitData, program_id: form.program_id });
+      }
+
       setShowForm(false);
       fetchPrograms();
     } catch (err) {
@@ -516,23 +525,25 @@ const CommunityProgramManagement = () => {
                           onChange={e => handleSurveyChange('preSurvey', idx, e.target.value)} 
                           required 
                         />
-                        <button 
+                        {/* Remove button đã bị ẩn */}
+                        {/* <button 
                           type="button" 
                           onClick={() => handleRemoveSurvey('preSurvey', idx)} 
                           className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 font-semibold text-sm"
                           disabled={form.preSurvey.length === 1}
                         >
                           Remove
-                        </button>
+                        </button> */}
                       </div>
                     ))}
-                    <button 
+                    {/* Ẩn nút Add Pre-survey Question */}
+                    {/* <button 
                       type="button" 
                       onClick={() => handleAddSurvey('preSurvey')} 
                       className="bg-[#e11d48] text-white px-4 py-2 rounded font-semibold hover:bg-[#be123c] text-sm"
                     >
                       + Add Pre-survey Question
-                    </button>
+                    </button> */}
                   </div>
                 </div>
                 <div className="mb-4">
@@ -552,23 +563,25 @@ const CommunityProgramManagement = () => {
                           onChange={e => handleSurveyChange('postSurvey', idx, e.target.value)} 
                           required 
                         />
-                        <button 
+                        {/* Remove button đã bị ẩn */}
+                        {/* <button 
                           type="button" 
                           onClick={() => handleRemoveSurvey('postSurvey', idx)} 
                           className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 font-semibold text-sm"
                           disabled={form.postSurvey.length === 1}
                         >
                           Remove
-                        </button>
+                        </button> */}
                       </div>
                     ))}
-                    <button 
+                    {/* Ẩn nút Add Post-survey Question */}
+                    {/* <button 
                       type="button" 
                       onClick={() => handleAddSurvey('postSurvey')} 
                       className="bg-[#e11d48] text-white px-4 py-2 rounded font-semibold hover:bg-[#be123c] text-sm"
                     >
                       + Add Post-survey Question
-                    </button>
+                    </button> */}
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 mt-6">
@@ -583,17 +596,13 @@ const CommunityProgramManagement = () => {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative animate-fadeIn p-0 max-h-[90vh] flex flex-col">
               {/* Header */}
-              <div className="flex items-center gap-3 p-8 pb-2">
-                <div className="bg-[#e11d48]/10 rounded-full p-4 text-3xl text-[#e11d48]">
+              <div className="flex flex-col items-center justify-center p-8 pb-2 relative text-center">
+                <div className="bg-[#e11d48]/10 rounded-full p-4 text-3xl text-[#e11d48] mx-auto mb-2">
                   <FaUsers />
                 </div>
-                <div>
-                  <div className="text-xs uppercase tracking-widest text-gray-400 font-semibold mb+1">Community Program</div>
-                  <div className="flex flex-col items-start">
-                    <h2 className="text-2xl font-bold text-[#e11d48]">{viewData.title || 'No Title'}</h2>
-                    <div className="text-gray-500 text-sm -mt-4 pl-1">Host: {typeof viewData.description === 'object' ? viewData.description.host : ''}</div>
-                  </div>
-                </div>
+                <div className="text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">Community Program</div>
+                <h2 className="text-2xl font-bold text-[#e11d48] w-full">{viewData.title || 'No Title'}</h2>
+                <div className="text-gray-500 text-sm mt-0.25">Host: {typeof viewData.description === 'object' ? viewData.description.host : ''}</div>
                 <button onClick={() => setShowView(false)} className="absolute top-2 right-4 text-5xl text-gray-400 hover:text-[#e11d48] font-bold cursor-pointer z-10 p-2">×</button>
               </div>
               {/* Info + Content */}

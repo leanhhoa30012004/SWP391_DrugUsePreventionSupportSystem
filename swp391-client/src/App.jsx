@@ -12,6 +12,7 @@ import OnlineConsultation from './pages/Homepage/Onlineconsultant'
 import Contact from './pages/Contact/contact'
 import News from './pages/News/news'
 import Blogs from './pages/Blogs/blogs'
+import MyBlogs from './pages/Blogs/MyBlogs';
 import Courses from './pages/Courses/Courses'
 
 import CourseDetail from '.\\pages\\Courses\\CourseDetail.jsx'
@@ -61,6 +62,7 @@ import CommunityProgramManagement from './pages/Manager/dashboard/CommunityProgr
 import ConsultantBooking from './pages/Consultant/Consultant.jsx'
 import OnlineConsultant from './pages/Homepage/Onlineconsultant'
 import OnlyConsultant from './pages/OnlyConsultant/OnlyConsultant.jsx'
+import BlogsManagement from './pages/Manager/dashboard/BlogsManagement.jsx';
 
 
 import Programs from './pages/CommunityProgramme/ViewProgramme.jsx'
@@ -81,6 +83,7 @@ function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/news" element={<News />} />
       <Route path="/blogs" element={<Blogs />} />
+      <Route path="/my-blogs" element={<MyBlogs />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/:course_id" element={<CourseDetail />} />
       <Route path="/learning/:course_id" element={<CourseLearning />} />
@@ -139,6 +142,7 @@ function App() {
         <Route path="course" element={<CourseManagement />} />
         <Route path="consultant" element={<ConsultantManagement />} />
         <Route path="community-program" element={<CommunityProgramManagement />} />
+        <Route path="blogs" element={<BlogsManagement />} />
       </Route>
     </Routes>
       {/* Global Chatbot - appears on all pages except manager/admin */}
