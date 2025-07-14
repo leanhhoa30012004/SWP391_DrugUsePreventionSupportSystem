@@ -24,7 +24,7 @@ function Courses() {
         const fetchAllCourses = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3000/api/course/get-all-course-follow-course-enrollment-by-member-id/${userId}`, {
+                const response = await axios.get(`http://localhost:3000/api/course/get-all-course-for-member-by-member-id/:member_id${userId}`, {
                     headers: {
                         'Content-Type': 'application/json',
                     }
