@@ -192,11 +192,18 @@ const CourseLearning = () => {
                 }
                 const parseData = await response.json()
                 console.log("Parse Data: ", parseData)
-                if (parseData.message && parseData.message == 'You have completed all the content of this course') navigate('/course-completed')
+                if (parseData.message === 'You have completed all the content of this course') {
+                    navigate('/course-completed');
+                    return;
+                  }
                 const data = parseData.data;
 
-                setCourseVersion(parseData.version.toFixed(1)); // Lấy version từ API response
-                setNumMoocs(parseData.quantity)
+                setCourseVersion(
+                    parseData.version ? parseFloat(parseData.version).toFixed(1) : '1.0'
+                  );
+                  console.log("📦 parseData.version = ", parseData.version);
+
+                                  setNumMoocs(parseData.quantity)
                 //console.log('📋 Course Data from API:', data);
 
                 // Cập nhật courseData

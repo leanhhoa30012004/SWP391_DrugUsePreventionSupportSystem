@@ -159,6 +159,25 @@ const ConsultantBooking = () => {
     }
   };
 
+  // Helper: Check if a time slot is in the past (local time, today only)
+  const isPastTimeSlot = (dateStr, timeStr) => {
+    if (!dateStr || !timeStr) return false;
+    const today = new Date();
+    const selectedDate = new Date(dateStr);
+    // Only check for today
+    if (
+      selectedDate.getFullYear() === today.getFullYear() &&
+      selectedDate.getMonth() === today.getMonth() &&
+      selectedDate.getDate() === today.getDate()
+    ) {
+      const [hour, minute] = timeStr.split(":").map(Number);
+      const slotDate = new Date(dateStr);
+      slotDate.setHours(hour, minute, 0, 0);
+      return slotDate <= today;
+    }
+    return false;
+  };
+
   // Fetch user info and auto-fill form
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -394,9 +413,13 @@ const ConsultantBooking = () => {
     return 'unknown';
   };
 
-  const getTimeSlotClassName = (time) => {
+  // Update getTimeSlotClassName to accept isPast param
+  const getTimeSlotClassName = (time, isPast = false) => {
     const status = getTimeSlotStatus(time);
     const isSelected = formData.appointment_time === time;
+    if (isPast) {
+      return 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60';
+    }
     if (status === 'checking') {
       return 'bg-gray-100 text-gray-400 border-gray-200 cursor-wait animate-pulse';
     }
@@ -526,17 +549,20 @@ const ConsultantBooking = () => {
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                       {timeSlots.map((time) => {
                         const status = getTimeSlotStatus(time);
+                        // Disable if: no date, unavailable, checking, booked, or slot is in the past (today)
+                        const isPast = isPastTimeSlot(formData.appointment_date, time);
                         const isDisabled = !formData.appointment_date ||
                           status === 'unavailable' ||
                           status === 'checking' ||
-                          status === 'booked';
+                          status === 'booked' ||
+                          isPast;
                         return (
                           <button
                             key={time}
                             type="button"
                             onClick={() => !isDisabled && setFormData({ ...formData, appointment_time: time })}
                             disabled={isDisabled}
-                            className={`p-3 text-sm font-medium rounded-lg border-2 transition-all relative ${getTimeSlotClassName(time)}`}
+                            className={`p-3 text-sm font-medium rounded-lg border-2 transition-all relative ${getTimeSlotClassName(time, isPast)}`}
                           >
                             <Clock className="h-4 w-4 mx-auto mb-1" />
                             {time}
@@ -554,6 +580,9 @@ const ConsultantBooking = () => {
                               <div className="absolute top-1 right-1">
                                 <CheckCircle className="h-3 w-3 text-green-500" />
                               </div>
+                            )}
+                            {isPast && (
+                              <div className="absolute inset-0 bg-gray-200 bg-opacity-60 rounded-lg pointer-events-none"></div>
                             )}
                           </button>
                         );
