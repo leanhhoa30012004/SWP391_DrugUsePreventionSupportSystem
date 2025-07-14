@@ -143,11 +143,10 @@ VALUES (?,?,?,?,?,?,?,?,?,?)`,
 
 const updateStatusProgramParticipants = async () => {
     const [isUpdate] = await db.execute(`UPDATE Community_program_participant cpp
-JOIN Community_programs cp 
-    ON cpp.program_id = cp.program_id
+JOIN Community_programs cp ON cpp.program_id = cp.program_id
 SET cpp.status = 'absent'
-WHERE cpp.status = 'registered'
-  AND cp.status = 'closed';`)
+WHERE cpp.status = 'registered' AND cp.status = 'closed'`)
+    // console.log(isUpdate)
     return isUpdate.affectedRows > 0
 }
 
