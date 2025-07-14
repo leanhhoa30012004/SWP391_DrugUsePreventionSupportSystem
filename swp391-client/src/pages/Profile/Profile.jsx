@@ -27,16 +27,21 @@ const Profile = () => {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    fetchUserProfile();
-    fetchUserCourses();
+    fetchUserProfile(); 
     fetchUserSurveys();
   }, []);
+  
+  useEffect(() => {
+    if (userInfo.member_id) {
+      fetchUserCourses(); 
+    }
+  }, [userInfo.member_id]);
+  
 
   useEffect(() => {
     if (activeTab === 'booking' && userInfo.member_id) {
       fetchUserBookings();
     }
-    // eslint-disable-next-line
   }, [activeTab, userInfo.member_id]);
 
   const fetchUserProfile = async () => {
@@ -49,6 +54,9 @@ const Profile = () => {
       const response = await axios.get("http://localhost:3000/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      console.log('Profile Response:', response.data); // Debug log
+      
       if (response.data.success) {
         setUserInfo(response.data.user);
         setFormData({
@@ -58,11 +66,16 @@ const Profile = () => {
         });
       }
     } catch (error) {
+      console.error('Profile fetch error:', error);
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
         navigate("/login");
       } else {
-        Swal.fire({ icon: "error", title: "Error", text: "Failed to load profile information" });
+        Swal.fire({ 
+          icon: "error", 
+          title: "Error", 
+          text: "Failed to load profile information" 
+        });
       }
     } finally {
       setLoading(false);
@@ -73,14 +86,23 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const response = await axios.get("http://localhost:3000/api/auth/profile/courses", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.data.success) {
-        setCourses(response.data.courses);
-      }
+      
+      console.log('Fetching courses for member_id:', userInfo.member_id); // Debug log
+      
+      const response = await axios.get(
+        `http://localhost:3000/api/course/get-all-course-follow-course-enrollment-by-member-id/${userInfo.member_id}`, 
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      console.log('Courses API Response:', response.data); // Debug log
+      
+      setCourses(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching courses:", error);
+      console.error("Error response:", error.response?.data);
+      setCourses([]);
     }
   };
 
@@ -88,27 +110,51 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
+      
       const response = await axios.get("http://localhost:3000/api/auth/profile/surveys", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      console.log('Surveys API Response:', response.data); // Debug log
+      
       if (response.data.success) {
-        setSurveys(response.data.surveys);
+        setSurveys(response.data.surveys || []);
+      } else {
+        setSurveys([]);
       }
     } catch (error) {
       console.error("Error fetching surveys:", error);
+      console.error("Error response:", error.response?.data);
+      setSurveys([]);
     }
   };
 
- 
   const fetchUserBookings = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/consultation/get-all-appointment-by-member-id/${userInfo.member_id}`);
-      setBookings(response.data || []);
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      
+      console.log('Fetching bookings for member_id:', userInfo.member_id); // Debug log
+      
+      const response = await axios.get(
+        `http://localhost:3000/api/consultation/get-all-appointment-by-id/${userInfo.member_id}`, 
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      console.log('Bookings API Response:', response.data); // Debug log
+      
+      // Kiểm tra cấu trúc response
+      setBookings(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
+      console.error("Error fetching bookings:", error);
+      console.error("Error response:", error.response?.data);
       setBookings([]);
     }
   };
 
+  // Fixed: Use the correct appointmentId parameter
   const handleCancelBooking = async (appointmentId) => {
     try {
       const result = await Swal.fire({
@@ -120,11 +166,19 @@ const Profile = () => {
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Yes, cancel it!',
       });
+      
       if (!result.isConfirmed) return;
-      await axios.delete(`http://localhost:3000/api/consultation/reject-appointment/${appointment_id}`);
+      
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/0`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      // Remove the cancelled booking from the list
       setBookings((prev) => prev.filter(b => b.appointment_id !== appointmentId));
       Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
     } catch (error) {
+      console.error("Error cancelling booking:", error);
       Swal.fire('Error', 'Failed to cancel booking.', 'error');
     }
   };
@@ -345,7 +399,7 @@ const Profile = () => {
                       : 'bg-gray-200 group-hover:bg-red-100'
                     }`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                   </div>
                   <div className="flex-1">
@@ -756,7 +810,7 @@ const Profile = () => {
                         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z"/></svg>
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No Bookings Yet</h3>
-                      <p className="text-gray-500">You have not booked any consultant appointments yet.</p>
+                      <p className="text-gray-500">You have not booking any consultant appointments yet.</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -765,9 +819,6 @@ const Profile = () => {
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3"></th>
                           </tr>
                         </thead>
@@ -776,9 +827,6 @@ const Profile = () => {
                             <tr key={b.appointment_id}>
                               <td className="px-6 py-4 whitespace-nowrap">{b.appointment_date}</td>
                               <td className="px-6 py-4 whitespace-nowrap">{b.appointment_time}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{b.email}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{b.member_id}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{b.name}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-right">
                                 <button onClick={() => handleCancelBooking(b.appointment_id)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium">Cancel</button>
                               </td>
