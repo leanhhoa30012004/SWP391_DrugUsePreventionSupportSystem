@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaUserMd, FaPhone, FaEnvelope, FaUserTie, FaStar, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaGraduationCap, FaAward, FaComments, FaTimes, FaInfo, FaSave, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
 import axiosInstance from '../../../config/axios/axiosInstance';
 import axios from 'axios';
+
 function ConsultantManagement() {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -180,6 +181,7 @@ function ConsultantManagement() {
       const consultantAppointments = allAppointmentsData.filter(appointment => {
         console.log('Checking appointment:', appointment.appointment_id, 'consultant_id:', appointment.consultant_id, typeof appointment.consultant_id);
 
+
         // Convert both to same type for comparison
         const appointmentConsultantId = parseInt(appointment.consultant_id);
         const targetConsultantId = parseInt(consultantId);
@@ -220,6 +222,7 @@ function ConsultantManagement() {
   };
 
   const deleteAppointment = async (appointmentId, is_active) => {
+
     try {
       // Check if appointmentId is valid
       if (!appointmentId || appointmentId === 'undefined') {
@@ -233,10 +236,12 @@ function ConsultantManagement() {
       let response;
       try {
         // Try with axiosInstance first
+
         response = await axiosInstance.get(`/consultation/reject-appointment/${appointmentId}/${is_active}`);
         console.log('AxiosInstance response:', response.data); // Debug log
       } catch (axiosError) {
         console.log('AxiosInstance failed, trying manual axios:', axiosError.message); // Debug log
+
 
         // Fallback to manual axios with headers
         const token = localStorage.getItem('token');
@@ -245,8 +250,10 @@ function ConsultantManagement() {
           Authorization: `Bearer ${token}`
         };
 
+
         try {
           response = await axios.get(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/${is_active}`, { headers });
+
           console.log('Manual axios response:', response.data); // Debug log
         } catch (manualError) {
           console.error('Both axios methods failed:', manualError); // Debug log
@@ -259,11 +266,13 @@ function ConsultantManagement() {
       console.log('Response data type:', typeof response.data); // Debug log
       console.log('Response data content:', response.data); // Debug log
 
+
       if (response.status === 200) {
         // Check the response message to determine if it was successful
         if (response.data && typeof response.data === 'string' &&
           (response.data.includes('cancelled') || response.data.includes('canceled'))) {
           showNotification('Appointment rejected successfully!', 'success');
+
 
           // Refresh appointments list
           if (selectedConsultantId) {
@@ -1462,4 +1471,6 @@ function ConsultantManagement() {
   );
 };
 
+
 export default ConsultantManagement;
+
