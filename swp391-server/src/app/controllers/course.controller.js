@@ -131,14 +131,13 @@ exports.submitCourse = async (req, res) => {
     }
 }
 
-exports.getAllCourseFollowSurveyEnrollmentByMemberId = async (req, res) => {
+exports.getAllCourseFollowCourseEnrollmentByMemberId = async (req, res) => {
     const member_id = req.params.member_id;
     try {
-        const listOfCourse = await courseModel.getAllCourseFollowEnrollmentCourseByMemberId(member_id);
+        const listOfCourse = await courseModel.getParticipantCourseByMemberId(member_id);
         return res.json(listOfCourse);
     } catch (error) {
         console.error('getAllCourseEnrollmetByMemberId error:', error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
-

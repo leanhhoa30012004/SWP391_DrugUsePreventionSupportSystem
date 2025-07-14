@@ -1,6 +1,7 @@
 const { json } = require('express');
 const programModel = require('../models/program.model');
 const { reportNumberOfUsersEachRole } = require('../models/report.models');
+const { clouddebugger } = require('googleapis/build/src/apis/clouddebugger');
 
 exports.getAllCommunityProgram = async (req, res) => {
     try {
@@ -95,11 +96,12 @@ exports.submitResponse = async (req, res) => {
 exports.updateProgram = async (req, res) => {
     const program = req.body;
     try {
+        console.log('updateProgram:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ', program)
         const check = await programModel.getProgramById(program.program_id);
         console.log(check)
         if (!check) return res.json("This program doesn't exist!")
         const isUpdate = await programModel.updateProgram(program);
-        if (isUpdate) return res.json('Updated program successfullly!')
+        if (isUpdate) return res.json('Updated program successfully!')
         return res.json('Update program failed!')
     } catch (error) {
         console.error("updateProgram: ", error);
@@ -138,6 +140,31 @@ exports.checkMemberRegistered = async (req, res) => {
         return res.json(check);
     } catch (error) {
         console.log("checkMemberRegistered: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.getProgramById = async (req, res) => {
+    const { program_id } = req.params;
+    try {
+        const program = await programModel.getProgramById(program_id);
+        if (!program) {
+            return res.status(404).json({ error: "Program not found" });
+        }
+        return res.json(program);
+    } catch (error) {
+        console.error("getProgramById: ", error);
+    }
+}
+exports.createProgram = async (req, res) => {
+    const { program } = req.body;
+    console.log(program)
+    try {
+        const isCreate = await programModel.createProgram(program)
+        if (isCreate) return res.json('Created program successfully!');
+        return res.json('Creation program failed!')
+    } catch (error) {
+        console.log("createProgram: ", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }

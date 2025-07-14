@@ -10,12 +10,10 @@ function ProgramDetail() {
     const [program, setProgram] = useState(null);
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
-    const [isJoined, setIsJoined] = useState(false);
+    const [participantStatus, setParticipantStatus] = useState(null); // 'registered', 'present', or null
     const [activeTab, setActiveTab] = useState('overview');
-    const [surveyAnswers, setSurveyAnswers] = useState({});
-    const [submittingSurvey, setSubmittingSurvey] = useState(false);
     const uid = JSON.parse(localStorage.getItem('user'))?.user_id;
-
+    const fname = JSON.parse(localStorage.getItem('user'))?.fullname;
     // Fetch program details
     useEffect(() => {
         const fetchProgramDetail = async () => {
@@ -29,8 +27,19 @@ function ProgramDetail() {
                     }
                 });
                 
+                const response_ = await axios.get(`http://localhost:3000/api/program/get-all-member-by-program-id/${program_id}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                console.log(">> res: ", response)
+                console.log(">> res >>: ", response_)
+                console.log(localStorage.getItem('user'))
                 // Find the program with matching ID
                 const foundProgram = response.data.find(p => p.program_id === parseInt(program_id));
+                const rstatus = response_.data.find(i => i.fullname == fname)?.status
+                setParticipantStatus(rstatus || null);
                 if (foundProgram) {
                     setProgram(foundProgram);
                 } else {
@@ -70,9 +79,26 @@ function ProgramDetail() {
                     }
                 }
             );
-
+            console.log(`**Rese: ** ${response.data}`)
             if (response.data === 'Registered successfully!') {
-                setIsJoined(true);
+                // Refresh program data to get updated status
+                try {
+                    const updatedResponse = await axios.get(`http://localhost:3000/api/program/get-all-member-by-program-id/${program_id}`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    
+                    const updatedStatus = updatedResponse.data.find(i => i.fullname == fname)?.status;
+                    setParticipantStatus(updatedStatus === 'registered');
+                    
+                    console.log('Updated status:', updatedStatus);
+                } catch (refreshError) {
+                    console.error('Error refreshing data:', refreshError);
+                    // Fallback to setting joined state
+                    setParticipantStatus('registered');
+                }
                 
                 // Show success message and redirect to survey page
                 Swal.fire({
@@ -81,11 +107,14 @@ function ProgramDetail() {
                     text: 'You have successfully registered for this program. You will now be redirected to complete the survey.',
                     confirmButtonColor: '#dc2626',
                     timer: 2000,
-                    timerProgressBar: true
-                }).then(() => {
-                    // Redirect to survey program page
-                    navigate(`/surveyprogram/${program_id}`);
+                    timerProgressBar: true,
+                    showConfirmButton: false
                 });
+                
+                setTimeout(() => {
+                    navigate(`/surveyprogram/${program_id}`);
+                }, 2000);
+                
             } else {
                 throw new Error(response.data);
             }
@@ -100,77 +129,6 @@ function ProgramDetail() {
         } finally {
             setJoining(false);
         }
-    };
-
-    // Handle survey submission
-    const handleSurveySubmit = async (surveyType) => {
-        try {
-            setSubmittingSurvey(true);
-            
-            const surveyQuestions = surveyType === 'pre' 
-                ? program.survey_question?.['pre-survey'] || []
-                : program.survey_question?.['post-survey'] || [];
-            
-            const answers = [];
-            for (let i = 0; i < surveyQuestions.length; i++) {
-                const answer = surveyAnswers[`${surveyType}_${i}`];
-                if (!answer) {
-                    throw new Error(`Please answer all questions before submitting.`);
-                }
-                answers.push(answer);
-            }
-
-            const response = await axios.post(
-                `http://localhost:3000/api/program/submit-program-survey/${program_id}`,
-                {
-                    type: surveyType,
-                    answer: answers
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
-            );
-
-            if (response.data === 'Submit successful!') {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Survey Submitted!',
-                    text: `${surveyType === 'pre' ? 'Pre-program' : 'Post-program'} survey submitted successfully.`,
-                    confirmButtonColor: '#dc2626'
-                });
-                // Clear survey answers
-                setSurveyAnswers(prev => {
-                    const newAnswers = { ...prev };
-                    surveyQuestions.forEach((_, index) => {
-                        delete newAnswers[`${surveyType}_${index}`];
-                    });
-                    return newAnswers;
-                });
-            } else {
-                throw new Error(response.data);
-            }
-        } catch (err) {
-            console.error("Survey submission error:", err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Submission Failed',
-                text: err.response?.data?.error || err.message || 'An error occurred during submission.',
-                confirmButtonColor: '#dc2626'
-            });
-        } finally {
-            setSubmittingSurvey(false);
-        }
-    };
-
-    // Handle survey answer change
-    const handleAnswerChange = (questionKey, value) => {
-        setSurveyAnswers(prev => ({
-            ...prev,
-            [questionKey]: value
-        }));
     };
 
     // Format date for display
@@ -189,14 +147,81 @@ function ProgramDetail() {
     // Get status color
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
-            case 'on going':
+            case 'not started':
                 return 'bg-green-100 text-green-800';
-            case 'upcoming':
+            case 'on going':
                 return 'bg-blue-100 text-blue-800';
-            case 'completed':
+            case 'closed':
                 return 'bg-gray-100 text-gray-800';
             default:
                 return 'bg-yellow-100 text-yellow-800';
+        }
+    };
+
+
+    const checkProgramStatus = (startDate, endDate) => {
+        const now = new Date();
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (now < start) {
+            return 'not started';
+        } else if (now >= start && now <= end) {
+            return 'on going';
+        } else {
+            return 'closed';
+        }
+    };
+
+    // Handle check-in
+    const handleCheckIn = async () => {
+        try {
+            const response = await axios.get(
+                `http://localhost:3000/api/program/mark-participant/${program_id}/${uid}`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            if (response.data === 'Marked succesfully!') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Check-in Successful!',
+                    text: 'You have successfully checked in for this program.',
+                    confirmButtonColor: '#dc2626'
+                });
+                // Refresh program data to get updated status
+                try {
+                    const updatedResponse = await axios.get(`http://localhost:3000/api/program/get-all-member-by-program-id/${program_id}`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    
+                    const updatedStatus = updatedResponse.data.find(i => i.fullname == fname)?.status;
+                    setParticipantStatus(updatedStatus);
+                    
+                    console.log('Updated status:', updatedStatus);
+                } catch (refreshError) {
+                    console.error('Error refreshing data:', refreshError);
+                    // Fallback to setting present state
+                    setParticipantStatus('present');
+                }
+            } else {
+                throw new Error(response.data);
+            }
+        } catch (err) {
+            console.error("Check-in error:", err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Check-in Failed',
+                text: err.response?.data?.error || err.message || 'An error occurred during check-in.',
+                confirmButtonColor: '#dc2626'
+            });
         }
     };
 
@@ -208,7 +233,7 @@ function ProgramDetail() {
                     <div className="container mx-auto px-4">
                         <div className="flex justify-center items-center h-64">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                            <span className="ml-3 text-gray-600">Đang tải chi tiết chương trình...</span>
+                            <span className="ml-3 text-gray-600">Loading program...</span>
                         </div>
                     </div>
                 </div>
@@ -234,6 +259,8 @@ function ProgramDetail() {
             </>
         );
     }
+
+    const programStatus = checkProgramStatus(program.start_date, program.end_date);
 
     return (
         <>
@@ -299,14 +326,28 @@ function ProgramDetail() {
                                             </span>
                                         </div>
 
-                                        {program.status === 'completed' ? (
+                                        {programStatus === 'closed' ? (
                                             <button
                                                 className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
                                                 disabled
                                             >
                                                 Program Completed
                                             </button>
-                                        ) : isJoined ? (
+                                        ) : participantStatus === 'present' ? (
+                                            <button
+                                                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
+                                                disabled
+                                            >
+                                                Already check-in
+                                            </button>
+                                        ) : programStatus === 'on going' && participantStatus === 'registered' ? (
+                                            <button
+                                                onClick={handleCheckIn}
+                                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
+                                            >
+                                                Check-in
+                                            </button>
+                                        ) : participantStatus === 'registered' ? (
                                             <button
                                                 className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
                                                 disabled
@@ -373,7 +414,6 @@ function ProgramDetail() {
                             {[
                                 { id: 'overview', label: 'Overview', icon: '📋' },
                                 { id: 'content', label: 'Program Content', icon: '📚' },
-                                { id: 'survey', label: 'Surveys', icon: '📊' },
                                 { id: 'schedule', label: 'Schedule', icon: '⏰' }
                             ].map(tab => (
                                 <button
@@ -455,108 +495,6 @@ function ProgramDetail() {
                                                 )}
                                             </div>
                                         ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Survey Tab */}
-                            {activeTab === 'survey' && (
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Program Surveys</h2>
-                                    <div className="space-y-8">
-                                        {/* Pre-Survey */}
-                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                                            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                                                <span className="mr-2">📝</span>
-                                                Pre-Program Survey
-                                            </h3>
-                                            <p className="text-gray-600 mb-4">Complete this survey before starting the program to help us understand your baseline knowledge and expectations.</p>
-                                            {program.survey_question?.['pre-survey'] && (
-                                                <div className="space-y-4">
-                                                    {program.survey_question['pre-survey'].map((question, index) => (
-                                                        <div key={index} className="bg-white p-4 rounded-lg border">
-                                                            <p className="font-medium text-gray-800 mb-3">{index + 1}. {question}</p>
-                                                            <div className="space-y-2">
-                                                                {['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'].map((option) => (
-                                                                    <label key={option} className="flex items-center">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`pre_${index}`}
-                                                                            value={option}
-                                                                            checked={surveyAnswers[`pre_${index}`] === option}
-                                                                            onChange={(e) => handleAnswerChange(`pre_${index}`, e.target.value)}
-                                                                            className="mr-2 text-red-600"
-                                                                        />
-                                                                        <span className="text-gray-700">{option}</span>
-                                                                    </label>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        onClick={() => handleSurveySubmit('pre')}
-                                                        disabled={submittingSurvey}
-                                                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 flex items-center"
-                                                    >
-                                                        {submittingSurvey ? (
-                                                            <>
-                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                                Submitting...
-                                                            </>
-                                                        ) : (
-                                                            'Submit Pre-Survey'
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Post-Survey */}
-                                        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                                            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                                                <span className="mr-2">✅</span>
-                                                Post-Program Survey
-                                            </h3>
-                                            <p className="text-gray-600 mb-4">Complete this survey after finishing the program to help us evaluate its effectiveness and your learning progress.</p>
-                                            {program.survey_question?.['post-survey'] && (
-                                                <div className="space-y-4">
-                                                    {program.survey_question['post-survey'].map((question, index) => (
-                                                        <div key={index} className="bg-white p-4 rounded-lg border">
-                                                            <p className="font-medium text-gray-800 mb-3">{index + 1}. {question}</p>
-                                                            <div className="space-y-2">
-                                                                {['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'].map((option) => (
-                                                                    <label key={option} className="flex items-center">
-                                                                        <input
-                                                                            type="radio"
-                                                                            name={`post_${index}`}
-                                                                            value={option}
-                                                                            checked={surveyAnswers[`post_${index}`] === option}
-                                                                            onChange={(e) => handleAnswerChange(`post_${index}`, e.target.value)}
-                                                                            className="mr-2 text-red-600"
-                                                                        />
-                                                                        <span className="text-gray-700">{option}</span>
-                                                                    </label>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        onClick={() => handleSurveySubmit('post')}
-                                                        disabled={submittingSurvey}
-                                                        className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:bg-green-400 flex items-center"
-                                                    >
-                                                        {submittingSurvey ? (
-                                                            <>
-                                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                                Submitting...
-                                                            </>
-                                                        ) : (
-                                                            'Submit Post-Survey'
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
                                     </div>
                                 </div>
                             )}

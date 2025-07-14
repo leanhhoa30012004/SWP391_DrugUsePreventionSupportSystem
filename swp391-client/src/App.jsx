@@ -57,6 +57,7 @@ import SidebarLayout from './pages/Manager/dashboard/SidebarLayout'
 import SurveyManagement from './pages/Manager/dashboard/SurveyManagement'
 import CourseManagement from './pages/Manager/dashboard/CourseManagement'
 import ConsultantManagement from './pages/Manager/dashboard/ConsultantManagement'
+import CommunityProgramManagement from './pages/Manager/dashboard/CommunityProgramManagement'
 import ConsultantBooking from './pages/Consultant/Consultant.jsx'
 import OnlineConsultant from './pages/Homepage/Onlineconsultant'
 import OnlyConsultant from './pages/OnlyConsultant/OnlyConsultant.jsx'
@@ -72,7 +73,7 @@ function App() {
   const hideChatbot = location.pathname.startsWith('/manager') || location.pathname.startsWith('/admin');
   return (
     <>
-      <Routes>
+    <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Homepage />} />
       {/* <Route path="/aboutus" element={<Aboutus />} /> */}
@@ -137,9 +138,9 @@ function App() {
         <Route path="survey" element={<SurveyManagement />} />
         <Route path="course" element={<CourseManagement />} />
         <Route path="consultant" element={<ConsultantManagement />} />
-        
+        <Route path="community-program" element={<CommunityProgramManagement />} />
       </Route>
-      </Routes>
+    </Routes>
       {/* Global Chatbot - appears on all pages except manager/admin */}
       {!hideChatbot && <Chatbot />}
     </>

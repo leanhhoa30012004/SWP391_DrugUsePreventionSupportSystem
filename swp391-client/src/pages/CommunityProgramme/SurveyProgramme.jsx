@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { 
   CheckCircle, 
   AlertTriangle, 
@@ -23,20 +23,24 @@ import Swal from 'sweetalert2';
 const ProgramSurveyPage = () => {
   const { program_id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [questions, setQuestions] = useState([]);
-  const [responses, setResponses] = useState([]);
   const [memberInfo, setMemberInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [programInfo, setProgramInfo] = useState(null);
   const [surveyType, setSurveyType] = useState('pre-survey');
   const [userAnswers, setUserAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [viewMode, setViewMode] = useState('survey'); // 'survey' or 'responses'
+  const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
     // Debug: Check if program_id exists
     console.log("🔍 Program ID from params:", program_id);
     console.log("🔍 Type of program_id:", typeof program_id);
+    
+    // Get survey type from URL params (pre-survey or post-survey)
+    let surveyTypeFromURL = searchParams.get('type');
+    console.log("📝 Survey type from URL:", surveyTypeFromURL);
     
     // Validate program_id
     if (!program_id) {
@@ -75,53 +79,104 @@ const ProgramSurveyPage = () => {
           setProgramInfo(program);
           console.log("✅ Program info set:", program);
           
-          // Always use pre-survey for now
-          const currentSurveyType = 'pre-survey';
-          setSurveyType(currentSurveyType);
-          console.log("📝 Survey type set to:", currentSurveyType);
+          // Check if program has ended to determine survey type
+          const currentDate = new Date();
+          const endDate = program.end_date ? new Date(program.end_date) : null;
+          const programHasEnded = endDate && currentDate > endDate;
+          
+          // Calculate if post-survey is still available (10 minutes after end date)
+          const postSurveyDeadline = endDate ? new Date(endDate.getTime() + 2 * 60 * 1000) : null; // 10 minutes after end date
+          const postSurveyExpired = postSurveyDeadline && currentDate > postSurveyDeadline;
+          
+          console.log("📅 Current date:", currentDate);
+          console.log("📅 Program end date:", endDate);
+          console.log("🔚 Program has ended:", programHasEnded);
+          console.log("⏰ Post-survey deadline:", postSurveyDeadline);
+          console.log("🚫 Post-survey expired:", postSurveyExpired);
+          
+          // Determine survey type: URL param takes precedence, then check end date
+          let finalSurveyType = surveyTypeFromURL;
+          if (!finalSurveyType) {
+            if (programHasEnded && !postSurveyExpired) {
+              finalSurveyType = 'post-survey';
+            } else if (programHasEnded && postSurveyExpired) {
+              finalSurveyType = 'pre-survey'; // Fallback to pre-survey if post-survey expired
+            } else {
+              finalSurveyType = 'pre-survey';
+            }
+          }
+          
+          // Check if user is trying to access post-survey after deadline
+          if (finalSurveyType === 'post-survey' && postSurveyExpired) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Post-Survey Unavailable',
+              text: 'The post-program survey is no longer available. It can only be completed within 10 minutes after the program ends.',
+              confirmButtonColor: '#dc2626'
+            }).then(() => {
+              navigate('/programs');
+            });
+            return;
+          }
+          
+          setSurveyType(finalSurveyType);
+          console.log("📝 Final survey type:", finalSurveyType);
+          
+          // Show notification if automatically switching to post-survey
+          if (!surveyTypeFromURL && programHasEnded && !postSurveyExpired) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Post-Program Survey',
+              text: 'This program has ended. You are now taking the post-program evaluation survey. You have 10 minutes to complete it.',
+              confirmButtonColor: '#dc2626'
+            });
+          }
           
           // Log survey_question structure for debugging
           console.log("📋 Survey question object:", program.survey_question);
           console.log("📋 Survey question type:", typeof program.survey_question);
           
-          // Get pre-survey questions from survey_question object
+          // Get survey questions based on type (pre-survey or post-survey)
           let surveyQuestions = [];
+          let surveyResponseChoices = [];
           
           if (program.survey_question) {
             if (typeof program.survey_question === 'string') {
               // If it's a string, try to parse it
               try {
                 const parsedSurveyQuestion = JSON.parse(program.survey_question);
-                surveyQuestions = parsedSurveyQuestion['pre-survey'] || [];
+                surveyQuestions = parsedSurveyQuestion[finalSurveyType] || [];
               } catch (error) {
                 console.error("❌ Error parsing survey_question string:", error);
                 surveyQuestions = [];
               }
             } else if (typeof program.survey_question === 'object') {
               // If it's already an object, access directly
-              surveyQuestions = program.survey_question['pre-survey'] || [];
+              surveyQuestions = program.survey_question[finalSurveyType] || [];
             }
           }
           
-          console.log("❓ Pre-survey questions:", surveyQuestions);
+          console.log(`❓ ${finalSurveyType} questions:`, surveyQuestions);
           
-          // Get pre-survey responses (these are the answer choices)
-          let surveyResponseChoices = [];
-          if (program.response && program.response.pre_response) {
-            surveyResponseChoices = program.response.pre_response;
-            console.log("💬 Pre-survey response choices:", surveyResponseChoices);
+          // Get survey responses based on type
+          if (program.response) {
+            if (finalSurveyType === 'pre-survey' && program.response.pre_response) {
+              surveyResponseChoices = program.response.pre_response;
+            } else if (finalSurveyType === 'post-survey' && program.response.post_response) {
+              surveyResponseChoices = program.response.post_response;
+            }
+            console.log(`💬 ${finalSurveyType} response choices:`, surveyResponseChoices);
           }
           
           if (!Array.isArray(surveyQuestions) || surveyQuestions.length === 0) {
-            console.warn("⚠️ No pre-survey questions found!");
+            console.warn(`⚠️ No ${finalSurveyType} questions found!`);
             Swal.fire({
               icon: 'warning',
               title: 'No Survey Questions',
-              text: 'This program does not have pre-survey questions available.',
+              text: `This program does not have ${finalSurveyType} questions available.`,
               confirmButtonColor: '#dc2626'
             });
             setQuestions([]);
-            setResponses([]);
           } else {
             // Format questions with their corresponding answer choices
             const formattedQuestions = surveyQuestions.map((question, index) => ({
@@ -134,7 +189,6 @@ const ProgramSurveyPage = () => {
             console.log("✨ Formatted questions:", formattedQuestions);
             
             setQuestions(formattedQuestions);
-            setResponses(surveyResponseChoices);
           }
         } else {
           console.error("❌ Program not found with ID:", program_id);
@@ -178,7 +232,7 @@ const ProgramSurveyPage = () => {
     } catch (error) {
       console.error("❌ Error parsing user data:", error);
     }
-  }, [program_id, navigate]);
+  }, [program_id, navigate, searchParams]);
 
   // Handle answer change
   const handleAnswerChange = (questionId, value) => {
@@ -342,58 +396,6 @@ const ProgramSurveyPage = () => {
     );
   };
 
-  // Component to display survey responses
-  const ResponseDisplay = () => {
-    return (
-      <div className="space-y-8">
-        {questions.map((question, questionIndex) => (
-          <div key={question.id} className={`pb-8 ${questionIndex < questions.length - 1 ? "border-b border-red-200" : ""}`}>
-            <div className="flex items-start mb-6">
-              <div className="bg-gradient-to-r from-red-500 to-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-3">
-                {question.id}
-              </div>
-              <div className="font-medium text-lg text-gray-800">
-                {question.question}
-              </div>
-            </div>
-            
-            <div className="pl-11">
-              <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                <div className="flex items-center text-gray-700 mb-3">
-                  <MessageSquare className="w-4 h-4 mr-2 text-red-500" />
-                  <span className="font-medium text-sm">
-                    Available Options ({question.options?.length || 0})
-                  </span>
-                </div>
-                
-                {question.options && question.options.length > 0 ? (
-                  <div className="space-y-3">
-                    {question.options.map((option, optionIndex) => (
-                      <div key={optionIndex} className="bg-white p-4 rounded-lg border border-red-200 shadow-sm">
-                        <div className="flex items-start">
-                          <div className="bg-red-100 text-red-600 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mr-3 text-sm font-medium">
-                            {optionIndex + 1}
-                          </div>
-                          <p className="text-gray-700 text-sm leading-relaxed">
-                            {option}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-gray-500 text-sm italic text-center py-4">
-                    No options available for this question
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <>
@@ -421,18 +423,22 @@ const ProgramSurveyPage = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">{programInfo?.title}</h1>
-                <p className="text-white/80">Pre-Program Survey</p>
+                <p className="text-white/80">
+                  {surveyType === 'pre-survey' ? 'Pre-Program Survey' : 'Post-Program Survey'}
+                </p>
               </div>
             </div>
             
             <div className="mt-4 flex items-center space-x-6 text-white/80">
               <div className="flex items-center">
                 <MessageSquare className="w-5 h-5 mr-2" />
-                <span className="text-sm">Survey Form</span>
+                <span className="text-sm">
+                  {surveyType === 'pre-survey' ? 'Pre-Program Evaluation' : 'Post-Program Evaluation'}
+                </span>
               </div>
               <div className="flex items-center">
                 <Heart className="w-5 h-5 mr-2" />
-                <span className="text-sm">Program Evaluation</span>
+                <span className="text-sm">Program Feedback</span>
               </div>
               <div className="flex items-center">
                 <Users className="w-5 h-5 mr-2" />
@@ -441,55 +447,17 @@ const ProgramSurveyPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Tab Navigation */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex bg-white rounded-lg shadow-sm border border-red-200 p-1">
-            <button
-              onClick={() => setViewMode('survey')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                viewMode === 'survey'
-                  ? 'bg-red-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
-              }`}
-            >
-              Fill Survey
-            </button>
-            <button
-              onClick={() => setViewMode('responses')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                viewMode === 'responses'
-                  ? 'bg-red-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
-              }`}
-            >
-              View Options
-            </button>
-          </div>
-        </div>
         
         {/* Survey Content */}
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg border border-red-100 overflow-hidden">
             <div className="p-8">
               {Array.isArray(questions) && questions.length > 0 ? (
-                viewMode === 'survey' ? <SurveyForm /> : <ResponseDisplay />
+                <SurveyForm />
               ) : (
                 <div className="py-12 text-center text-gray-500">
                   <FileText className="w-16 h-16 mx-auto text-red-300 mb-4" />
-                  <p>No survey questions available</p>
-                </div>
-              )}
-              
-              {viewMode === 'responses' && (
-                <div className="mt-10 flex justify-center">
-                  <button 
-                    onClick={() => navigate('/programs')}
-                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl"
-                  >
-                    <ChevronLeft className="w-5 h-5 mr-2" />
-                    <span>Back to Programs</span>
-                  </button>
+                  <p>No {surveyType} questions available</p>
                 </div>
               )}
             </div>

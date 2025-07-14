@@ -223,7 +223,7 @@ WHERE ce.course_id = ? AND ce.member_id = ? AND ce.is_active = 1`,
     return rows;
 }
 const createCourse = async (course) => {
-    const connection = await db.getConnection(); 
+    const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
 
@@ -337,47 +337,64 @@ WHERE r.rn = 1;`);
     }));
 };
 
-const getAllCourseFollowEnrollmentCourseByMemberId = async (member_id) => {
-    const [listOfCourse] = await db.execute(`SELECT
-	c.course_id,
-	c.created_at,
-	c.created_by,
-	c.age_group,
-	cv.course_img,
-	cv.course_name,
-	cv.content,
-	cv.edited_at,
-	cv.edited_by,
-	cv.version
-FROM Course c
-LEFT JOIN Course_enrollment ce
-	ON c.course_id = ce.course_id AND ce.member_id = ? AND ce.is_active = 1
-LEFT JOIN Course_version cv
-	ON cv.course_id = c.course_id
-	AND (
-		cv.version = ce.enroll_version
-		OR (
-			ce.enroll_version IS NULL AND
-			cv.version = (
-				SELECT MAX(version )
-				FROM Course_version
-				WHERE course_id = c.course_id AND is_active = 1 
-			)
-		)
-	)
-WHERE c.is_active = 1`, [member_id]);
-    return listOfCourse.map(course => ({
-        course_id: course.course_id,
-        created_at: course.created_at,
-        created_by: course.created_by,
-        age_group: course.age_group,
-        course_img: course.course_img,
-        course_name: course.course_name,
-        content: JSON.parse(course.content),
-        edited_at: course.edited_at,
-        edited_by: course.edited_by,
-        version: course.version
-    }));
+// const getAllCourseFollowEnrollmentCourseByMemberId = async (member_id) => {
+//     const [listOfCourse] = await db.execute(`SELECT
+// 	c.course_id,
+// 	c.created_at,
+// 	c.created_by,
+// 	c.age_group,
+// 	cv.course_img,
+// 	cv.course_name,
+// 	cv.content,
+// 	cv.edited_at,
+// 	cv.edited_by,
+// 	cv.version
+// FROM Course c
+// LEFT JOIN Course_enrollment ce
+// 	ON c.course_id = ce.course_id AND ce.member_id = ? AND ce.is_active = 1
+// LEFT JOIN Course_version cv
+// 	ON cv.course_id = c.course_id
+// 	AND (
+// 		cv.version = ce.enroll_version
+// 		OR (
+// 			ce.enroll_version IS NULL AND
+// 			cv.version = (
+// 				SELECT MAX(version )
+// 				FROM Course_version
+// 				WHERE course_id = c.course_id AND is_active = 1 
+// 			)
+// 		)
+// 	)
+// WHERE c.is_active = 1`, [member_id]);
+//     return listOfCourse.map(course => ({
+//         course_id: course.course_id,
+//         created_at: course.created_at,
+//         created_by: course.created_by,
+//         age_group: course.age_group,
+//         course_img: course.course_img,
+//         course_name: course.course_name,
+//         content: JSON.parse(course.content),
+//         edited_at: course.edited_at,
+//         edited_by: course.edited_by,
+//         version: course.version
+//     }));
+// }
+
+const getParticipantCourseByMemberId = async (member_id) => {
+    const [list] = await db.execute(`SELECT
+    ce.member_id,
+    ce.course_id,
+    ce.enroll_version,
+    c.age_group,
+    c.created_at,
+    cv.course_name,
+    cv.course_img,
+    cv.version
+FROM Course_enrollment ce
+JOIN Course c ON ce.course_id = c.course_id
+JOIN Course_version cv ON cv.course_id = c.course_id 
+WHERE ce.member_id = ? AND ce.enroll_version = cv.version;`, [member_id])
+    return list;
 }
 
 
@@ -397,6 +414,6 @@ module.exports = {
     createCourse,
     updateCourse,
     listOfCourseFullInfo,
-    getAllCourseFollowEnrollmentCourseByMemberId
-
+    // getAllCourseFollowEnrollmentCourseByMemberId,
+    getParticipantCourseByMemberId
 };

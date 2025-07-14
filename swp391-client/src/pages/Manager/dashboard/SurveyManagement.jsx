@@ -673,10 +673,10 @@ const SurveyManagement = () => {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white p-0 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden animate-fade-in border border-gray-100">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-8 py-6 flex justify-between items-center">
+            <div className="bg-[#e11d48] px-8 py-6 flex justify-between items-center border-b border-[#e11d48]/20">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-1">✨ Create New Survey</h2>
-                <p className="text-indigo-100">Build an engaging survey for assessment or education</p>
+                <h2 className="text-2xl font-bold text-white mb-1">Create New Survey</h2>
+                <p className="text-[#ffe4ed]">Build an engaging survey for assessment or education</p>
               </div>
               <button
                 type="button"
@@ -723,8 +723,8 @@ const SurveyManagement = () => {
             {/* Content Section */}
             <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gradient-to-br from-gray-50 to-indigo-50">
               {/* Basic Survey Info */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <div className="bg-[#fde4ea] rounded-2xl p-6 mb-6 shadow-lg border border-[#e11d48]">
+                <h3 className="text-lg font-semibold text-[#e11d48] mb-4 flex items-center">
                   📝 Basic Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -749,8 +749,8 @@ const SurveyManagement = () => {
                 </div>
               </div>
               {/* Survey Content */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
+              <div className="bg-[#fde4ea] rounded-2xl p-6 shadow-lg border border-[#e11d48]">
+                <h3 className="text-lg font-semibold text-[#e11d48] mb-6 flex items-center">
                   📋 Survey Content
                 </h3>
                 {newSurvey.content.map((q, qIdx) => (
@@ -891,7 +891,7 @@ const SurveyManagement = () => {
                   Cancel
                 </button>
                 <button
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="px-8 py-3 bg-[#e11d48] hover:bg-[#be123c] text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                   onClick={handleCreateSurvey}
                 >
                   Create Survey

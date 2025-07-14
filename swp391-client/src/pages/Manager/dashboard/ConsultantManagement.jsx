@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaUserMd, FaPhone, FaEnvelope, FaUserTie, FaStar, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaGraduationCap, FaAward, FaComments, FaTimes, FaInfo, FaSave, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
 import axiosInstance from '../../../config/axios/axiosInstance';
 import axios from 'axios';
+
 function ConsultantManagement() {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -180,6 +181,7 @@ function ConsultantManagement() {
       const consultantAppointments = allAppointmentsData.filter(appointment => {
         console.log('Checking appointment:', appointment.appointment_id, 'consultant_id:', appointment.consultant_id, typeof appointment.consultant_id);
 
+
         // Convert both to same type for comparison
         const appointmentConsultantId = parseInt(appointment.consultant_id);
         const targetConsultantId = parseInt(consultantId);
@@ -220,6 +222,7 @@ function ConsultantManagement() {
   };
 
   const deleteAppointment = async (appointmentId, is_active) => {
+
     try {
       // Check if appointmentId is valid
       if (!appointmentId || appointmentId === 'undefined') {
@@ -233,10 +236,12 @@ function ConsultantManagement() {
       let response;
       try {
         // Try with axiosInstance first
+
         response = await axiosInstance.get(`/consultation/reject-appointment/${appointmentId}/${is_active}`);
         console.log('AxiosInstance response:', response.data); // Debug log
       } catch (axiosError) {
         console.log('AxiosInstance failed, trying manual axios:', axiosError.message); // Debug log
+
 
         // Fallback to manual axios with headers
         const token = localStorage.getItem('token');
@@ -245,8 +250,10 @@ function ConsultantManagement() {
           Authorization: `Bearer ${token}`
         };
 
+
         try {
           response = await axios.get(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/${is_active}`, { headers });
+
           console.log('Manual axios response:', response.data); // Debug log
         } catch (manualError) {
           console.error('Both axios methods failed:', manualError); // Debug log
@@ -259,11 +266,13 @@ function ConsultantManagement() {
       console.log('Response data type:', typeof response.data); // Debug log
       console.log('Response data content:', response.data); // Debug log
 
+
       if (response.status === 200) {
         // Check the response message to determine if it was successful
         if (response.data && typeof response.data === 'string' &&
           (response.data.includes('cancelled') || response.data.includes('canceled'))) {
           showNotification('Appointment rejected successfully!', 'success');
+
 
           // Refresh appointments list
           if (selectedConsultantId) {
@@ -537,19 +546,19 @@ function ConsultantManagement() {
 
   return (
     <div className="h-full w-full flex flex-col bg-gradient-to-br from-red-50 via-pink-50 to-gray-50 p-0 rounded-2xl shadow-lg font-sans">
-      {/* Header with red background and large consultant icon */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-gradient-to-r from-red-600 via-red-700 to-yellow-500 rounded-t-2xl shadow-lg">
+      {/* Header với nền trắng */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-2xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow-lg">
-            <FaUserMd className="text-4xl text-red-600" />
+          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+            <FaUserMd className="text-4xl text-[#e11d48]" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 font-sans">Consultant Management</h1>
-            <p className="text-white text-sm md:text-base max-w-xl font-normal">Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow font-sans">Consultant Management</h1>
+            <p className="text-[#be123c] text-sm md:text-base max-w-xl font-medium font-sans">Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.</p>
           </div>
         </div>
         <button
-          className="flex items-center gap-2 bg-yellow-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl shadow transition-all duration-200 text-base font-sans"
+          className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-6 py-3 rounded-2xl shadow transition-all duration-200 text-base font-sans"
           onClick={() => setShowCreateModal(true)}
         >
           <FaPlus /> Add Consultant
@@ -585,11 +594,10 @@ function ConsultantManagement() {
           </button>
         </div>
       </div>
-      {/* Consultant Table with enhanced details */}
+      {/* Consultant Table với nền trắng */}
       <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 font-sans">
         <table className="min-w-full text-sm text-left">
-          <thead className="bg-gradient-to-r from-red-600 via-red-700 to-yellow-500 text-white">
-
+          <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
               <th className="px-4 py-3 font-bold font-sans">Consultant</th>
               <th className="px-4 py-3 font-bold font-sans">Contact</th>
@@ -610,11 +618,11 @@ function ConsultantManagement() {
                 <td colSpan={7} className="text-center py-8 text-gray-400 font-normal">No consultants found.</td>
               </tr>
             ) : (
-              filteredConsultants.map(consultant => (
-                <tr key={consultant.user_id} className="border-b last:border-b-0 hover:bg-red-50 transition">
+              filteredConsultants.map((consultant, idx) => (
+                <tr key={consultant.user_id} className="border-b last:border-b-0 bg-[#fff1f2] hover:bg-white transition">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-red-600 to-yellow-500 flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-white border-2 border-[#e11d48]/30 flex items-center justify-center text-[#e11d48] font-bold">
                         <FaUserTie />
                       </div>
                       <div>
@@ -631,9 +639,7 @@ function ConsultantManagement() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-
                     <span className="inline-block px-3 py-1 rounded-full bg-yellow-500 text-white font-bold text-xs shadow capitalize font-sans">{consultant.role}</span>
-
                   </td>
                   <td className="px-4 py-3 text-gray-900 font-medium font-sans">
                     {consultant.birthday ? formatDate(consultant.birthday) : 'N/A'}
@@ -654,22 +660,21 @@ function ConsultantManagement() {
                   </td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
-                      className="p-2 rounded-lg bg-red-600 hover:bg-red-700 text-white"
+                      className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="View Details"
                       onClick={() => setViewConsultant(consultant)}
                     >
                       <FaEye />
                     </button>
                     <button
-                      className="p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
+                      className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="View Appointments"
                       onClick={() => fetchAppointmentsByConsultant(consultant.user_id)}
                     >
                       <FaCalendarAlt />
                     </button>
                     <button
-                      className="p-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white"
-
+                      className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="Edit"
                       onClick={() => {
                         setEditConsultant(consultant);
@@ -685,11 +690,18 @@ function ConsultantManagement() {
                       <FaEdit />
                     </button>
                     <button
-                      className={`p-2 rounded-lg ${Boolean(consultant.is_active) ? 'bg-gray-200 hover:bg-red-200 text-red-600' : 'bg-green-200 hover:bg-green-300 text-green-700'}`}
+                      className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title={Boolean(consultant.is_active) ? "Deactivate" : "Activate"}
                       onClick={() => toggleConsultantStatus(consultant.user_id, consultant.is_active)}
                     >
                       {Boolean(consultant.is_active) ? <FaTimesCircle /> : <FaCheckCircle />}
+                    </button>
+                    <button
+                      className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
+                      title="Delete"
+                      onClick={() => handleDeleteConsultant(consultant.user_id)}
+                    >
+                      <FaTrash />
                     </button>
                   </td>
                 </tr>
@@ -710,27 +722,23 @@ function ConsultantManagement() {
             </button>
 
             {/* Header with enhanced design */}
-            <div className="relative mb-0 p-8 bg-gradient-to-br from-indigo-600 via-blue-600 to-purple-700 rounded-t-3xl text-white overflow-hidden shadow-lg">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm"></div>
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-10 -translate-x-10"></div>
-
-              <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-                <div className="w-28 h-28 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-4xl shadow-2xl border-2 border-white/30 hover:scale-105 transition-transform duration-300">
+            <div className="relative mb-0 p-8 bg-[#e11d48] border-b border-[#be123c]/40 rounded-t-3xl text-white shadow-none">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="w-28 h-28 rounded-2xl bg-white border-2 border-[#fff1f2] flex items-center justify-center text-[#e11d48] text-4xl shadow-none">
                   <FaUserMd />
                 </div>
                 <div className="text-center md:text-left flex-1">
                   <h2 className="text-4xl font-bold mb-3 text-white drop-shadow-lg tracking-tight">{viewConsultant.fullname}</h2>
                   <div className="flex flex-wrap items-center gap-3 text-sm">
-                    <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white font-medium shadow-lg">
+                    <span className="flex items-center gap-2 bg-white border border-[#fff1f2] rounded-full px-4 py-2 text-[#e11d48] font-medium shadow-none">
                       <FaUserTie className="text-lg" /> @{viewConsultant.username}
                     </span>
-                    <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white font-medium shadow-lg">
+                    <span className="flex items-center gap-2 bg-white border border-[#fff1f2] rounded-full px-4 py-2 text-[#e11d48] font-medium shadow-none">
                       <FaUserMd className="text-lg" /> {viewConsultant.role}
                     </span>
-                    <span className={`flex items-center gap-2 rounded-full px-4 py-2 font-medium shadow-lg ${Boolean(viewConsultant.is_active)
-                      ? 'bg-green-500/90 text-white'
-                      : 'bg-red-500/90 text-white'}`}>
+                    <span className={`flex items-center gap-2 rounded-full px-4 py-2 font-medium shadow-none border ${Boolean(viewConsultant.is_active)
+                      ? 'bg-white border-[#fff1f2] text-[#e11d48]'
+                      : 'bg-[#fff1f2] border-[#fff1f2] text-[#be123c]'}`}>
                       {Boolean(viewConsultant.is_active) ? <FaCheckCircle className="text-lg" /> : <FaTimesCircle className="text-lg" />}
                       {Boolean(viewConsultant.is_active) ? 'Active' : 'Inactive'}
                     </span>
@@ -742,80 +750,78 @@ function ConsultantManagement() {
             {/* Information Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-gray-50">
               {/* Contact Information */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group">
-                <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FaEnvelope className="text-white text-sm" />
+              <div className="bg-white rounded-2xl p-6 border border-[#e11d48]/20 group">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white border-2 border-[#e11d48]/30 rounded-xl flex items-center justify-center">
+                    <FaEnvelope className="text-[#e11d48] text-sm" />
                   </div>
                   Contact Information
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaEnvelope className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaEnvelope className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-blue-600 uppercase tracking-wide mb-1">Email</p>
-                      <p className="text-sm text-gray-700 font-medium">{viewConsultant.email}</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Email</p>
+                      <p className="text-sm text-black font-medium">{viewConsultant.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaUserTie className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaUserTie className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-blue-600 uppercase tracking-wide mb-1">Username</p>
-                      <p className="text-sm text-gray-700 font-medium">@{viewConsultant.username}</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Username</p>
+                      <p className="text-sm text-black font-medium">@{viewConsultant.username}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaUserMd className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaUserMd className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-blue-600 uppercase tracking-wide mb-1">Role</p>
-                      <span className="inline-block px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium capitalize shadow-sm">
-                        {viewConsultant.role}
-                      </span>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Role</p>
+                      <span className="inline-block px-3 py-1 rounded-full bg-[#fff1f2] text-[#e11d48] font-bold text-xs border border-[#e11d48]/30">Consultant</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Personal Details */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-green-200 group">
-                <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FaGraduationCap className="text-white text-sm" />
+              <div className="bg-white rounded-2xl p-6 shadow-none border border-[#e11d48]/20 group">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white border-2 border-[#e11d48]/30 rounded-xl flex items-center justify-center shadow-none">
+                    <FaGraduationCap className="text-[#e11d48] text-sm" />
                   </div>
                   Personal Details
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-3 bg-green-50 rounded-lg border border-green-100">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaClock className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaClock className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-green-600 uppercase tracking-wide mb-1">Birthday</p>
-                      <p className="text-sm text-gray-700 font-medium">{viewConsultant.birthday ? formatDate(viewConsultant.birthday) : 'N/A'}</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Birthday</p>
+                      <p className="text-sm text-black font-medium">{viewConsultant.birthday ? formatDate(viewConsultant.birthday) : 'N/A'}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-3 bg-green-50 rounded-lg border border-green-100">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaCalendarAlt className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaCalendarAlt className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-green-600 uppercase tracking-wide mb-1">Created</p>
-                      <p className="text-sm text-gray-700 font-medium">{formatDate(viewConsultant.created_at)}</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Created</p>
+                      <p className="text-sm text-black font-medium">{formatDate(viewConsultant.created_at)}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-3 bg-green-50 rounded-lg border border-green-100">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaEdit className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaEdit className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-green-600 uppercase tracking-wide mb-1">Last Updated</p>
-                      <p className="text-sm text-gray-700 font-medium">{formatDate(viewConsultant.updated_at)}</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Last Updated</p>
+                      <p className="text-sm text-black font-medium">{formatDate(viewConsultant.updated_at)}</p>
                     </div>
                   </div>
                 </div>
@@ -823,20 +829,20 @@ function ConsultantManagement() {
 
 
               {/* Status Information */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200 group">
-                <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <FaCheckCircle className="text-white text-sm" />
+              <div className="bg-white rounded-2xl p-6 shadow-none border border-[#e11d48]/20 group">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white border-2 border-[#e11d48]/30 rounded-xl flex items-center justify-center shadow-none">
+                    <FaCheckCircle className="text-[#e11d48] text-sm" />
                   </div>
                   Status Information
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
-                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaCheckCircle className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaCheckCircle className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-purple-600 uppercase tracking-wide mb-1">Current Status</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Current Status</p>
                       <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold shadow-sm ${Boolean(viewConsultant.is_active)
                         ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
                         : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
@@ -845,13 +851,13 @@ function ConsultantManagement() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
-                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mt-0.5">
-                      <FaUserMd className="text-white text-xs" />
+                  <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
+                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaUserMd className="text-[#e11d48] text-xs" />
                     </div>
                     <div>
-                      <p className="font-semibold text-xs text-purple-600 uppercase tracking-wide mb-1">User ID</p>
-                      <p className="text-sm text-gray-700 font-mono bg-gray-100 px-2 py-1 rounded font-medium border">{viewConsultant.user_id}</p>
+                      <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">User ID</p>
+                      <p className="text-sm text-black font-mono bg-gray-100 px-2 py-1 rounded font-medium border">{viewConsultant.user_id}</p>
                     </div>
                   </div>
                 </div>
@@ -959,7 +965,7 @@ function ConsultantManagement() {
                       return (
                         <tr key={appointment.appointment_id || appointment.id || Math.random()} className="border-b hover:bg-gray-50">
                           <td className="px-4 py-3 text-black">
-                            {appointment.appointment_id || appointment.id || appointment.appointmentId || appointment.appointmentID || appointment.AppointmentID || appointment.APPOINTMENT_ID || 'N/A'}
+                            {appointment.appointment_id || appointment.id || appointment.appointmentId || appointment.appointmentID || appointment.APPOINTMENT_ID || 'N/A'}
                           </td>
 
                           <td className="px-4 py-3 text-black">
@@ -1087,7 +1093,7 @@ function ConsultantManagement() {
             </button>
 
             {/* Header */}
-            <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-t-3xl p-8 text-white relative overflow-hidden">
+            <div className="bg-[#e11d48] border-b border-[#be123c]/40 rounded-t-3xl p-8 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
 
@@ -1096,8 +1102,8 @@ function ConsultantManagement() {
                   <FaEdit className="text-white text-2xl" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold mb-1">Edit Consultant</h2>
-                  <p className="text-blue-100">Update consultant information</p>
+                  <h2 className="text-3xl font-bold mb-1 text-white">Edit Consultant</h2>
+                  <p className="text-[#fff1f2]">Update consultant information</p>
                 </div>
               </div>
             </div>
@@ -1105,20 +1111,20 @@ function ConsultantManagement() {
             {/* Form */}
             <div className="p-8 space-y-6">
               {/* Info Notice */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <FaInfo className="text-white text-sm" />
+              <div className="bg-[#fff1f2] border border-[#e11d48]/20 rounded-xl p-4 flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-white border-2 border-[#e11d48]/30 rounded-lg flex items-center justify-center">
+                  <FaInfo className="text-[#e11d48] text-sm" />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-800 font-medium">Edit Consultant Information</p>
-                  <p className="text-xs text-blue-600">Only name and birthday can be updated. Email, username, and role cannot be changed.</p>
+                  <p className="text-sm text-[#e11d48] font-bold">Edit Consultant Information</p>
+                  <p className="text-xs text-[#e11d48]">Only name and birthday can be updated. Email, username, and role cannot be changed.</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserTie className="text-blue-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaUserTie className="text-[#e11d48]" />
                     Full Name
                     <span className="text-red-500">*</span>
                   </label>
@@ -1132,8 +1138,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaEnvelope className="text-green-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaEnvelope className="text-[#e11d48]" />
                     Email Address
                   </label>
                   <input
@@ -1150,8 +1156,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserTie className="text-gray-400" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaUserTie className="text-[#e11d48]" />
                     Username
                   </label>
                   <input
@@ -1168,8 +1174,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaClock className="text-purple-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaClock className="text-[#e11d48]" />
                     Birthday
                   </label>
                   <input
@@ -1181,8 +1187,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserMd className="text-orange-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaUserMd className="text-[#e11d48]" />
                     Role
                   </label>
                   <select
@@ -1218,7 +1224,7 @@ function ConsultantManagement() {
                 </button>
                 <button
                   type="button"
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
                   onClick={updateConsultant}
                 >
                   <FaSave />
@@ -1269,7 +1275,7 @@ function ConsultantManagement() {
               <FaTimes className="text-lg" />
             </button>
             {/* Header */}
-            <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 rounded-t-3xl p-8 text-white relative overflow-hidden">
+            <div className="bg-[#e11d48] border-b border-[#be123c]/40 rounded-t-3xl p-8 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
 
@@ -1278,8 +1284,8 @@ function ConsultantManagement() {
                   <FaPlus className="text-white text-2xl" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold mb-1">Create New Consultant</h2>
-                  <p className="text-green-100">Add a new consultant to the system</p>
+                  <h2 className="text-3xl font-bold mb-1 text-white">Create New Consultant</h2>
+                  <p className="text-[#fff1f2]">Add a new consultant to the system</p>
                 </div>
               </div>
             </div>
@@ -1287,20 +1293,20 @@ function ConsultantManagement() {
             {/* Form */}
             <div className="p-8 space-y-6">
               {/* Info Box */}
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                  <FaInfo className="text-white text-sm" />
+              <div className="bg-[#fff1f2] border border-[#e11d48]/20 rounded-xl p-4 flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-white border-2 border-[#e11d48]/30 rounded-lg flex items-center justify-center">
+                  <FaInfo className="text-[#e11d48] text-sm" />
                 </div>
                 <div>
-                  <p className="text-sm text-green-800 font-medium">Creating new consultant account</p>
-                  <p className="text-xs text-green-600">All fields marked with * are required</p>
+                  <p className="text-sm text-[#e11d48] font-bold">Creating new consultant account</p>
+                  <p className="text-xs text-[#e11d48]">All fields marked with * are required</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserTie className="text-blue-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaUserTie className="text-[#e11d48]" />
                     Full Name
                     <span className="text-red-500">*</span>
                   </label>
@@ -1314,8 +1320,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaEnvelope className="text-green-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaEnvelope className="text-[#e11d48]" />
                     Email Address
                     <span className="text-red-500">*</span>
                   </label>
@@ -1329,8 +1335,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserTie className="text-purple-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaUserTie className="text-[#e11d48]" />
                     Username
                     <span className="text-red-500">*</span>
                   </label>
@@ -1344,8 +1350,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaEye className="text-red-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaEye className="text-[#e11d48]" />
                     Password
                     <span className="text-red-500">*</span>
                   </label>
@@ -1368,8 +1374,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaClock className="text-orange-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaClock className="text-[#e11d48]" />
                     Birthday
                   </label>
                   <input
@@ -1381,8 +1387,8 @@ function ConsultantManagement() {
                 </div>
 
                 <div className="group">
-                  <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserMd className="text-indigo-500" />
+                  <label className="block text-sm font-bold text-[#e11d48] mb-2 flex items-center gap-2">
+                    <FaUserMd className="text-[#e11d48]" />
                     Role
                   </label>
                   <select
@@ -1422,7 +1428,7 @@ function ConsultantManagement() {
                   Cancel
                 </button>
                 <button
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  className="px-8 py-3 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
                   onClick={createConsultant}
                 >
                   <FaPlus />
@@ -1462,4 +1468,6 @@ function ConsultantManagement() {
   );
 };
 
+
 export default ConsultantManagement;
+
