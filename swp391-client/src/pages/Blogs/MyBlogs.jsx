@@ -1,42 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { FaSearch, FaCalendarAlt, FaUser, FaEye, FaHeart, FaShareAlt, FaBookmark, FaTags, FaClock, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
-import CreateBlogForm from './CreateBlogForm';
+import { FaHeart, FaEye, FaShareAlt } from 'react-icons/fa';
 
-const Blogs = () => {
-    const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState('all');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [expandedCards, setExpandedCards] = useState(new Set());
+const MyBlogs = () => {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const blogsPerPage = 6;
-    const [likedBlogs, setLikedBlogs] = useState({}); // { [blogId]: true }
-    const [comments, setComments] = useState({}); // { [blogId]: [comment, ...] }
-    const [commentInputs, setCommentInputs] = useState({}); // { [blogId]: '' }
-    const [commentLoading, setCommentLoading] = useState({}); // { [blogId]: true/false }
+    const [likedBlogs, setLikedBlogs] = useState({});
+    const [comments, setComments] = useState({});
+    const [commentInputs, setCommentInputs] = useState({});
+    const [commentLoading, setCommentLoading] = useState({});
 
-    const fetchBlogs = () => {
+    const user_id = localStorage.getItem('user_id');
+
+    useEffect(() => {
+        if (!user_id) return;
         setLoading(true);
         setError(null);
-        fetch('/api/blog/get-all-blog-approved')
+        fetch(`/api/blog/getAllBlogByMemberId/${user_id}`)
             .then(res => {
-                if (!res.ok) throw new Error('Failed to load blogs!');
+                if (!res.ok) throw new Error('Failed to load your blogs!');
                 return res.json();
             })
             .then(data => {
-                setBlogs(Array.isArray(data) ? data : data.blogs || []);
+                setBlogs(Array.isArray(data) ? data : []);
                 setLoading(false);
             })
             .catch(err => {
-                setError(err.message || 'Failed to load blogs!');
+                setError(err.message || 'Failed to load your blogs!');
                 setLoading(false);
             });
-    };
+    }, [user_id]);
 
     // Lấy comment cho blog
     const fetchComments = async (blogId) => {
@@ -54,17 +49,14 @@ const Blogs = () => {
 
     // Gửi comment mới
     const handleCommentSubmit = async (blogId) => {
-        const member = JSON.parse(localStorage.getItem('user'));
-        const member_id = member.user_id;
-        console.log(member_id);
-        if (!member_id) {
+        if (!user_id) {
             alert('Please log in to comment!');
             return;
         }
         const content = commentInputs[blogId]?.trim();
         if (!content) return;
         try {
-            await fetch(`/api/blog/comment-blog/${member_id}/${blogId}`, {
+            await fetch(`/api/blog/comment-blog/${user_id}/${blogId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content }),
@@ -76,32 +68,12 @@ const Blogs = () => {
         }
     };
 
-    // Khi mount, tự động fetch comment cho từng blog (chỉ khi mở rộng hoặc khi user focus vào input)
-    // Để tối ưu, chỉ fetch khi user click "Show comments" hoặc focus vào input
-    // Ở đây sẽ fetch luôn khi render (có thể tối ưu sau)
     useEffect(() => {
-        if (blogs.length > 0) {
-            blogs.forEach(blog => {
-                if (blog.blog_id) fetchComments(blog.blog_id);
-            });
-        }
+        blogs.forEach(blog => {
+            if (blog.blog_id) fetchComments(blog.blog_id);
+        });
         // eslint-disable-next-line
     }, [blogs.length]);
-
-    useEffect(() => {
-        fetchBlogs();
-    }, []);
-
-    // Categories
-    const categories = [
-        { id: 'all', name: 'All Blogs' },
-        { id: 'addiction', name: 'Addiction' },
-        { id: 'prevention', name: 'Prevention' },
-        { id: 'recovery', name: 'Recovery' },
-        { id: 'family', name: 'Family Support' },
-        { id: 'community', name: 'Community' },
-        { id: 'mental-health', name: 'Mental Health' }
-    ];
 
     // Map dữ liệu backend sang format frontend
     const blogsData = blogs.map(blog => ({
@@ -112,7 +84,7 @@ const Blogs = () => {
         author: blog.fullname || `User #${blog.author}` || 'Unknown',
         date: blog.approval_date || blog.post_date || blog.date,
         category: blog.tags ? blog.tags.split(',')[0]?.trim().toLowerCase().replace(/\s/g, '-') : 'other',
-        image: blog.cover_img,
+        image: blog.cover_img ? blog.cover_img : 'https://via.placeholder.com/600x400?text=Blog+Image',
         readTime: '5 min read',
         views: blog.views || 0,
         likes: blog.likes || 0,
@@ -120,90 +92,33 @@ const Blogs = () => {
         status: blog.status,
     }));
 
-    // Sắp xếp blogs mới nhất lên trên (KHAI BÁO TRƯỚC KHI DÙNG TRONG useEffect)
+    // Sắp xếp blogs mới nhất lên trên
     const sortedBlogs = [...blogsData].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Filter blogs
-    const filteredBlogs = blogsData.filter(blog => {
-        const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            blog.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            blog.author.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = activeCategory === 'all' || blog.category === activeCategory;
-        return matchesSearch && matchesCategory;
-    });
-
-    // Pagination
-    const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
-    const indexOfLastBlog = currentPage * blogsPerPage;
-    const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
-    const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
-
-    // Featured blog (first blog)
-    const featuredBlog = blogsData[0];
-
-    const handleBlogClick = (blog) => {
-        navigate(`/blogs/${blog.id}`);
-    };
-
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    // Xử lý Like blog
-    const handleLike = async (blogId) => {
-        // Lấy member_id từ localStorage hoặc context (giả sử user_id = 1 nếu chưa đăng nhập)
-        const member = JSON.parse(localStorage.getItem('user'));
-        const member_id = member.user_id;
-        if (!member_id) {
-            alert('Please log in to like blogs!');
-            return;
-        }
-        // Optimistic update
-        setLikedBlogs(prev => ({ ...prev, [blogId]: !prev[blogId] }));
-        // Gọi API like/unlike
-        try {
-            await fetch(`/api/blog/like-blog/${member_id}/${blogId}`);
-            // Không cần xử lý response, số like sẽ được cập nhật ở lần fetch tiếp theo
-            // Có thể cập nhật số like ngay trên UI nếu muốn (ở đây chỉ đổi màu icon)
-        } catch (err) {
-            // Nếu lỗi, revert lại
-            setLikedBlogs(prev => ({ ...prev, [blogId]: !!prev[blogId] }));
-            alert('Failed to like blog!');
-        }
-    };
-
-    const handleBookmark = (blogId, e) => {
-        e.stopPropagation();
-        // Handle bookmark functionality here
-        console.log('Bookmarked blog:', blogId);
-    };
-
-    const toggleCardExpansion = (blogId, e) => {
-        e.stopPropagation();
-        const newExpandedCards = new Set(expandedCards);
-        if (expandedCards.has(blogId)) {
-            newExpandedCards.delete(blogId);
-        } else {
-            newExpandedCards.add(blogId);
-        }
-        setExpandedCards(newExpandedCards);
-    };
-
-    // Loading state
-    if (loading) {
+    if (!user_id) {
         return (
             <>
                 <Navbar />
                 <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                    <span className="text-red-500 text-xl font-semibold">Loading blogs...</span>
+                    <span className="text-red-500 text-xl font-semibold">Please log in to view your blogs.</span>
                 </div>
                 <Footer />
             </>
         );
     }
 
-    // Error state
+    if (loading) {
+        return (
+            <>
+                <Navbar />
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                    <span className="text-red-500 text-xl font-semibold">Loading your blogs...</span>
+                </div>
+                <Footer />
+            </>
+        );
+    }
+
     if (error) {
         return (
             <>
@@ -221,13 +136,10 @@ const Blogs = () => {
             <Navbar />
             <div className="min-h-screen bg-gray-50">
                 <div className="mx-auto px-2 py-10 max-w-[700px]">
-                    {/* Create Blog Form */}
-                    <CreateBlogForm onPostSuccess={fetchBlogs} />
-
-                    {/* Newsfeed Blogs */}
+                    <h2 className="text-3xl font-bold mb-8 text-center text-[#e11d48]">My Blogs</h2>
                     {sortedBlogs.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-lg p-12 text-center mt-8">
-                            <p className="text-gray-600 text-lg">No blogs found.</p>
+                            <p className="text-gray-600 text-lg">You haven't posted any blogs yet.</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-10 mt-6">
@@ -263,16 +175,17 @@ const Blogs = () => {
                                     <div className="flex items-center gap-10 mt-6 text-gray-500 text-xl">
                                         <button
                                             className={`flex items-center gap-2 transition font-semibold group ${likedBlogs[blog.id] ? 'text-red-500' : 'hover:text-red-500'}`}
-                                            onClick={() => handleLike(blog.id)}
+                                            onClick={() => {}}
+                                            disabled
                                         >
                                             <FaHeart className={`text-2xl group-hover:scale-110 transition-transform ${likedBlogs[blog.id] ? 'fill-red-500' : ''}`} />
                                             <span className="text-lg">{blog.likes + (likedBlogs[blog.id] ? 1 : 0)}</span>
                                         </button>
-                                        <button className="flex items-center gap-2 hover:text-blue-500 transition font-semibold group">
+                                        <button className="flex items-center gap-2 hover:text-blue-500 transition font-semibold group" disabled>
                                             <FaEye className="text-2xl group-hover:scale-110 transition-transform" />
                                             <span className="text-lg">0</span>
                                         </button>
-                                        <button className="flex items-center gap-2 hover:text-green-500 transition font-semibold group">
+                                        <button className="flex items-center gap-2 hover:text-green-500 transition font-semibold group" disabled>
                                             <FaShareAlt className="text-2xl group-hover:scale-110 transition-transform" />
                                             <span className="text-lg">Share</span>
                                         </button>
@@ -328,4 +241,4 @@ const Blogs = () => {
     );
 };
 
-export default Blogs;
+export default MyBlogs; 

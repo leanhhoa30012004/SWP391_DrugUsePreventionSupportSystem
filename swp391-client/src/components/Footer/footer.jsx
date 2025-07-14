@@ -77,7 +77,7 @@ const Footer = () => {
                                     </div>
                                     <div>
                                         <p className="text-gray-800 font-semibold text-sm">Address</p>
-                                        <p className="text-gray-600 text-sm">WeHope, TP Hồ Chí Minh</p>
+                                        <p className="text-gray-600 text-sm">WeHope, Ho Chi Minh City</p>
                                     </div>
                                 </div>
 

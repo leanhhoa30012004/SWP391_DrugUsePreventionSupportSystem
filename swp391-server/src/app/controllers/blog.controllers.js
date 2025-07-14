@@ -18,13 +18,10 @@ exports.blogPost = async (req, res) => {
 exports.getAllBlogPending = async (req, res) => {
     try {
         const list = await blogModel.getAllBlogPending();
-        const blogs = await Promise.all(
-            list.map(async (blog) => ({
-                ...blog,
-                manager_id: blog.manager_id ? await managerModel.getNameByUserId(blog.manager_id) : null,
-                cover_img: blog.cover_img ? `../../uploads/${blog.cover_img}` : null
-            }))
-        )
+        const blogs = list.map(blog => ({
+            ...blog,
+            cover_img: blog.cover_img ? `../../uploads/${blog.cover_img}` : null
+        }));
         return res.json(blogs)
     } catch (error) {
         console.error("getAllBlogPending: ", error);
@@ -36,13 +33,10 @@ exports.getAllBlogByMemberId = async (req, res) => {
     const member_id = req.params.member_id;
     try {
         const list = await blogModel.getAllBlogByMemberId(member_id);
-        const blogs = await Promise.all(
-            list.map(async (blog) => ({
-                ...blog,
-                manager_id: blog.manager_id ? await managerModel.getNameByUserId(blog.manager_id) : null,
-                cover_img: blog.cover_img ? `../../uploads/${blog.cover_img}` : null
-            }))
-        )
+        const blogs = list.map(blog => ({
+            ...blog,
+            cover_img: blog.cover_img ? `../../uploads/${blog.cover_img}` : null
+        }));
         return res.json(blogs)
     } catch (error) {
         console.error("getAllBlogByMemberId: ", error);
@@ -63,7 +57,6 @@ exports.approvalBlog = async (req, res) => {
         console.error("approvalBlog: ", error);
         res.status(500).json({ error: "Internal server error" });
     }
-    i
 }
 
 exports.rejectblog = async (req, res) => {
