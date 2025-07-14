@@ -12,6 +12,8 @@ const BlogsManagement = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingBlogId, setRejectingBlogId] = useState(null);
   const user = JSON.parse(localStorage.getItem('user'));
   const manager_id = user?.user_id;
 
@@ -41,20 +43,31 @@ const BlogsManagement = () => {
       return;
     }
     try {
-      await axios.get(`/api/blog/approval-blog/${manager_id}/${blog_id}`);
+      const token = localStorage.getItem('token');
+      await axios.get(`/api/blog/approval-blog/${manager_id}/${blog_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       fetchBlogs();
     } catch (err) {
       alert('Approve failed!');
     }
   };
 
-  const handleReject = async (blog_id) => {
+  const handleReject = async (blog_id, reason) => {
     if (!manager_id) {
       alert('Manager ID not found!');
       return;
     }
+    if (!reason || !reason.trim()) {
+      alert('Please enter a reject reason!');
+      return;
+    }
     try {
-      await axios.post(`/api/blog/reject-blog/${manager_id}/${blog_id}`);
+      const token = localStorage.getItem('token');
+      await axios.post(`/api/blog/reject-blog/${manager_id}/${blog_id}`, { reason }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRejectingBlogId(null);
       fetchBlogs();
     } catch (err) {
       alert('Reject failed!');
@@ -113,7 +126,41 @@ const BlogsManagement = () => {
                         {blog.status === 'Pending' && (
                           <div className="flex gap-2">
                             <button onClick={() => handleApprove(blog.blog_id)} className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-1.5 rounded-lg shadow">Approve</button>
-                            <button onClick={() => handleReject(blog.blog_id)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-1.5 rounded-lg shadow">Reject</button>
+                            <button
+                              onClick={() => {
+                                setRejectingBlogId(blog.blog_id);
+                                setRejectReason('');
+                              }}
+                              className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-1.5 rounded-lg shadow"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                        {rejectingBlogId === blog.blog_id && (
+                          <div className="flex flex-col gap-2 mt-2">
+                            <input
+                              type="text"
+                              value={rejectReason}
+                              onChange={e => setRejectReason(e.target.value)}
+                              placeholder="Enter reject reason..."
+                              className="border px-2 py-1 rounded"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleReject(blog.blog_id, rejectReason)}
+                                className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-1.5 rounded-lg shadow"
+                                disabled={!rejectReason.trim()}
+                              >
+                                Confirm Reject
+                              </button>
+                              <button
+                                onClick={() => setRejectingBlogId(null)}
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-4 py-1.5 rounded-lg shadow"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
                         )}
                       </td>
