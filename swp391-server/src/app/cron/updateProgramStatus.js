@@ -8,3 +8,8 @@ cron.schedule('*/15 * * * *', async () => {
     // console.log('update>>>', isUpdate)
     if (isUpdate) console.log(`[CRON] Updated program statuses at ${new Date().toLocaleString()}`)
 });
+
+cron.schedule('*/15 * * * *', async () => {
+    const isUpdate = await programModel.updateStatusProgramParticipants();
+    if (isUpdate) console.log(`[CRON] Updated program participant statuses at ${new Date().toLocaleString()}`)
+});

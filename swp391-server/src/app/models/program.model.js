@@ -46,13 +46,11 @@ SET status = 'on going'
 WHERE status = 'not started'
 AND start_date <= NOW()
 AND end_date > NOW()`);
-    // console.log('[DEBUG] Ongoing affected:', ongoing.affectedRows);
 
     const [closed] = await db.execute(`UPDATE Community_programs
       SET status = 'closed'
       WHERE status = 'on going'
         AND end_date <= NOW()`);
-    // console.log('[DEBUG] Closed affected:', closed.affectedRows);
 
     const isUpdate = ongoing.affectedRows > 0 || closed.affectedRows > 0;
     return isUpdate;
@@ -96,7 +94,7 @@ WHERE program_id = ? AND is_active = 1`,
         JSON.stringify(program.description),
         program.start_date,
         program.end_date,
-        JSON.stringify(program.location),
+        program.location,
         JSON.stringify(program.detail),
         program.age_group,
         program.program_id])
@@ -126,6 +124,33 @@ FROM Community_program_participant WHERE member_id = ? AND program_id = ?`, [mem
     return true;
 }
 
+const createProgram = async (program) => {
+    console.log(program)
+    const [isCreate] = await db.execute(`INSERT INTO Community_programs (title, description, start_date, end_date, location, detail, age_group, manager_id, survey_question, status)
+VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        [program.title,
+        JSON.stringify(program.description),
+        program.start_date,
+        program.end_date,
+        program.location,
+        JSON.stringify(program.detail),
+        program.age_group,
+        program.manager_id,
+        program.survey_question,
+        program.status]);
+    return isCreate.affectedRows > 0
+}
+
+const updateStatusProgramParticipants = async () => {
+    const [isUpdate] = await db.execute(`UPDATE Community_program_participant cpp
+JOIN Community_programs cp 
+    ON cpp.program_id = cp.program_id
+SET cpp.status = 'absent'
+WHERE cpp.status = 'registered'
+  AND cp.status = 'closed';`)
+    return isUpdate.affectedRows > 0
+}
+
 module.exports = {
     getAllCommunityProgram,
     numberParticipantProgram,
@@ -137,5 +162,7 @@ module.exports = {
     updateProgram,
     deleteProgram,
     getAllMemberByProgramId,
-    checkMemberRegistered
+    checkMemberRegistered,
+    createProgram,
+    updateStatusProgramParticipants
 }

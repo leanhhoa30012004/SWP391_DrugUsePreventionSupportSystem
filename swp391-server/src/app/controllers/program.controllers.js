@@ -142,3 +142,16 @@ exports.checkMemberRegistered = async (req, res) => {
     }
 }
 
+exports.createProgram = async (req, res) => {
+    const { program } = req.body;
+    console.log(program)
+    try {
+        const isCreate = await programModel.createProgram(program)
+        if (isCreate) return res.json('Created program successfully!');
+        return res.json('Creation program failed!')
+    } catch (error) {
+        console.log("createProgram: ", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
