@@ -79,7 +79,7 @@ WHERE ce.enroll_version = cv.version AND cv.course_id = ? AND ce.member_id = ? A
 
 const createMemberEnrollmentCourse = async (member_id, course_id, enroll_version) => {
     const [rows] = await db.execute(
-        "INSERT INTO Course_enrollment (course_id, member_id, enroll_version) VALUES (?, ?, ?)",
+        "INSERT INTO Course_enrollment (course_id, member_id, enroll_version, date) VALUES (?, ?, ?, now())",
         [course_id, member_id, enroll_version]
     );
     return rows;
