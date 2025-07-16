@@ -347,8 +347,6 @@ const ConsultantBooking = () => {
     try {
       const appointmentData = {
         member_id: JSON.parse(localStorage.getItem('user')).user_id,
-        name: formData.name,
-        email: JSON.parse(localStorage.getItem('user')).email,
         appointment_date: formData.appointment_date,
         appointment_time: formData.appointment_time
       };
