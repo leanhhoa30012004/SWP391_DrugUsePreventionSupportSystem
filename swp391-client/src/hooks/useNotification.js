@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
 
-const useNotification = (userId) => {
+const useNotification = (userID) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -11,21 +11,20 @@ const useNotification = (userId) => {
 
   // API base URL - thay đổi theo environment
   const API_BASE_URL = 'http://localhost:3000/api/notice';
-  const SOCKET_URL ='http://localhost:3000';
+  const SOCKET_URL = 'http://localhost:3000';
 
   // Fetch notifications từ API
   const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
+    if (!userID) return;
 
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/${userID}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Thêm authorization header nếu cần
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
@@ -35,15 +34,27 @@ const useNotification = (userId) => {
       }
 
       const data = await response.json();
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.is_read).length);
+      console.log("Notification API response:", data);
+      
+      if (data.error) {
+        setNotifications([]);
+        setUnreadCount(0);
+        setError(data.error);
+        return;
+      }
+
+      // Đảm bảo data là array
+      const notificationArray = Array.isArray(data) ? data : [];
+      setNotifications(notificationArray);
+      console.log("set", notificationArray)
+      setUnreadCount(notificationArray.filter(n => !n.is_read).length);
     } catch (error) {
       setError(error.message);
       console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
     }
-  }, [userId, API_BASE_URL]);
+  }, [userID, API_BASE_URL]);
 
   // Đánh dấu thông báo đã đọc
   const markAsRead = useCallback(async (notificationId) => {
@@ -79,7 +90,7 @@ const useNotification = (userId) => {
   // Đánh dấu tất cả thông báo đã đọc
   const markAllAsRead = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/${userId}/read-all`, {
+      const response = await fetch(`${API_BASE_URL}/${userID}/read-all`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +111,7 @@ const useNotification = (userId) => {
       console.error('Error marking all notifications as read:', error);
       setError(error.message);
     }
-  }, [API_BASE_URL, userId]);
+  }, [API_BASE_URL, userID]);
 
   // Tạo thông báo mới
   const createNotification = useCallback(async (data) => {
@@ -128,8 +139,10 @@ const useNotification = (userId) => {
 
   // Xử lý thông báo mới từ socket
   const handleNewNotification = useCallback((data) => {
+    console.log('Received new notification:', data);
+    
     const newNotification = {
-      id: Date.now(), // Hoặc sử dụng ID từ server
+      id: data.id || Date.now(), // Sử dụng ID từ server hoặc timestamp
       title: data.title,
       message: data.message,
       type: data.type || 'info',
@@ -146,35 +159,76 @@ const useNotification = (userId) => {
   }, []);
 
   // Hiển thị toast notification
-  const showToast = (notification) => {
+  const showToast = useCallback((notification) => {
+    // Kiểm tra nếu browser hỗ trợ Notification API
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(notification.title, {
+        body: notification.message,
+        icon: '/favicon.ico', // Thay đổi path theo icon của bạn
+        tag: notification.id,
+        requireInteraction: false
+      });
+    }
+    
     // Tạo custom event để hiển thị toast
     const event = new CustomEvent('showNotificationToast', {
       detail: notification
     });
     window.dispatchEvent(event);
-  };
+  }, []);
+
+  // Yêu cầu quyền thông báo
+  const requestNotificationPermission = useCallback(async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    return false;
+  }, []);
 
   // Khởi tạo Socket.IO connection
   useEffect(() => {
-    if (!userId) return;
+    if (!userID) return;
+
+    // Yêu cầu quyền thông báo khi component mount
+    requestNotificationPermission();
 
     const socketConnection = io(SOCKET_URL, {
       cors: {
         origin: "*",
-      }
+      },
+      // Thêm options cho reconnection
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     socketConnection.on('connect', () => {
       console.log('Socket connected:', socketConnection.id);
       setIsConnected(true);
+      setError(null);
       
       // Đăng ký user với socket
-      socketConnection.emit('register_user', userId);
+      socketConnection.emit('register_user', userID);
     });
 
     socketConnection.on('disconnect', () => {
       console.log('Socket disconnected');
       setIsConnected(false);
+    });
+
+    socketConnection.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setIsConnected(false);
+      setError('Connection failed');
+    });
+
+    socketConnection.on('reconnect', (attemptNumber) => {
+      console.log('Socket reconnected after', attemptNumber, 'attempts');
+      setIsConnected(true);
+      setError(null);
+      // Đăng ký lại user
+      socketConnection.emit('register_user', userID);
     });
 
     // Lắng nghe thông báo mới
@@ -185,8 +239,9 @@ const useNotification = (userId) => {
     // Cleanup
     return () => {
       socketConnection.disconnect();
+      setSocket(null);
     };
-  }, [userId, SOCKET_URL, handleNewNotification]);
+  }, [userID, SOCKET_URL, handleNewNotification, requestNotificationPermission]);
 
   // Fetch notifications khi component mount
   useEffect(() => {
@@ -199,10 +254,12 @@ const useNotification = (userId) => {
     isConnected,
     loading,
     error,
+    socket,
     markAsRead,
     markAllAsRead,
     createNotification,
-    fetchNotifications
+    fetchNotifications,
+    requestNotificationPermission
   };
 };
 

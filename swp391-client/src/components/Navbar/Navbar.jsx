@@ -2,10 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, NavLink } from 'react-router-dom'
 import Logo from "../../assets/logo-WeHope.png";
 import { NavbarMenu } from './Data';
-import { IoMdSearch } from "react-icons/io";
-import FaceIcon from '@mui/icons-material/Face';
 import { Bell, X, Check, CheckCheck, Circle } from 'lucide-react';
-import useNotification from '../../hooks/useNotification';
+import { useNotificationContext } from "../../context/NotificationContext";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,7 +16,7 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
   const notificationRef = useRef(null);
 
-  // Initialize notification hook
+  // Initialize notification hook with user ID
   const {
     notifications,
     unreadCount,
@@ -28,7 +26,7 @@ const Navbar = () => {
     markAsRead,
     markAllAsRead,
     fetchNotifications
-  } = useNotification(user?.userId);
+  } = useNotificationContext();
 
   // Add scroll event listener
   useEffect(() => {
@@ -44,8 +42,10 @@ const Navbar = () => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
         setUser(null);
       }
     } else {
@@ -78,49 +78,24 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
     window.location.href = '/login';
   };
 
-  const handleNotificationClick = (notification) => {
-    if (!notification.is_read) {
-      markAsRead(notification.id);
-    }
-    
-    if (notification.redirect_url) {
-      window.open(notification.redirect_url, '_blank');
-    }
-  };
-
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'success':
-        return <Circle className="w-3 h-3 text-green-500 fill-current" />;
-      case 'warning':
-        return <Circle className="w-3 h-3 text-yellow-500 fill-current" />;
-      case 'error':
-        return <Circle className="w-3 h-3 text-red-500 fill-current" />;
-      default:
-        return <Circle className="w-3 h-3 text-blue-500 fill-current" />;
-    }
-  };
-
-  const formatTimeAgo = (dateString) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return 'Vừa xong';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
-    return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
-  };
-
   // User menu for popover (simple dropdown)
   const menu = (
-    <div className="bg-white shadow-lg rounded-md py-2 min-w-[160px]">
-      <Link to="/profile" className="block px-4 py-2 hover:bg-red-50">Profile</Link>
-      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-[#E53935] hover:bg-red-50">Log out</button>
+    <div className="bg-white shadow-lg rounded-md py-2 min-w-[160px] border border-gray-200">
+      <Link to="/profile" className="block px-4 py-2 hover:bg-red-50 transition-colors">
+        Profile
+      </Link>
+      <hr className="my-1" />
+      <button 
+        onClick={handleLogout} 
+        className="w-full text-left px-4 py-2 text-[#E53935] hover:bg-red-50 transition-colors"
+      >
+        Log out
+      </button>
     </div>
   );
 
@@ -130,40 +105,51 @@ const Navbar = () => {
       <button
         onClick={() => setIsNotificationOpen(!isNotificationOpen)}
         className="relative p-2 text-gray-600 hover:text-[#E53935] hover:bg-gray-100 rounded-full transition-colors duration-200"
+        title="Notifications"
       >
         <Bell className="w-6 h-6" />
         
         {/* Unread count badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-[#E53935] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 bg-[#E53935] text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 animate-pulse">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
         
-        {/* Connection status */}
-        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-400'}`} />
+        {/* Connection status indicator */}
+        <div 
+          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+            isConnected ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+          title={isConnected ? 'Connected' : 'Disconnected'}
+        />
       </button>
 
       {/* Notification Dropdown */}
       {isNotificationOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Notification</h3>
+              <h3 className="font-semibold text-gray-900">Notifications</h3>
               <div className="flex items-center space-x-2">
                 {unreadCount > 0 && (
                   <button
-                    onClick={markAllAsRead}
-                    className="text-sm text-[#E53935] hover:text-[#E53935]/80 flex items-center space-x-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markAllAsRead();
+                    }}
+                    className="text-sm text-[#E53935] hover:text-[#E53935]/80 flex items-center space-x-1 transition-colors"
+                    title="Mark all as read"
                   >
                     <CheckCheck className="w-4 h-4" />
-                    <span>Mark All</span>
+                    <span>Mark all</span>
                   </button>
                 )}
                 <button
                   onClick={() => setIsNotificationOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Close"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -172,7 +158,7 @@ const Navbar = () => {
           </div>
 
           {/* Notifications List */}
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto">
             {loading ? (
               <div className="p-4 text-center text-gray-500">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E53935] mx-auto"></div>
@@ -180,52 +166,46 @@ const Navbar = () => {
               </div>
             ) : error ? (
               <div className="p-4 text-center text-red-500">
-                <p>Error Loading Notification</p>
+                <p>Error loading notifications</p>
                 <button 
                   onClick={fetchNotifications}
-                  className="mt-2 px-3 py-1 bg-[#E53935] text-white rounded text-sm hover:bg-[#E53935]/80"
+                  className="mt-2 px-3 py-1 bg-[#E53935] text-white rounded text-sm hover:bg-[#E53935]/80 transition-colors"
                 >
-                  Thử lại
+                  Try again
                 </button>
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-4 text-center text-gray-500">
                 <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p>Không có thông báo nào</p>
+                <p>No notifications</p>
               </div>
             ) : (
-              notifications.map((notification) => (
+              notifications.map((n) => (
                 <div
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    !notification.is_read ? 'bg-red-50' : ''
+                  key={n.id}
+                  className={`px-4 py-3 cursor-pointer transition-colors duration-150 ${
+                    n.is_read
+                      ? "bg-white hover:bg-gray-50"
+                      : "bg-blue-50 hover:bg-blue-100 font-semibold text-blue-900"
                   }`}
+                  onClick={() => {
+                    markAsRead(n.id);
+                    if (n.redirect_url) window.location.href = n.redirect_url;
+                  }}
                 >
-                  <div className="flex items-start space-x-3">
-                    {getNotificationIcon(notification.type)}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className={`text-sm font-medium ${!notification.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
-                          {notification.title}
-                        </p>
-                        {!notification.is_read && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markAsRead(notification.id);
-                            }}
-                            className="text-[#E53935] hover:text-[#E53935]/80 ml-2"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        {formatTimeAgo(notification.created_at)}
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="truncate max-w-[70%]">{n.title}</span>
+                    {!n.is_read && (
+                      <span className="ml-2 inline-block w-2 h-2 rounded-full bg-blue-500" />
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-700 mt-1 truncate">{n.message}</div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {n.date
+                      ? new Date(n.date).toLocaleString()
+                      : n.created_at
+                      ? new Date(n.created_at).toLocaleString()
+                      : ""}
                   </div>
                 </div>
               ))
@@ -233,22 +213,25 @@ const Navbar = () => {
           </div>
 
           {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200">
+          {/* {notifications.length > 0 && (
+            <div className="p-3 border-t border-gray-200 bg-gray-50">
               <Link
                 to="/notifications"
-                className="w-full text-center text-sm text-[#E53935] hover:text-[#E53935]/80 block"
+                className="w-full text-center text-sm text-[#E53935] hover:text-[#E53935]/80 block font-medium transition-colors"
                 onClick={() => setIsNotificationOpen(false)}
               >
-                Xem tất cả thông báo
+                View all notifications
               </Link>
             </div>
-          )}
+          )} */}
         </div>
       )}
     </div>
   );
 
+  // Log notifications mỗi lần render Navbar
+  console.log("[Navbar] notifications:", notifications);
+  
   return (
     <>
       {/* Spacer for fixed navbar */}
@@ -303,7 +286,7 @@ const Navbar = () => {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <img
-                      src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || user.username || 'default'}`}
+                      src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userID || user.id || user.username || 'default'}`}
                       alt={user.fullname || user.username || "User"}
                       className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border-2 border-[#E53935]/20 cursor-pointer hover:border-[#E53935] transition-all duration-200 hover:scale-105 shadow-sm"
                       onClick={() => setIsUserMenuOpen((prev) => !prev)}
@@ -318,9 +301,9 @@ const Navbar = () => {
 
                   <div className="hidden xl:block">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm text-gray-600">Welcome,</span>
+                      <span className="text-sm text-gray-600">Xin chào,</span>
                       <span className="text-sm font-semibold text-[#E53935] max-w-[100px] truncate">
-                        {user.fullname || 'User'}
+                        {user.fullname || user.username || 'User'}
                       </span>
                     </div>
                   </div>
@@ -331,13 +314,13 @@ const Navbar = () => {
                     to="/login"
                     className="px-4 py-2 text-sm text-[#E53935] border border-[#E53935] rounded-lg transition-colors duration-200 hover:bg-[#E53935] hover:text-white whitespace-nowrap"
                   >
-                    Log in
+                    Đăng nhập
                   </Link>
                   <Link
                     to="/register"
                     className="px-4 py-2 text-sm bg-[#E53935] text-white rounded-lg transition-colors duration-200 hover:bg-white hover:text-[#E53935] border border-[#E53935] whitespace-nowrap"
                   >
-                    Register
+                    Đăng ký
                   </Link>
                 </div>
               )}
@@ -395,8 +378,8 @@ const Navbar = () => {
                       <Bell className="w-5 h-5 mr-3" />
                       <span className="font-medium">Thông báo</span>
                       {unreadCount > 0 && (
-                        <span className="ml-auto bg-[#E53935] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {unreadCount}
+                        <span className="ml-auto bg-[#E53935] text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+                          {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                       )}
                     </Link>
@@ -409,7 +392,7 @@ const Navbar = () => {
                     <div className="px-4">
                       <div className="flex items-center mb-3">
                         <img
-                          src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || user.username || 'default'}`}
+                          src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userID || user.id || user.username || 'default'}`}
                           alt={user.fullname || user.username || "User"}
                           className="w-8 h-8 rounded-full object-cover border-2 border-[#E53935]/20"
                         />
@@ -425,14 +408,14 @@ const Navbar = () => {
                                    transition-colors duration-200"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          Profile
+                          Hồ sơ
                         </Link>
                         <button
                           onClick={handleLogout}
                           className="w-full py-2 text-center bg-[#E53935] text-white rounded-lg 
                                    hover:bg-white hover:text-[#E53935] transition-colors duration-200 border-2 border-[#E53935]"
                         >
-                          Log out
+                          Đăng xuất
                         </button>
                       </div>
                     </div>
@@ -444,7 +427,7 @@ const Navbar = () => {
                                  hover:bg-white hover:text-[#E53935] transition-colors duration-200 border-2 border-[#E53935]"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        Log in
+                        Đăng nhập
                       </Link>
                       <Link
                         to="/register"
@@ -453,7 +436,7 @@ const Navbar = () => {
                                  transition-colors duration-200"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        Register
+                        Đăng ký
                       </Link>
                     </div>
                   )}
