@@ -27,7 +27,13 @@ exports.numberOfParticipantProgram = async (req, res) => {
 exports.registeredProgram = async (req, res) => {
     const { program_id, member_id } = req.params
     try {
-        console.log(await programModel.checkMemberRegistered(program_id, member_id))
+        // console.log(await programModel.checkMemberRegistered(program_id, member_id))
+        const check = await programModel.getProgramById(program_id);
+        if (!check) return res.json("This program doesn't exist!")
+        if (check.status === 'closed')
+            return res.json('The program has ended!!!')
+        if (check.status === 'not started')
+            return res.json('The program not started!!');
         if (await programModel.checkMemberRegistered(program_id, member_id))
             return res.json('You are already registered');
         const isRegistered = await programModel.registeredProgram(program_id, member_id);
@@ -46,6 +52,8 @@ exports.markParticipantAsPresent = async (req, res) => {
         if (!check) return res.json("This program doesn't exist!")
         if (check.status === 'closed')
             return res.json('The program has ended!!!')
+        if (check.status === 'not started')
+            return res.json('The program not started!!');
         const isMarked = await programModel.markParticipantAsPresent(program_id, member_id);
         if (isMarked) return res.json('Marked succesfully!');
         return res.json('Mark Failed!')

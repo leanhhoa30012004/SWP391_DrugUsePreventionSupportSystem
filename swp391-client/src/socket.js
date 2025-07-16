@@ -1,3 +1,7 @@
 import { io } from "socket.io-client";
-const socket = io("http://localhost:3000"); // Đổi thành địa chỉ server của bạn
-export default socket;
+
+const SOCKET_URL = "http://localhost:3000"; 
+
+export const socket = io(SOCKET_URL, {
+  autoConnect: false, // Chỉ connect khi đã có userId
+});
