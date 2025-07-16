@@ -101,12 +101,13 @@ exports.rejectAppointment = async (req, res) => {
         const appointment = await consultationModel.getAppointmentById(appointment_id)
         if (await consultationModel.rejectOrActiveAppointment(appointment_id, is_active)) {
             //send notice to member
+            console.log(is_active)
             await pushNotice({
                 userID: appointment.member_id,
-                title: `Appointment ${is_active ? 'Accepted' : 'Rejected'}`,
-                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been ${is_active ? 'Accepted' : 'Rejected'} by the consultant.`,
+                title: `Appointment ID ${appointment_id} ${is_active == 1 ? 'Accepted' : 'Rejected'}`,
+                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been ${is_active == 1 ? 'Accepted' : 'Rejected'}.`,
                 type: 'warning',
-                redirect_url: `/appointments/${appointment_id}`
+                redirect_url: `/profile`
             });
 
             return res.json('Your appointment has been cancelled!');

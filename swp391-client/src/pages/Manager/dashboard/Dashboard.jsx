@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaChartPie, FaBookOpen, FaClipboardCheck, FaCalendarAlt, FaUsers, FaSignOutAlt, FaSyncAlt, FaExclamationTriangle, FaChartBar, FaChartLine, FaUserCheck, FaArrowUp, FaArrowDown, FaChevronDown, FaChevronRight, FaCheck, FaTimes, FaClipboardList, FaCalendar, FaGraduationCap, FaClock, FaStar, FaCrown, FaUserFriends, FaHeartbeat, FaMedal } from 'react-icons/fa';
 import ReactApexChart from 'react-apexcharts';
@@ -75,7 +76,7 @@ function useDynamicDashboardStats() {
           const now = new Date();
           const monthIdx = now.getMonth();
           const avg = 400 + Math.floor(Math.random() * 100);
-          const peak = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Math.floor(Math.random()*12)];
+          const peak = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Math.floor(Math.random() * 12)];
           const survey = 20 + Math.floor(Math.random() * 80);
           const lastChange = Math.floor(Math.random() * 20 - 10);
           return {
@@ -119,11 +120,11 @@ const RealTimeStats = () => {
   const fetchTodayStats = useCallback(async (isRefresh = false) => {
     console.log('fetchTodayStats called, isRefresh:', isRefresh);
     if (!isRefresh) {
-    setLoading(true);
+      setLoading(true);
     }
     // Không set refreshing ở đây nữa vì đã set trong handleRefresh
     setError('');
-    
+
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Token not found. Please login again.');
@@ -133,26 +134,31 @@ const RealTimeStats = () => {
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const year = today.slice(0, 4);
-      
-      console.log('Fetching data for:', today, year);
-      
+
+      const today = DateTime.now().setZone('Asia/Ho_Chi_Minh');
+      const isoDate = today.toISODate(); // YYYY-MM-DD
+      const year = today.year;
+
+      console.log(">>> ISO:", isoDate, "Local:", today.toFormat('yyyy-MM-dd HH:mm:ss'));
+
+
+      console.log('Fetching data for:', isoDate, year);
+
       const [activeUsersRes, surveysRes, coursesRes, appointmentsRes] = await Promise.all([
         axios.get(`http://localhost:3000/api/manager/report/active-members`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:3000/api/manager/report/survey-done/day/${today}/${year}/0/0`, {
+        axios.get(`http://localhost:3000/api/manager/report/survey-done/day/${isoDate}/${year}/0/0`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:3000/api/manager/report/course-done/day/${today}/${year}/0/0`, {
+        axios.get(`http://localhost:3000/api/manager/report/course-done/day/${isoDate}/${year}/0/0`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:3000/api/manager/report/appointment-done/day/${today}/${year}/0/0`, {
+        axios.get(`http://localhost:3000/api/manager/report/appointment-done/day/${isoDate}/${year}/0/0`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
-
+      console.log(">>>>>", coursesRes)
       console.log('Data fetched successfully:', {
         activeUsers: activeUsersRes.data.active || 0,
         surveys: surveysRes.data.count || 0,
@@ -178,11 +184,11 @@ const RealTimeStats = () => {
 
   const fetchTotalStats = useCallback(async (period, isRefresh = false) => {
     if (!isRefresh) {
-    setLoading(true);
+      setLoading(true);
     }
     // Không set refreshing ở đây nữa vì đã set trong handleRefresh
     setError('');
-    
+
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Token not found. Please login again.');
@@ -194,10 +200,10 @@ const RealTimeStats = () => {
     try {
       const currentYear = new Date().getFullYear();
       const currentMonth = new Date().getMonth() + 1;
-      const currentWeek = Math.ceil((new Date().getDate() + new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay()) / 7);
-      
+      const currentWeek = DateTime.now().setZone('Asia/Ho_Chi_Minh').weekNumber;
+
       let surveysUrl, coursesUrl, appointmentsUrl;
-      
+      console.log("Current WEEK", currentWeek)
       switch (period) {
         case 'week':
           surveysUrl = `http://localhost:3000/api/manager/report/survey-done/week/0/${currentYear}/${currentWeek}/0`;
@@ -242,10 +248,10 @@ const RealTimeStats = () => {
 
   const handleRefresh = useCallback(() => {
     console.log('Refresh clicked, viewMode:', viewMode);
-    
+
     // Hiển thị trạng thái refreshing ngay lập tức
     setRefreshing(true);
-    
+
     // Thêm delay nhỏ để tránh refresh quá nhanh
     setTimeout(() => {
       if (viewMode === 'today') {
@@ -307,8 +313,8 @@ const RealTimeStats = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-[#e11d48]/70">View:</span>
-            <select 
-              value={viewMode} 
+            <select
+              value={viewMode}
               onChange={(e) => handleViewModeChange(e.target.value)}
               className="px-3 py-1 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50 text-sm"
             >
@@ -318,14 +324,14 @@ const RealTimeStats = () => {
               <option value="year">This Year</option>
             </select>
           </div>
-                      <button
+          <button
             onClick={handleRefresh}
             disabled={refreshing}
             className="px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm flex items-center gap-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
-            >
+          >
             <FaSyncAlt className={`text-sm text-white ${refreshing ? 'animate-spin' : ''}`} />
             <span className="text-white">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
-            </button>
+          </button>
         </div>
       </div>
 
@@ -476,52 +482,52 @@ const BarChart = ({ data, months, title, description, caption }) => {
   );
 };
 
-  const LineChart = () => {
-    const maxY = Math.max(...consultationsData, ...surveysData);
+const LineChart = () => {
+  const maxY = Math.max(...consultationsData, ...surveysData);
   const chartWidth = 720;
-    const chartHeight = 130;
-    const xStep = chartWidth / (months.length - 1);
-    const getPoints = (data) =>
-      data.map((v, i) => `${i * xStep},${chartHeight - (v / maxY) * 100}`).join(' ');
-    return (
-      <svg width={chartWidth} height={chartHeight} className="mb-2 w-full max-w-full">
-        <polyline
-          fill="none"
-          stroke="#e11d48"
-          strokeWidth="3"
-          points={getPoints(consultationsData)}
+  const chartHeight = 130;
+  const xStep = chartWidth / (months.length - 1);
+  const getPoints = (data) =>
+    data.map((v, i) => `${i * xStep},${chartHeight - (v / maxY) * 100}`).join(' ');
+  return (
+    <svg width={chartWidth} height={chartHeight} className="mb-2 w-full max-w-full">
+      <polyline
+        fill="none"
+        stroke="#e11d48"
+        strokeWidth="3"
+        points={getPoints(consultationsData)}
+      />
+      <polyline
+        fill="none"
+        stroke="#fbbf24"
+        strokeWidth="3"
+        points={getPoints(surveysData)}
+      />
+      {consultationsData.map((v, i) => (
+        <circle
+          key={i}
+          cx={i * xStep}
+          cy={chartHeight - (v / maxY) * 100}
+          r="4"
+          fill="#e11d48"
+          stroke="#fff"
+          strokeWidth="1"
         />
-        <polyline
-          fill="none"
-          stroke="#fbbf24"
-          strokeWidth="3"
-          points={getPoints(surveysData)}
+      ))}
+      {surveysData.map((v, i) => (
+        <circle
+          key={i}
+          cx={i * xStep}
+          cy={chartHeight - (v / maxY) * 100}
+          r="4"
+          fill="#fbbf24"
+          stroke="#fff"
+          strokeWidth="1"
         />
-        {consultationsData.map((v, i) => (
-          <circle
-            key={i}
-            cx={i * xStep}
-            cy={chartHeight - (v / maxY) * 100}
-            r="4"
-            fill="#e11d48"
-            stroke="#fff"
-            strokeWidth="1"
-          />
-        ))}
-        {surveysData.map((v, i) => (
-          <circle
-            key={i}
-            cx={i * xStep}
-            cy={chartHeight - (v / maxY) * 100}
-            r="4"
-            fill="#fbbf24"
-            stroke="#fff"
-            strokeWidth="1"
-          />
-        ))}
-      </svg>
-    );
-  };
+      ))}
+    </svg>
+  );
+};
 
 // Survey Report Manager Component
 const SurveyReportManager = () => {
@@ -541,17 +547,17 @@ const SurveyReportManager = () => {
     setError('');
     setResult(null);
     setDetails([]);
-    
+
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Token not found in localStorage. Please login again.');
       setLoading(false);
       return;
     }
-    
+
     let url = '';
     let baseUrl = '';
-    
+
     // Determine base URL based on report type
     switch (reportType) {
       case 'survey':
@@ -571,7 +577,7 @@ const SurveyReportManager = () => {
         setLoading(false);
         return;
     }
-    
+
     if (period === 'day') {
       if (!date) return setError('Please select a date!');
       const y = date.slice(0, 4);
@@ -586,7 +592,7 @@ const SurveyReportManager = () => {
       if (!year) return setError('Please enter year!');
       url = `${baseUrl}/year/0/${year}/0/0`;
     }
-    
+
     try {
       const response = await axios.get(url, {
         headers: {
@@ -594,19 +600,20 @@ const SurveyReportManager = () => {
           'Content-Type': 'application/json'
         }
       });
-      
+      console.log(date)
+      console.log(response)
       setResult(response.data.count);
-      
+
       // If API returns detailed data, use it; otherwise show count only
       if (response.data.data && Array.isArray(response.data.data)) {
         setDetails(response.data.data);
       }
-      
+
     } catch (err) {
       if (err.response) {
         const status = err.response.status;
         const message = err.response.data?.message || err.response.data?.error || 'Unknown error';
-        
+
         if (status === 401) {
           setError(`Authentication error (401): ${message}. Token may have expired, please login again.`);
         } else if (status === 403) {
@@ -659,13 +666,13 @@ const SurveyReportManager = () => {
   const getResultText = () => {
     switch (reportType) {
       case 'survey':
-        return `Result: ${result} surveys completed`;
+        return `Result: ${result} surveys completed!`;
       case 'appointment':
-        return `Result: ${result} appointments completed`;
+        return `Result: ${result} appointments completed!`;
       case 'course':
-        return `Result: ${result} courses completed`;
+        return `Result: ${result} courses completed!`;
       case 'active-member':
-        return `Result: ${result} active members`;
+        return `Result: ${result} active members!`;
       default:
         return `Result: ${result}`;
     }
@@ -754,7 +761,7 @@ const SurveyReportManager = () => {
           </tr>
         );
       case 'appointment':
-    return (
+        return (
           <tr key={item.id || index} className="border-b border-green-200">
             <td className="px-3 py-2 text-green-700">{item.id || `APT-${index + 1}`}</td>
             <td className="px-3 py-2 text-green-700">{item.patientName || 'N/A'}</td>
@@ -768,7 +775,7 @@ const SurveyReportManager = () => {
           </tr>
         );
       case 'course':
-          return (
+        return (
           <tr key={item.id || index} className="border-b border-green-200">
             <td className="px-3 py-2 text-green-700">{item.courseName || `Course ${index + 1}`}</td>
             <td className="px-3 py-2 text-green-700">{item.completedBy || 'N/A'}</td>
@@ -804,18 +811,18 @@ const SurveyReportManager = () => {
     }
   };
 
-    return (
+  return (
     <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10">
       <div className="flex items-center gap-2 mb-4">
         {getReportIcon()}
         <h2 className="text-xl font-bold text-[#e11d48]">Report</h2>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-[#e11d48] mb-1">Report Type</label>
-          <select 
-            value={reportType} 
+          <select
+            value={reportType}
             onChange={(e) => setReportType(e.target.value)}
             className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
           >
@@ -825,11 +832,11 @@ const SurveyReportManager = () => {
             <option value="active-member">Active Member</option>
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-[#e11d48] mb-1">Period</label>
-          <select 
-            value={period} 
+          <select
+            value={period}
             onChange={(e) => setPeriod(e.target.value)}
             className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
           >
@@ -839,26 +846,26 @@ const SurveyReportManager = () => {
             <option value="year">Year</option>
           </select>
         </div>
-        
+
         {period === 'day' && (
           <div>
             <label className="block text-sm font-medium text-[#e11d48] mb-1">Date</label>
-            <input 
-              type="date" 
-              value={date} 
+            <input
+              type="date"
+              value={date}
               onChange={(e) => setDate(e.target.value)}
               className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
             />
           </div>
         )}
-        
+
         {period === 'week' && (
           <>
             <div>
               <label className="block text-sm font-medium text-[#e11d48] mb-1">Year</label>
-              <input 
-                type="number" 
-                value={year} 
+              <input
+                type="number"
+                value={year}
                 onChange={(e) => setYear(e.target.value)}
                 placeholder="2025"
                 className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
@@ -866,26 +873,26 @@ const SurveyReportManager = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#e11d48] mb-1">Week</label>
-              <input 
-                type="number" 
-                value={week} 
+              <input
+                type="number"
+                value={week}
                 onChange={(e) => setWeek(e.target.value)}
                 placeholder="27"
-                min="1" 
+                min="1"
                 max="53"
                 className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
               />
             </div>
           </>
         )}
-        
+
         {period === 'month' && (
           <>
             <div>
               <label className="block text-sm font-medium text-[#e11d48] mb-1">Year</label>
-              <input 
-                type="number" 
-                value={year} 
+              <input
+                type="number"
+                value={year}
                 onChange={(e) => setYear(e.target.value)}
                 placeholder="2025"
                 className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
@@ -893,34 +900,34 @@ const SurveyReportManager = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#e11d48] mb-1">Month</label>
-              <input 
-                type="number" 
-                value={month} 
+              <input
+                type="number"
+                value={month}
                 onChange={(e) => setMonth(e.target.value)}
                 placeholder="7"
-                min="1" 
+                min="1"
                 max="12"
                 className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
               />
             </div>
           </>
         )}
-        
+
         {period === 'year' && (
           <div>
             <label className="block text-sm font-medium text-[#e11d48] mb-1">Year</label>
-            <input 
-              type="number" 
-              value={year} 
+            <input
+              type="number"
+              value={year}
               onChange={(e) => setYear(e.target.value)}
               placeholder="2025"
               className="w-full px-3 py-2 border border-[#e11d48]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#e11d48]/50"
             />
           </div>
         )}
-        
+
         <div className="flex items-end">
-          <button 
+          <button
             onClick={handleFetch}
             disabled={loading}
             className="w-full px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
@@ -929,20 +936,20 @@ const SurveyReportManager = () => {
           </button>
         </div>
       </div>
-      
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       )}
-      
+
       {result !== null && (
         <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
           <div className="flex items-center gap-2">
             {getReportIcon()}
             <span className="font-medium">{getResultText()}</span>
           </div>
-          
+
           {/* Details Table - Only show if we have detailed data */}
           {details.length > 0 && (
             <div className="mt-4">
@@ -959,7 +966,7 @@ const SurveyReportManager = () => {
               </div>
             </div>
           )}
-            </div>
+        </div>
       )}
     </div>
   );
@@ -1053,15 +1060,15 @@ const Dashboard = () => {
           }}
         >
           <FaChartPie className="inline-block mr-3 text-5xl align-middle -mt-2" />
-            System Overview Statistics
-          </h1>
+          System Overview Statistics
+        </h1>
         <p className="text-lg md:text-xl italic font-semibold text-[#e11d48] px-4 py-2 rounded-xl shadow-sm inline-block font-serif tracking-wide mt-2">
           "Spreading Hope, Protecting the Future!"
         </p>
-        </div>
+      </div>
       {/* Nội dung cuộn độc lập, có padding-top để không bị che */}
-          <div
-            style={{
+      <div
+        style={{
           marginTop: '180px',
           height: 'calc(100vh - 180px - 2rem)',
           overflowY: 'auto',
@@ -1069,15 +1076,15 @@ const Dashboard = () => {
         }}
         className="pr-2"
       >
-      <RealTimeStats />
-      <SurveyReportManager />
-      <div className="bg-white rounded-2xl p-6 shadow-lg mt-8 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-8">
-        <div className="flex-1 min-w-0">
-          <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Consultation & Survey Analytics</h2>
-          <div className="text-sm text-[#e11d48]/80 mb-2">
-            This chart visualizes the monthly number of consultations and surveys conducted throughout the year.
-            It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
-          </div>
+        <RealTimeStats />
+        <SurveyReportManager />
+        <div className="bg-white rounded-2xl p-6 shadow-lg mt-8 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-8">
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Consultation & Survey Analytics</h2>
+            <div className="text-sm text-[#e11d48]/80 mb-2">
+              This chart visualizes the monthly number of consultations and surveys conducted throughout the year.
+              It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
+            </div>
             <div className="bg-white rounded-3xl shadow-lg p-6 border border-[#e11d48]/10">
               {chartLoading ? (
                 <div className="text-[#e11d48] text-center py-8 font-semibold">Loading chart data...</div>
@@ -1094,11 +1101,11 @@ const Dashboard = () => {
                   height={350}
                 />
               )}
+            </div>
           </div>
-            </div>
           {/* Bỏ box số liệu trung bình trên tháng, chỉ giữ các số liệu động khác nếu cần */}
-            </div>
-      {/* Consultant Analytics Bar Chart */}
+        </div>
+        {/* Consultant Analytics Bar Chart */}
         {/* Đã gộp vào ApexDashboardCharts, không cần BarChart riêng */}
       </div>
     </div>

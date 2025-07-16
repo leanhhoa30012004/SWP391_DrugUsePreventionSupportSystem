@@ -53,25 +53,46 @@ const sendAppointmentEmail = async (toEmail, appointmentInfo) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: process.env.EMAIL_USER, // Gmail của bạn
-            pass: process.env.EMAIL_PASS, // App password
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
         },
     });
 
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `"Drug Use Prevention Support System" <${process.env.EMAIL_USER}>`,
         to: toEmail,
-        subject: 'Appointment Confirmation',
+        subject: `Appointment in  ${appointmentInfo.appointment_date} at ${appointmentInfo.appointment_time} Confirmation`,
         html: `
-      <h3>Hello ${appointmentInfo.member_name},</h3>
-      <p>Your appointment has been successfully scheduled.</p>
-      <p><strong>Date:</strong> ${appointmentInfo.appointment_date}</p>
-      <p><strong>Time:</strong> ${appointmentInfo.appointment_time}</p>
-      <p><strong>Consultant:</strong> ${appointmentInfo.consultant_name}</p>
-      ${appointmentInfo.meeting_link ? `<p><strong>Google Meet:</strong> <a href="${appointmentInfo.meeting_link}">${appointmentInfo.meeting_link}</a></p>` : ''}
-      <br/>
-      <p>Thank you!</p>
-    `,
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <h2 style="color: #2c3e50;">Appointment Confirmation</h2>
+            <p>Dear <strong>${appointmentInfo.member_name}</strong>,</p>
+            <p>Your appointment has been successfully scheduled. Here are the details:</p>
+            <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; font-weight: bold;">Date:</td>
+                <td style="padding: 8px;">${appointmentInfo.appointment_date}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; font-weight: bold;">Time:</td>
+                <td style="padding: 8px;">${appointmentInfo.appointment_time}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; font-weight: bold;">Consultant:</td>
+                <td style="padding: 8px;">${appointmentInfo.consultant_name}</td>
+            </tr>
+            ${appointmentInfo.meeting_link
+                ? `<tr>
+                    <td style="padding: 8px; font-weight: bold;">Google Meet:</td>
+                    <td style="padding: 8px;"><a href="${appointmentInfo.meeting_link}" style="color: #1a73e8;">${appointmentInfo.meeting_link}</a></td>
+                    </tr>`
+                : ''
+            }
+            </table>
+            <p style="margin-top: 20px;">Thank you for using our service.</p>
+            <p style="color: #888; font-size: 12px;">This is an automated message from Drug Use Prevention Support System.</p>
+        </div>
+        `,
+
     };
 
     await transporter.sendMail(mailOptions);
