@@ -28,8 +28,9 @@ FROM Appointment `, [appointment_date, appointment_date, appointment_time]);
 }
 
 const getAllAppointmentByMemberId = async (member_id) => {
-    const [rows] = await db.execute(`SELECT appointment_id, appointment_date, appointment_time, date_sent_request, status, meeting_link 
-FROM Appointment WHERE member_id = ? AND is_active = 1`, [member_id])
+    const [rows] = await db.execute(`SELECT a.appointment_id,u.fullname ,a.appointment_date, a.appointment_time, a.date_sent_request, a.status , a.meeting_link 
+FROM Appointment a JOIN Users u ON a.consultant_id = u.user_id
+WHERE a.member_id = ? AND a.is_active = 1`, [member_id])
     return rows;
 }
 
