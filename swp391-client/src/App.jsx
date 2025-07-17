@@ -70,6 +70,7 @@ import ProgramDetail from './pages/CommunityProgramme/DetailProgramme.jsx'
 import ProgramSurveyPage from './pages/CommunityProgramme/SurveyProgramme.jsx'
 
 import { NotificationProvider } from "./context/NotificationContext";
+import AppointmentPage from './components/Navbar/Appointment.jsx'
 
 function App() {
   const location = useLocation();
@@ -97,6 +98,8 @@ function App() {
         <Route path="/learning/:course_id" element={<CourseLearning />} />
         <Route path="/course-completed" element={<CourseCompleted />} />
 
+        {/* Notice Route*/}
+        <Route path="/appointments/:appointment_id" element={<AppointmentPage/>}/>
         {/* Auth Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
