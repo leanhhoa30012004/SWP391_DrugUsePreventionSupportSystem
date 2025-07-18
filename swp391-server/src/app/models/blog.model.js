@@ -1,6 +1,7 @@
 const db = require('../../config/db.config')
 
 const blogPost = async (author, title, tags, cover_img, content) => {
+    console.log('blogPost>>>>', cover_img)
     const [post] = await db.execute(`INSERT INTO Blog(post_date,author,title,tags,cover_img ,content)
 VALUES (NOW(),?,?,?,?,?)`, [author, title, tags, cover_img, content])
     return post.affectedRows > 0
