@@ -171,7 +171,39 @@ WHERE appointment_id = ?`, [appointment_id])
     return row.affectedRows > 0
 }
 
+const updateConsultantProfile = async (certificate) => {
+    const [isUpdate] = await db.execute(`UPDATE Consultant_certificate
+SET certificate_name = ?, url = ?, expired = ?, date_submit = NOW()
+WHERE certificate_id = ? `, [certificate.certificate_name, certificate.certificate_img, certificate.expired, certificate.certificate_id])
+    return isUpdate.affectedRows > 0;
+}
 
+const addConsultantProfile = async (certificate) => {
+    const [isAdd] = await db.execute(`INSERT INTO Consultant_certificate(consultant_id, certificate_name, url, expired, date_submit)
+VALUES (?, ?, ?, ?, NOW())`, [certificate.consultant_id, certificate.certificate_name, certificate.certificate_img, certificate.expired]);
+    return isAdd.affectedRows > 0;
+}
+
+const getConsultantProfileByConsultantId = async (consultant_id) => {
+    const [profile] = await db.execute(`SELECT u.fullname, cc.certificate_name, cc.url, cc.expired, cc.date_submit, cc.date_submit, cc.status, cc.reject_reason
+FROM Consultant_certificate cc JOIN Users u ON cc.consultant_id = u.user_id
+WHERE cc.consultant_id = ?`, [consultant_id])
+    return profile;
+}
+
+const approveCertificateRequest = async (certificate_id) => {
+    const [isApprove] = await db.execute(`UPDATE Consultant_certificate
+SET status = 'approved'
+WHERE certificate_id = ?`, [certificate_id])
+    return isApprove.affectedRows > 0
+}
+
+const rejectCertificateRequest = async (certificate_id, reject_reason) => {
+    const [isReject] = await db.execute(`UPDATE Consultant_certificate
+SET status = 'rejeceted', reject_reason = ?
+WHERE certificate_id = ?`, [reject_reason, certificate_id])
+    return isReject.affectedRows > 0
+}
 module.exports = {
     addAppointment,
     numberOfConsultant,
@@ -186,5 +218,10 @@ module.exports = {
     getConsultantFreeTime,
     getAppointmentById,
     getAllAppointment,
-    completeAppointment
+    completeAppointment,
+    updateConsultantProfile,
+    addConsultantProfile,
+    getConsultantProfileByConsultantId,
+    approveCertificateRequest,
+    rejectCertificateRequest
 }

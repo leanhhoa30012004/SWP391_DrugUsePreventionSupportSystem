@@ -70,14 +70,12 @@ exports.approvalBlog = async (req, res) => {
 
 exports.rejectblog = async (req, res) => {
     const { manager_id, blog_id } = req.params;
-    console.log(manager_id, blog_id)
-    const { reason } = req.body;
-    console.log(reason)
+    const reject_reason = req.body.reject_reason;
     try {
         const blog = await blogModel.getBlogById(blog_id);
         if (blog.status === 'Rejected')
             return res.json('This blog has been rejected.')
-        const isRejected = await blogModel.rejectBlog(manager_id, blog_id, reason)
+        const isRejected = await blogModel.rejectBlog(manager_id, blog_id, reject_reason)
         if (isRejected) return res.json('Rejected successfully')
         res.json('Refused to fail')
     } catch (error) {
