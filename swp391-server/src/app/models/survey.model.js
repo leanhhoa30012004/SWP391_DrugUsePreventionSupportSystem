@@ -275,6 +275,34 @@ WHERE s.is_active = 1;`, [member_id]);
   }));
 }
 
+const getSurveyHistoryBySurveyEnrollmenId = async (survey_enrollment_id) => {
+  const [surveyEnroll] = await db.execute(`SELECT survey_enrollment_id, survey_id, member_id, response, date, enroll_version
+FROM Survey_enrollment
+WHERE survey_enrollment_id = ? AND is_active = 1`, [survey_enrollment_id]);
+  return {
+    survey_enrollment_id: surveyEnroll[0].survey_enrollment_id,
+    survey_id: surveyEnroll[0].survey_id,
+    member_id: surveyEnroll[0].member_id,
+    response: JSON.parse(surveyEnroll[0].response),
+    date: surveyEnroll[0].date,
+    enroll_version: surveyEnroll[0].enroll_version
+  }
+}
+
+const findSurveyBySurveyIDAndVersion = async (survey_id, version) => {
+  const [rows] = await db.execute(`SELECT version_id, survey_id, version, content, edited_by, edited_at
+FROM Survey_version
+WHERE survey_id = ? AND version = ? AND is_active = 1`, [survey_id, version]);
+  return {
+    version_id: rows[0].version_id,
+    survey_id: rows[0].survey_id,
+    version: rows[0].version,
+    content: JSON.parse(rows[0].content),
+    edited_by: rows[0].edited_by,
+    edited_at: rows[0].edited_at
+  };
+};
+
 module.exports = {
   listOfSurvey,
   findSurveyByType,
@@ -286,5 +314,7 @@ module.exports = {
   addEnrollmentSurvey,
   updateSurvey,
   addSurvey,
-  getAllSurveyFollowEnrollmentSurveyByMemberId
+  getAllSurveyFollowEnrollmentSurveyByMemberId,
+  getSurveyHistoryBySurveyEnrollmenId,
+  findSurveyBySurveyIDAndVersion,
 };

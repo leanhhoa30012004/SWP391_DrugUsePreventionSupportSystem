@@ -1,3 +1,4 @@
+const { json } = require("express");
 const surveyModel = require("../models/survey.model");
 
 exports.viewSurvey = async (req, res) => {
@@ -160,6 +161,28 @@ exports.getAllSurveyFollowSurveyEnrollmentByMemberId = async (req, res) => {
         return res.json(listOfSurvey);
     } catch (error) {
         console.error('getAllSurveyEnrollmetByMemberId error:', error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+exports.getDetailSurveyHistoryBySurveyEnrollmenId = async (req, res) => {
+    const survey_enrollment_id = req.params.survey_enrollment_id;
+    try {
+        const surveyHistory = await surveyModel.getSurveyHistoryBySurveyEnrollmenId(survey_enrollment_id);
+        if (!surveyHistory) {
+            return res.status(404).json({ error: "Survey history not found" });
+        }
+        const surveyVersion = await surveyModel.findSurveyBySurveyIDAndVersion(
+            surveyHistory.survey_id,
+            surveyHistory.enroll_version
+        );
+        const response = {
+            survey_content: surveyVersion.content,
+            member_answers: surveyHistory.response,
+        }
+        return res.json(response);
+    } catch (error) {
+        console.error('getDetailSurveyHistoryBySurveyEnrollmenId error:', error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
