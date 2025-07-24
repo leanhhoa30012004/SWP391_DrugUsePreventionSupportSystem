@@ -252,7 +252,7 @@ const Blogs = () => {
                                     <div className="text-gray-700 text-base mb-4 whitespace-pre-line">{blog.content}</div>
                                     {blog.image && (
 
-                                        <img src={import.meta.env.VITE_API_URL + `/uploads/${blog.image}`} alt="cover" className="w-full rounded-xl mb-4 object-cover max-h-96 border" onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }} />
+                                        <img src={blog.image} alt="cover" className="w-full rounded-xl mb-4 object-cover max-h-96 border" onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }} />
                                     )}
                                     {blog.tags && blog.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mb-3">
