@@ -11,4 +11,5 @@ router.get('/check-enrollment-course/:member_id/:course_id/:enroll_version', cou
 // router.get('/get-course-by-course_id-and-version/:course_id/:version', courseController.getCourseByCourseIdAndVersion)
 router.get('/get-all-course-follow-course-enrollment-by-member-id/:member_id', courseController.getAllCourseFollowCourseEnrollmentByMemberId)
 router.get('/get-all-course-for-member-by-member-id/:member_id', courseController.getAllCourseForMemberByMemberId)
+router.get('/get-learning-process-by-course-id-and-member-id/:member_id/:course_id', courseController.getLearningProcessByCourseIdAndMemberId)
 module.exports = router

@@ -90,7 +90,15 @@ const checkEnrollmentCourse = async (member_id, course_id, enroll_version) => {
         "SELECT * FROM Course_enrollment ce WHERE ce.is_active = 1 AND course_id = ? AND member_id = ? AND enroll_version = ?",
         [course_id, member_id, enroll_version]
     );
-    return rows.length > 0;
+    if (rows.length === 0) return null; // Hoặc false nếu bạn muốn trả về false thay vì null
+    return {
+        course_id: rows[0].course_id,
+        member_id: rows[0].member_id,
+        date: rows[0].date,
+        learning_process: JSON.parse(rows[0].learning_process),
+        enroll_version: rows[0].enroll_version,
+        status: rows[0].status
+    };
 };
 
 const updateLearningProcess = async (member_id, course_id, learning_process) => {
@@ -397,6 +405,19 @@ WHERE ce.member_id = ? AND ce.enroll_version = cv.version;`, [member_id])
     return list;
 }
 
+const getLearningProcessByCourseIdAndMemberId = async (member_id, course_id) => {
+    const [rows] = await db.execute(`SELECT course_id, member_id, date, learning_process, enroll_version, status
+FROM Course_enrollment
+WHERE course_id = ? AND member_id = ? AND is_active = 1`, [course_id, member_id]);
+    return {
+        course_id: rows[0].course_id,
+        member_id: rows[0].member_id,
+        date: rows[0].date,
+        learning_process: JSON.parse(rows[0].learning_process),
+        enroll_version: rows[0].enroll_version,
+        status: rows[0].status
+    };
+}
 
 module.exports = {
     listOfCourse,
@@ -415,5 +436,6 @@ module.exports = {
     updateCourse,
     listOfCourseFullInfo,
     getAllCourseForMemberByMemberId,
-    getParticipantCourseByMemberId
+    getParticipantCourseByMemberId,
+    getLearningProcessByCourseIdAndMemberId
 };
