@@ -71,6 +71,7 @@ import ProgramSurveyPage from './pages/CommunityProgramme/SurveyProgramme.jsx'
 
 import { NotificationProvider } from "./context/NotificationContext";
 import AppointmentPage from './components/Navbar/Appointment.jsx'
+import ResultSurvey from './pages/Survey/ResultSurvey.jsx'
 
 function App() {
   const location = useLocation();
@@ -124,6 +125,7 @@ function App() {
         <Route path="/survey" element={<SurveySelectionPage />} />
         <Route path="/survey/:sid" element={<Survey />} />
         <Route path="/survey/history/:memberId/:id" element={<SurveyHistoryPage />} />
+        <Route path="/resultsurvey/:sid" element={<ResultSurvey/>} />
         <Route path="/about" element={<AboutUsPage />} />
 
         {/* Consultant Routes */}

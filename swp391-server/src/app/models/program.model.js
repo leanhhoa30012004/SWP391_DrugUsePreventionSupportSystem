@@ -28,7 +28,8 @@ GROUP BY program_id`)
 }
 
 const registeredProgram = async (program_id, member_id) => {
-    const [row] = await db.execute(`INSERT INTO Community_program_participant(member_id, program_id, status)
+    console.log("Reg >>>")
+    const row = await db.execute(`INSERT INTO Community_program_participant(member_id, program_id, status)
 VALUES (?, ?, 'registered')`, [member_id, program_id])
     return row.affectedRows > 0;
 }
@@ -46,11 +47,13 @@ SET status = 'on going'
 WHERE status = 'not started'
 AND start_date <= NOW()
 AND end_date > NOW()`);
+    // console.log('[DEBUG] Ongoing affected:', ongoing.affectedRows);
 
     const [closed] = await db.execute(`UPDATE Community_programs
       SET status = 'closed'
       WHERE status = 'on going'
         AND end_date <= NOW()`);
+    // console.log('[DEBUG] Closed affected:', closed.affectedRows);
 
     const isUpdate = ongoing.affectedRows > 0 || closed.affectedRows > 0;
     return isUpdate;
@@ -86,19 +89,17 @@ WHERE program_id = ? AND is_active = 1`, [response, program_id])
 }
 
 const updateProgram = async (program) => {
-   
+    console.log('check>>', JSON.stringify(program.description))
     const [isUpdate] = await db.execute(`UPDATE Community_programs
-SET title = ?, description = ?, start_date = ?, end_date = ?,  location = ?, detail = ?, age_group = ?, survey_question = ?, response = ?
+SET title = ?, description = ?, start_date = ?, end_date = ?,  location = ?, detail = ?, age_group = ?
 WHERE program_id = ? AND is_active = 1`,
         [program.title,
         JSON.stringify(program.description),
         program.start_date,
         program.end_date,
-        program.location,
+        JSON.stringify(program.location),
         JSON.stringify(program.detail),
         program.age_group,
-        JSON.stringify(program.survey_question),
-        JSON.stringify(program.response || { pre_response: [], post_response: [] }),
         program.program_id])
     return isUpdate.affectedRows > 0;
 }
@@ -111,45 +112,11 @@ WHERE program_id = ? AND is_active = 1`, [program_id])
 }
 
 const getAllMemberByProgramId = async (program_id) => {
-    const [list] = await db.execute(`SELECT cp.program_id, u.fullname, cpp.status
+    const [list] = await db.execute(`SELECT cp.program_id, u.fullname, cpp.status, u.user_id
 FROM Community_programs cp JOIN Community_program_participant cpp ON cp.program_id = cpp.program_id
 JOIN Users u ON cpp.member_id = u.user_id
 WHERE cp.program_id = ? AND cp.is_active = 1`, [program_id]);
     return list;
-}
-
-const checkMemberRegistered = async (program_id, member_id) => {
-    const [member] = await db.execute(`SELECT *
-FROM Community_program_participant WHERE member_id = ? AND program_id = ?`, [member_id, program_id]);
-    if (!member[0])
-        return false;
-    return true;
-}
-
-const createProgram = async (program) => {
-    console.log(program)
-    const [isCreate] = await db.execute(`INSERT INTO Community_programs (title, description, start_date, end_date, location, detail, age_group, manager_id, survey_question, status)
-VALUES (?,?,?,?,?,?,?,?,?,?)`,
-        [program.title,
-        JSON.stringify(program.description),
-        program.start_date,
-        program.end_date,
-        program.location,
-        JSON.stringify(program.detail),
-        program.age_group,
-        program.manager_id,
-        program.survey_question,
-        program.status]);
-    return isCreate.affectedRows > 0
-}
-
-const updateStatusProgramParticipants = async () => {
-    const [isUpdate] = await db.execute(`UPDATE Community_program_participant cpp
-JOIN Community_programs cp ON cpp.program_id = cp.program_id
-SET cpp.status = 'absent'
-WHERE cpp.status = 'registered' AND cp.status = 'closed'`)
-    // console.log(isUpdate)
-    return isUpdate.affectedRows > 0
 }
 
 module.exports = {
@@ -162,8 +129,5 @@ module.exports = {
     updateResponseProgram,
     updateProgram,
     deleteProgram,
-    getAllMemberByProgramId,
-    checkMemberRegistered,
-    createProgram,
-    updateStatusProgramParticipants
+    getAllMemberByProgramId
 }
