@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/footer';
 import CreateBlogForm from './CreateBlogForm';
+import ImageModal from '../../components/ImageModal/ImageModal';
 
 const Blogs = () => {
     const navigate = useNavigate();
@@ -19,6 +20,8 @@ const Blogs = () => {
     const [comments, setComments] = useState({}); // { [blogId]: [comment, ...] }
     const [commentInputs, setCommentInputs] = useState({}); // { [blogId]: '' }
     const [commentLoading, setCommentLoading] = useState({}); // { [blogId]: true/false }
+    const [selectedBlog, setSelectedBlog] = useState(null);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     const fetchBlogs = () => {
         setLoading(true);
@@ -112,7 +115,7 @@ const Blogs = () => {
         author: blog.fullname || `User #${blog.author}` || 'Unknown',
         date: blog.approval_date || blog.post_date || blog.date,
         category: blog.tags ? blog.tags.split(',')[0]?.trim().toLowerCase().replace(/\s/g, '-') : 'other',
-        image: blog.cover_img,
+        image: blog.cover_img ? import.meta.env.VITE_API_URL + `/uploads/${blog.cover_img}` : null,
         readTime: '5 min read',
         views: blog.views || 0,
         likes: blog.likes || 0,
@@ -190,6 +193,17 @@ const Blogs = () => {
         setExpandedCards(newExpandedCards);
     };
 
+    const handleImageClick = (blog, e) => {
+        e.stopPropagation();
+        setSelectedBlog(blog);
+        setIsImageModalOpen(true);
+    };
+
+    const closeImageModal = () => {
+        setIsImageModalOpen(false);
+        setSelectedBlog(null);
+    };
+
     // Loading state
     if (loading) {
         return (
@@ -251,8 +265,13 @@ const Blogs = () => {
                                     <div className="text-2xl font-semibold text-gray-900 mb-2">{blog.title}</div>
                                     <div className="text-gray-700 text-base mb-4 whitespace-pre-line">{blog.content}</div>
                                     {blog.image && (
-
-                                        <img src={import.meta.env.VITE_API_URL + `/uploads/${blog.image}`} alt="cover" className="w-full rounded-xl mb-4 object-cover max-h-96 border" onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }} />
+                                        <img 
+                                            src={blog.image} 
+                                            alt="cover" 
+                                            className="w-full rounded-xl mb-4 object-cover max-h-96 border cursor-pointer hover:opacity-90 transition-opacity" 
+                                            onClick={(e) => handleImageClick(blog, e)}
+                                            onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }} 
+                                        />
                                     )}
                                     {blog.tags && blog.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mb-3">
@@ -324,6 +343,20 @@ const Blogs = () => {
                     )}
                 </div>
             </div>
+            
+            {/* Image Modal */}
+            <ImageModal
+                isOpen={isImageModalOpen}
+                onClose={closeImageModal}
+                blog={selectedBlog}
+                onLike={handleLike}
+                likedBlogs={likedBlogs}
+                comments={selectedBlog ? comments[selectedBlog.id] : []}
+                commentInputs={commentInputs}
+                setCommentInputs={setCommentInputs}
+                handleCommentSubmit={handleCommentSubmit}
+            />
+            
             <Footer />
         </>
     );
