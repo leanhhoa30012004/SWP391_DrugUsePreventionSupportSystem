@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaChartPie, FaBookOpen, FaClipboardCheck, FaCalendarAlt, FaUsers, FaSignOutAlt, FaSyncAlt, FaExclamationTriangle, FaChartBar, FaChartLine, FaUserCheck, FaArrowUp, FaArrowDown, FaChevronDown, FaChevronRight, FaCheck, FaTimes, FaClipboardList, FaCalendar, FaGraduationCap, FaClock, FaStar, FaCrown, FaUserFriends, FaHeartbeat, FaMedal } from 'react-icons/fa';
 import ReactApexChart from 'react-apexcharts';
 import axios from 'axios';
+// Thêm file css animation mới
 
 
 // Helper for animated numbers
@@ -299,7 +300,7 @@ const RealTimeStats = () => {
   const periodLabel = useMemo(() => getPeriodLabel(), [getPeriodLabel]);
 
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10" key={`stats-${viewMode}-${refreshing}`}>
+    <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 border border-[#e11d48]/10" key={`stats-${viewMode}-${refreshing}`}>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <FaChartPie className="text-2xl text-[#e11d48] flex-shrink-0" />
@@ -341,9 +342,9 @@ const RealTimeStats = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Active Users Card */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
               <FaUsers className="text-white text-xl" />
@@ -362,7 +363,7 @@ const RealTimeStats = () => {
         </div>
 
         {/* Surveys Completed Card */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
               <FaChartBar className="text-white text-xl" />
@@ -381,7 +382,7 @@ const RealTimeStats = () => {
         </div>
 
         {/* Courses Completed Card */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
               <FaGraduationCap className="text-white text-xl" />
@@ -400,7 +401,7 @@ const RealTimeStats = () => {
         </div>
 
         {/* Appointments Card */}
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
               <FaCalendarAlt className="text-white text-xl" />
@@ -812,7 +813,7 @@ const SurveyReportManager = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-[#e11d48]/10">
+    <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 border border-[#e11d48]/10">
       <div className="flex items-center gap-2 mb-4">
         {getReportIcon()}
         <h2 className="text-xl font-bold text-[#e11d48]">Report</h2>
@@ -1041,51 +1042,54 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] text-[#e11d48] p-8">
+    <div className="min-h-screen bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] text-[#e11d48] p-4">
       {/* Header fixed trong main content */}
       <div
-        className="fixed left-64 right-8 top-8 z-30 bg-gradient-to-br from-white via-[#fff1f2] to-[#f8fafc] py-6 shadow-md flex flex-col items-center justify-center text-center rounded-2xl"
+        className="fixed left-0 md:left-64 right-0 top-0 z-30 bg-white py-6 shadow-lg flex flex-col items-center justify-center text-center"
         style={{
-          maxWidth: 'calc(100vw - 18rem - 4rem)',
+          maxWidth: '100vw',
           marginLeft: 'auto',
-          marginRight: 'auto'
+          marginRight: 'auto',
+          borderBottom: '1.5px solid #f3f3f3',
+          marginBottom: '24px',
+          background: '#fff',
         }}
       >
         <h1
-          className="text-5xl font-extrabold uppercase tracking-widest text-[#e11d48] drop-shadow-lg mb-2 border-b-4 border-[#e11d48] pb-2"
+          className="text-2xl md:text-4xl font-extrabold uppercase tracking-widest text-[#e11d48] drop-shadow-lg mb-2 border-b-4 border-[#e11d48] pb-2"
           style={{
             fontFamily: "'Bungee', cursive",
             letterSpacing: '0.15em',
             textShadow: '0 2px 12px #e11d4844'
           }}
         >
-          <FaChartPie className="inline-block mr-3 text-5xl align-middle -mt-2" />
+          <FaChartPie className="inline-block mr-3 text-2xl md:text-4xl align-middle -mt-2" />
           System Overview Statistics
         </h1>
-        <p className="text-lg md:text-xl italic font-semibold text-[#e11d48] px-4 py-2 rounded-xl shadow-sm inline-block font-serif tracking-wide mt-2">
+        <p className="text-sm md:text-base italic font-semibold text-[#e11d48] px-3 py-1 rounded-xl shadow-sm inline-block font-serif tracking-wide mt-2">
           "Spreading Hope, Protecting the Future!"
         </p>
       </div>
       {/* Nội dung cuộn độc lập, có padding-top để không bị che */}
       <div
         style={{
-          marginTop: '180px',
-          height: 'calc(100vh - 180px - 2rem)',
+          marginTop: '140px',
+          height: 'calc(100vh - 140px - 2rem)',
           overflowY: 'auto',
-          paddingTop: '24px'
+          paddingTop: '16px'
         }}
-        className="pr-2"
+        className="pr-1"
       >
         <RealTimeStats />
         <SurveyReportManager />
-        <div className="bg-white rounded-2xl p-6 shadow-lg mt-8 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-8">
+        <div className="bg-white rounded-2xl p-4 shadow-lg mt-6 border border-[#e11d48]/10 flex flex-row items-start justify-between gap-6">
           <div className="flex-1 min-w-0">
             <h2 className="font-bold text-lg mb-4 text-[#e11d48]">Consultation & Survey Analytics</h2>
             <div className="text-sm text-[#e11d48]/80 mb-2">
               This chart visualizes the monthly number of consultations and surveys conducted throughout the year.
               It helps managers track service usage trends and evaluate the effectiveness of outreach efforts over time.
             </div>
-            <div className="bg-white rounded-3xl shadow-lg p-6 border border-[#e11d48]/10">
+            <div className="bg-white rounded-2xl shadow-lg p-4 border border-[#e11d48]/10 w-full">
               {chartLoading ? (
                 <div className="text-[#e11d48] text-center py-8 font-semibold">Loading chart data...</div>
               ) : chartError ? (

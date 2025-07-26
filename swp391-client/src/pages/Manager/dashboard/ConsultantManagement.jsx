@@ -545,40 +545,43 @@ function ConsultantManagement() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-gradient-to-br from-red-50 via-pink-50 to-gray-50 p-0 rounded-2xl shadow-lg font-sans">
-      {/* Header với nền trắng */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-2xl shadow border-b border-[#e11d48]/20">
+    <div className="h-full w-full flex flex-col bg-gradient-to-br from-[#faf5ff] via-[#f3e8ff] to-[#f8fafc] p-0 rounded-2xl shadow-lg">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
           <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
             <FaUserMd className="text-4xl text-[#e11d48]" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow font-sans">Consultant Management</h1>
-            <p className="text-[#be123c] text-sm md:text-base max-w-xl font-medium font-sans">Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Consultant Management</h1>
+            <p className="text-black text-sm md:text-base max-w-xl font-medium">
+              Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.
+            </p>
           </div>
         </div>
         <button
-          className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-6 py-3 rounded-2xl shadow transition-all duration-200 text-base font-sans"
+          className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
           onClick={() => setShowCreateModal(true)}
         >
-          <FaPlus /> Add Consultant
+          <FaPlus className="text-white" /> <span className="text-white">Add Consultant</span>
         </button>
       </div>
+
       {/* Toolbar: Search & Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-4 bg-white rounded-b-2xl shadow-md -mt-4 z-10 relative font-sans">
-        <div className="flex items-center gap-2 bg-red-50 rounded-xl px-3 py-2 shadow w-full md:w-1/3">
-          <FaSearch className="text-red-600" />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-6 py-3 bg-white border-b border-[#e11d48]/10">
+        <div className="flex items-center gap-2 bg-[#fff1f2] rounded-xl px-3 py-2 shadow w-full md:w-1/3 border border-[#e11d48]/10">
+          <FaSearch className="text-[#e11d48]" />
           <input
             type="text"
             placeholder="Search consultants..."
-            className="outline-none border-none flex-1 bg-transparent text-gray-900 font-normal placeholder-gray-500"
+            className="outline-none border-none flex-1 bg-transparent text-black"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
           <select
-            className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:ring-red-500 focus:border-red-500 font-normal"
+            className="rounded-lg border border-[#e11d48]/20 px-3 py-2 text-sm text-black focus:ring-[#e11d48] focus:border-[#e11d48]"
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
           >
@@ -587,15 +590,16 @@ function ConsultantManagement() {
             <option value="Inactive">Inactive</option>
           </select>
           <button
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 font-sans"
+            className="bg-[#e11d48] hover:bg-[#be123c] text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
             onClick={fetchAllAppointments}
           >
-            View All Appointments
+            <span className="text-white">View All Appointments</span>
           </button>
         </div>
       </div>
-      {/* Consultant Table với nền trắng */}
-      <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 font-sans">
+
+      {/* Consultant Table */}
+      <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
@@ -611,49 +615,49 @@ function ConsultantManagement() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-400 font-normal">Loading consultants...</td>
+                <td colSpan={7} className="text-center py-8 text-gray-400">Loading consultants...</td>
               </tr>
             ) : filteredConsultants.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-400 font-normal">No consultants found.</td>
+                <td colSpan={7} className="text-center py-8 text-gray-400">No consultants found.</td>
               </tr>
             ) : (
               filteredConsultants.map((consultant, idx) => (
-                <tr key={consultant.user_id} className="border-b last:border-b-0 bg-[#fff1f2] hover:bg-white transition">
+                <tr key={consultant.user_id} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white border-2 border-[#e11d48]/30 flex items-center justify-center text-[#e11d48] font-bold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#be123c] flex items-center justify-center text-white font-bold">
                         <FaUserTie />
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-900 font-sans">{consultant.fullname}</div>
-                        <div className="text-xs text-gray-500 font-normal">@{consultant.username}</div>
+                        <div className="font-semibold text-black">{consultant.fullname}</div>
+                        <div className="text-xs text-gray-500">@{consultant.username}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="text-gray-900">
-                      <div className="flex items-center gap-1 text-xs font-normal">
-                        <FaEnvelope className="text-red-600" /> {consultant.email}
+                    <div className="text-black">
+                      <div className="flex items-center gap-1 text-xs">
+                        <FaEnvelope className="text-[#e11d48]" /> {consultant.email}
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-block px-3 py-1 rounded-full bg-yellow-500 text-white font-bold text-xs shadow capitalize font-sans">{consultant.role}</span>
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#e11d48] text-white font-bold text-xs shadow capitalize">{consultant.role}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-900 font-medium font-sans">
+                  <td className="px-4 py-3 text-black font-medium">
                     {consultant.birthday ? formatDate(consultant.birthday) : 'N/A'}
                   </td>
-                  <td className="px-4 py-3 text-gray-900 font-medium font-sans">
+                  <td className="px-4 py-3 text-black font-medium">
                     {formatDate(consultant.created_at)}
                   </td>
                   <td className="px-4 py-3">
                     {Boolean(consultant.is_active) ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold font-sans">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
                         <FaCheckCircle className="text-green-500" /> Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-bold font-sans">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-bold">
                         <FaTimesCircle className="text-gray-400" /> Inactive
                       </span>
                     )}
@@ -713,7 +717,7 @@ function ConsultantManagement() {
       {/* Enhanced View Consultant Modal */}
       {viewConsultant && (
         <div className="fixed inset-0 bg-white/20 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-0 w-full max-w-5xl relative max-h-[95vh] overflow-y-auto border border-gray-200 transform transition-all duration-300 scale-100">
+          <div className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-5xl relative max-h-[95vh] overflow-y-auto border border-gray-200 transform transition-all duration-300 scale-100">
             <button
               className="absolute top-4 right-4 w-12 h-12 bg-red-50 hover:bg-red-100 rounded-full flex items-center justify-center text-red-500 hover:text-red-600 transition-all duration-200 z-20 shadow-lg hover:shadow-xl"
               onClick={() => setViewConsultant(null)}
@@ -722,13 +726,13 @@ function ConsultantManagement() {
             </button>
 
             {/* Header with enhanced design */}
-            <div className="relative mb-0 p-8 bg-[#e11d48] border-b border-[#be123c]/40 rounded-t-3xl text-white shadow-none">
+            <div className="relative mb-0 p-8 bg-white border-b border-[#be123c]/40 rounded-t-3xl text-[#e11d48] shadow-none">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-28 h-28 rounded-2xl bg-white border-2 border-[#fff1f2] flex items-center justify-center text-[#e11d48] text-4xl shadow-none">
                   <FaUserMd />
                 </div>
                 <div className="text-center md:text-left flex-1">
-                  <h2 className="text-4xl font-bold mb-3 text-white drop-shadow-lg tracking-tight">{viewConsultant.fullname}</h2>
+                  <h2 className="text-4xl font-bold mb-3 text-[#e11d48] drop-shadow-lg tracking-tight">{viewConsultant.fullname}</h2>
                   <div className="flex flex-wrap items-center gap-3 text-sm">
                     <span className="flex items-center gap-2 bg-white border border-[#fff1f2] rounded-full px-4 py-2 text-[#e11d48] font-medium shadow-none">
                       <FaUserTie className="text-lg" /> @{viewConsultant.username}
@@ -1079,7 +1083,7 @@ function ConsultantManagement() {
             }
           }}
         >
-          <div className="bg-white rounded-3xl shadow-2xl p-0 w-full max-w-2xl relative border border-gray-200 transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-2xl relative border border-gray-200 transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               className="absolute top-4 right-4 w-12 h-12 bg-red-50 hover:bg-red-100 rounded-full flex items-center justify-center text-red-500 hover:text-red-600 transition-all duration-200 z-50 shadow-lg hover:shadow-xl"
@@ -1254,7 +1258,7 @@ function ConsultantManagement() {
             }
           }}
         >
-          <div className="bg-white rounded-3xl shadow-2xl p-0 w-full max-w-3xl relative border border-gray-200 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100">
+          <div className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-3xl relative border border-gray-200 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100">
             <button
               type="button"
               className="absolute top-4 right-4 w-12 h-12 bg-red-50 hover:bg-red-100 rounded-full flex items-center justify-center text-red-500 hover:text-red-600 transition-all duration-200 z-50 shadow-lg hover:shadow-xl"

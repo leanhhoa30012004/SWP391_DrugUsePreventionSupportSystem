@@ -820,11 +820,10 @@ function Programs() {
                                                             View Details
                                                         </button>
                                                         <button
-                                                            onClick={() => handleCheckInOut(program)}
-                                                            className={`text-sm border px-3 py-2 rounded-lg transition-colors duration-200 font-medium flex-1 ${getButtonColor(program)}`}
-                                                            disabled={checkProgramStatus(program.start_date, program.end_date) === 'not started'}
+                                                            onClick={() => handleViewProgram(program.program_id)}
+                                                            className="text-sm text-green-600 border border-green-600 hover:bg-green-50 px-3 py-2 rounded-lg transition-colors duration-200 font-medium flex-1"
                                                         >
-                                                            {getButtonText(program)}
+                                                            Register
                                                         </button>
                                                     </div>
                                                 </div>

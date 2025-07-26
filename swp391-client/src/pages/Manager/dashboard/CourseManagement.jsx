@@ -389,8 +389,8 @@ const CourseManagement = () => {
   );
 
   return (
-    <div className="h-full w-full flex flex-col bg-gradient-to-br from-[#e0e7ff] via-[#fef6fb] to-[#f8fafc] p-0 rounded-2xl shadow-lg">
-      {/* Header */}
+    <div className="h-full w-full flex flex-col bg-gradient-to-br from-[#faf5ff] via-[#f3e8ff] to-[#f8fafc] p-0 rounded-2xl shadow-lg">
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
           <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
@@ -398,7 +398,7 @@ const CourseManagement = () => {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Course Management</h1>
-            <p className="text-[#be123c] text-sm md:text-base max-w-xl font-medium">
+            <p className="text-black text-sm md:text-base max-w-xl font-medium">
               View, create, edit and manage courses for your community. All in one place.
             </p>
           </div>
@@ -407,12 +407,13 @@ const CourseManagement = () => {
           className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
           onClick={() => setShowCreate(true)}
         >
-          <FaPlus /> Create New Course
+          <FaPlus className="text-white" /> <span className="text-white">Create New Course</span>
         </button>
       </div>
-      {/* Toolbar: Search */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-4 bg-white rounded-b-2xl shadow-md -mt-4 z-10 relative">
-        <div className="flex items-center gap-2 bg-[#f1f5f9] rounded-xl px-3 py-2 shadow w-full md:w-1/3">
+
+      {/* Toolbar: Search & Filters */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-6 py-3 bg-white border-b border-[#e11d48]/10">
+        <div className="flex items-center gap-2 bg-[#fff1f2] rounded-xl px-3 py-2 shadow w-full md:w-1/3 border border-[#e11d48]/10">
           <FaSearch className="text-[#e11d48]" />
           <input
             type="text"
@@ -423,8 +424,9 @@ const CourseManagement = () => {
           />
         </div>
       </div>
-      {/* Table */}
-      <div className="overflow-auto rounded-b-3xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
+
+      {/* Course Table */}
+      <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
@@ -438,21 +440,67 @@ const CourseManagement = () => {
           <tbody>
             {filteredCourses.length === 0 ? (
               <tr>
-                <td colSpan={11} className="text-center py-8 text-gray-400">No courses available.</td>
+                <td colSpan={5} className="text-center py-8 text-gray-400">No courses available.</td>
               </tr>
             ) : (
               filteredCourses.map((c, index) => (
-                <tr key={c.id} className="border-b last:border-b-0 hover:bg-[#e0e7ff] transition">
-                  <td className="px-4 py-3 flex items-center gap-2">
-                    <FaBookOpen className="text-[#e11d48] text-lg" />
-                    <span className="font-bold text-[#1e293b]">{c.name}</span>
+                <tr key={c.id} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
+                  <td className="px-4 py-3 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#be123c] flex items-center justify-center text-white font-bold">
+                      <FaBookOpen />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-black">
+                        {c.name}
+                      </div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <span className="inline-block px-2 py-1 rounded-full bg-[#e11d48]/20 text-[#e11d48] font-bold text-xs border border-[#e11d48]/30">
+                          {c.age_group}
+                        </span>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3">{c.enrolled} enrolled</td>
-                  <td className="px-4 py-3">{c.completed} completed</td>
-                  <td className="px-4 py-3">{c.age_group}</td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-black">
+                        <span>Enrolled</span>
+                        <span className="font-bold">{c.enrolled || 0}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full bg-[#e11d48]"
+                          style={{ width: `${Math.min((c.enrolled || 0) * 10, 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {c.completed || 0} completed
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="space-y-1 text-black">
+                      <div className="flex items-center gap-1 text-xs">
+                        <FaBookOpen className="text-[#e11d48]" /> 
+                        {c.content?.length || 0} lessons
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <FaCheck className="text-[#e11d48]" /> 
+                        {c.completed || 0} completed
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <span className="text-[#e11d48]">●</span> 
+                        {c.age_group}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+                      <FaCheck className="text-green-500" /> Active
+                    </span>
+                  </td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
-                      className="p-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white shadow transition"
+                      className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="Edit"
                       onClick={() => {
                         setShowEdit(c);
@@ -485,7 +533,7 @@ const CourseManagement = () => {
                       <FaEdit />
                     </button>
                     <button
-                      className="p-2 rounded-lg bg-gray-200 hover:bg-[#e11d48] text-[#e11d48] hover:text-white shadow transition"
+                      className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="Delete"
                       onClick={() => setShowDelete(c)}
                     >
@@ -555,7 +603,7 @@ const CourseManagement = () => {
             </div>
 
             {/* Content Section */}
-            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gray-50">
+            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-6 bg-gray-50">
               {/* Basic Course Info */}
               <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -884,7 +932,7 @@ const CourseManagement = () => {
             </div>
 
             {/* Content Section */}
-            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-8 bg-gray-50">
+            <div className="overflow-y-auto max-h-[calc(95vh-100px)] p-6 bg-gray-50">
               {/* Basic Course Info */}
               <div className="bg-white rounded-lg p-6 mb-6 shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">

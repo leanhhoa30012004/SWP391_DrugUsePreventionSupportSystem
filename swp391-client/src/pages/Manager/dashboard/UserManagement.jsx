@@ -209,8 +209,8 @@ const UserManagement = () => {
             onClick={() => setShowCreateModal(true)}
             className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
-            <span>➕</span>
-            <span>Create User</span>
+            <span className="text-white">➕</span>
+            <span className="text-white font-bold">Create User</span>
           </button>
         </div>
       </div>
@@ -221,19 +221,19 @@ const UserManagement = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-red-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase uppercase tracking-wider">
                   Birthday
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -253,14 +253,14 @@ const UserManagement = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-red-900">{user.fullname}</div>
-                          <div className="text-sm text-red-500">@{user.username}</div>
+                          <div className="text-sm font-medium text-[#000000]">{user.fullname}</div>
+                          <div className="text-sm text-[#000000]">@{user.username}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-red-900">{user.email}</div>
-                      <div className="text-sm text-red-500">{user.phone}</div>
+                      <div className="text-sm text-[#000000]">{user.email}</div>
+                      <div className="text-sm text-[#000000]">{user.phone}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
@@ -274,7 +274,7 @@ const UserManagement = () => {
                         <option value="member">Member</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#000000]">
                       {user.birthday ? new Date(user.birthday).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -332,8 +332,8 @@ const UserManagement = () => {
         {filteredUsers.length === 0 && (
           <div className="text-center py-12">
             <span className="text-4xl">👥</span>
-            <h3 className="mt-2 text-sm font-medium text-red-900">No users found</h3>
-            <p className="mt-1 text-sm text-red-500">
+            <h3 className="mt-2 text-sm font-medium text-[#000000]">No users found</h3>
+            <p className="mt-1 text-sm text-[#000000]">
               {searchTerm || selectedRole !== 'all'
                 ? 'Try adjusting your search or filter criteria.'
                 : 'Get started by creating a new user.'}
@@ -347,7 +347,7 @@ const UserManagement = () => {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-fadeInUp">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-red-600 tracking-tight">Create New User</h3>
+              <h3 className="text-2xl font-bold text-white tracking-tight">Create New User</h3>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
@@ -358,7 +358,7 @@ const UserManagement = () => {
             </div>
             <form onSubmit={handleCreateUser} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Username</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Username</label>
                 <input
                   type="text"
                   required
@@ -369,7 +369,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Password</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Password</label>
                 <input
                   type="password"
                   required
@@ -380,7 +380,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Full Name</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Full Name</label>
                 <input
                   type="text"
                   required
@@ -391,7 +391,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Email</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Email</label>
                 <input
                   type="email"
                   required
@@ -402,7 +402,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Birthday</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Birthday</label>
                 <input
                   type="date"
                   required
@@ -412,7 +412,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Role</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Role</label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -449,7 +449,7 @@ const UserManagement = () => {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-fadeInUp">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-red-600 tracking-tight">Edit User Profile</h3>
+              <h3 className="text-2xl font-bold text-[#000000] tracking-tight">Edit User Profile</h3>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
@@ -460,7 +460,7 @@ const UserManagement = () => {
             </div>
             <form onSubmit={handleEditUser} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Full Name</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Full Name</label>
                 <input
                   type="text"
                   required
@@ -471,7 +471,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Email</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Email</label>
                 <input
                   type="email"
                   required
@@ -482,7 +482,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Birthday</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Birthday</label>
                 <input
                   type="date"
                   required
@@ -492,7 +492,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Password (leave blank to keep current)</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Password (leave blank to keep current)</label>
                 <input
                   type="password"
                   value={editUserData.password}
@@ -502,7 +502,7 @@ const UserManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-red-700 mb-1">Role</label>
+                <label className="block text-sm font-semibold text-[#000000] mb-1">Role</label>
                 <select
                   value={editUserData.role}
                   onChange={(e) => setEditUserData({ ...editUserData, role: e.target.value })}

@@ -81,38 +81,16 @@ function ProgramDetail() {
             );
             console.log(`**Rese: ** ${response.data}`)
             if (response.data === 'Registered successfully!') {
-                // Refresh program data to get updated status
-                try {
-                    const updatedResponse = await axios.get(`http://localhost:3000/api/program/get-all-member-by-program-id/${program_id}`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    });
-                    
-                    const updatedStatus = updatedResponse.data.find(i => i.fullname == fname)?.status;
-                    setParticipantStatus(updatedStatus === 'registered');
-                    
-                    console.log('Updated status:', updatedStatus);
-                } catch (refreshError) {
-                    console.error('Error refreshing data:', refreshError);
-                    // Fallback to setting joined state
-                    setParticipantStatus('registered');
-                }
-                
-                // Show success message and redirect to survey page
                 Swal.fire({
                     icon: 'success',
                     title: 'Registration Successful!',
-                    text: 'You have successfully registered for this program. You will now be redirected to complete the survey.',
+                    text: 'You have successfully registered for this program.',
                     confirmButtonColor: '#dc2626',
                     timer: 2000,
-                    timerProgressBar: true,
                     showConfirmButton: false
                 });
-                
                 setTimeout(() => {
-                    navigate(`/surveyprogram/${program_id}`);
+                    window.location.reload();
                 }, 2000);
                 
             } else {
@@ -327,48 +305,64 @@ function ProgramDetail() {
                                         </div>
 
                                         {programStatus === 'closed' ? (
-                                            <button
-                                                className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
-                                                disabled
-                                            >
-                                                Program Completed
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
+                                                    disabled
+                                                >
+                                                    Program Completed
+                                                </button>
+                                            </>
                                         ) : participantStatus === 'present' ? (
-                                            <button
-                                                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
-                                                disabled
-                                            >
-                                                Already check-in
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
+                                                    disabled
+                                                >
+                                                    Already check-in
+                                                </button>
+                                            </>
+                                        ) : (participantStatus !== 'registered' && participantStatus !== 'present') ? (
+                                            <>
+                                                <button
+                                                    onClick={handleJoin}
+                                                    disabled={joining}
+                                                    className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 disabled:bg-red-400 transition-colors duration-200 flex items-center justify-center"
+                                                >
+                                                    {joining ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                            Registering...
+                                                        </>
+                                                    ) : (
+                                                        'Register Now'
+                                                    )}
+                                                </button>
+                                                <div className="mt-2 text-xs text-gray-500 text-center">
+                                                    You can register early before the program starts.
+                                                </div>
+                                            </>
                                         ) : programStatus === 'on going' && participantStatus === 'registered' ? (
-                                            <button
-                                                onClick={handleCheckIn}
-                                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
-                                            >
-                                                Check-in
-                                            </button>
-                                        ) : participantStatus === 'registered' ? (
-                                            <button
-                                                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
-                                                disabled
-                                            >
-                                                Already Registered
-                                            </button>
+                                            <>
+                                                <button
+                                                    onClick={handleCheckIn}
+                                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
+                                                >
+                                                    Check-in
+                                                </button>
+                                                <div className="mt-2 text-xs text-gray-500 text-center">
+                                                    Check-in is only available when the program is ongoing.
+                                                </div>
+                                            </>
                                         ) : (
-                                            <button
-                                                onClick={handleJoin}
-                                                disabled={joining}
-                                                className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 disabled:bg-red-400 transition-colors duration-200 flex items-center justify-center"
-                                            >
-                                                {joining ? (
-                                                    <>
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                        Registering...
-                                                    </>
-                                                ) : (
-                                                    'Register Now'
-                                                )}
-                                            </button>
+                                            <>
+                                                <button
+                                                    className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
+                                                    disabled
+                                                >
+                                                    Already Registered
+                                                </button>
+                                            </>
                                         )}
 
                                         <div className="mt-4 text-sm text-gray-600 space-y-2">
