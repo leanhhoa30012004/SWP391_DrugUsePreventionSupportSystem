@@ -40,7 +40,7 @@ const Profile = () => {
   
 
   useEffect(() => {
-    if (activeTab === 'booking' && userInfo.member_id) {
+    if (userInfo.member_id) {
       fetchUserBookings();
     }
   }, [activeTab, userInfo.member_id]);
@@ -745,7 +745,7 @@ const Profile = () => {
                                 Enrolled
                               </span>
                               <button
-                                onClick={() => navigate(`/course-learning/${course.member_id || userInfo.member_id}/${course.course_id}`)}
+                                onClick={() => navigate(`/learning/${course.course_id}`)}
                                 className="text-red-600 hover:text-red-700 text-sm font-medium"
                               >
                                 Continue Learning
