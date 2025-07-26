@@ -19,16 +19,16 @@ function Programs() {
     const [currentPage, setCurrentPage] = useState(1);
     const programsPerPage = 6;
 
-    // NEW: Auto-detection state
+
     const [checkedPrograms, setCheckedPrograms] = useState(new Set());
     const [previousStatuses, setPreviousStatuses] = useState(new Map());
     const [checkInReminders, setCheckInReminders] = useState(new Set());
     const intervalRef = useRef(null);
     const checkInIntervalRef = useRef(null);
 
-    // NEW: Request notification permission on component mount
+
     useEffect(() => {
-        // Request notification permission when component mounts
+
         if (Notification.permission === 'default') {
             Swal.fire({
                 icon: 'question',
