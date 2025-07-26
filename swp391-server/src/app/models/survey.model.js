@@ -222,6 +222,75 @@ const deleteSurvey = async (survey_id) => {
   return rows;
 };
 
+const getAllSurveyFollowEnrollmentSurveyByMemberId = async (member_id) => {
+  const [listOfSurvey] = await db.execute(`SELECT
+    s.survey_id,
+    s.survey_type,
+    s.created_by,
+    s.created_date,
+    sv.content,
+    sv.edited_at,
+    sv.edited_by,
+    sv.version
+FROM Survey s
+LEFT JOIN Survey_enrollment se 
+    ON s.survey_id = se.survey_id AND se.member_id = ? AND se.is_active = 1
+LEFT JOIN Survey_version sv 
+    ON sv.survey_id = s.survey_id 
+    AND sv.is_active = 1
+    AND (
+        sv.version = se.enroll_version
+        OR (
+            se.enroll_version IS NULL AND
+            sv.version = (
+                SELECT MAX(version)
+                FROM Survey_version
+                WHERE survey_id = s.survey_id AND is_active = 1
+            )
+        )
+    )
+WHERE s.is_active = 1;`, [member_id]);
+  return listOfSurvey.map(survey => ({
+    survey_id: survey.survey_id,
+    survey_type: survey.survey_type,
+    created_by: survey.created_by,
+    created_date: survey.created_date,
+    content: JSON.parse(survey.content),
+    edited_at: survey.edited_at,
+    edited_by: survey.edited_by,
+    version: survey.version
+  }));
+}
+
+const getSurveyHistoryBySurveyEnrollmenId = async (survey_enrollment_id) => {
+  const [surveyEnroll] = await db.execute(`SELECT survey_enrollment_id, survey_id, member_id, response, date, enroll_version
+FROM Survey_enrollment
+WHERE survey_enrollment_id = ? AND is_active = 1`, [survey_enrollment_id]);
+  return {
+    survey_enrollment_id: surveyEnroll[0].survey_enrollment_id,
+    survey_id: surveyEnroll[0].survey_id,
+    member_id: surveyEnroll[0].member_id,
+    response: JSON.parse(surveyEnroll[0].response),
+    date: surveyEnroll[0].date,
+    enroll_version: surveyEnroll[0].enroll_version
+  }
+}
+
+const findSurveyBySurveyIDAndVersion = async (survey_id, version) => {
+  const [rows] = await db.execute(`SELECT version_id, survey_id, version, content, edited_by, edited_at
+FROM Survey_version
+WHERE survey_id = ? AND version = ? AND is_active = 1`, [survey_id, version]);
+  return {
+    version_id: rows[0].version_id,
+    survey_id: rows[0].survey_id,
+    version: rows[0].version,
+    content: JSON.parse(rows[0].content),
+    edited_by: rows[0].edited_by,
+    edited_at: rows[0].edited_at
+  };
+};
+
+
 module.exports = {
   listOfSurvey,
   findSurveyByType,
@@ -233,4 +302,9 @@ module.exports = {
   addEnrollmentSurvey,
   updateSurvey,
   addSurvey,
+
+  getAllSurveyFollowEnrollmentSurveyByMemberId,
+  getSurveyHistoryBySurveyEnrollmenId,
+  findSurveyBySurveyIDAndVersion,
+
 };
