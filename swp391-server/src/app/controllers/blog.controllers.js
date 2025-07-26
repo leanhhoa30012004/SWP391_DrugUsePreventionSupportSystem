@@ -1,11 +1,24 @@
 const { json } = require('express');
 const blogModel = require('../models/blog.model');
 const managerModel = require('../models/manager.model');
+const cloudinary = require('../../service/cloudinary.service')
+const fs = require('fs')
 
 exports.blogPost = async (req, res) => {
     const { author, title, tags, content } = req.body;
-    const cover_img = req.file?.filename || null;
+    let cover_img = null
     try {
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'uploads'
+            })
+            // get url from cloudinary
+            cover_img = result.secure_url;
+            console.log(cover_img)
+            // delete local uploads
+            fs.unlinkSync(req.file.path)
+        }
+
         const isPost = await blogModel.blogPost(author, title, tags, cover_img, content);
         if (isPost)
             return res.json('Your blog posting request has been received, please wait for manager approval.');
@@ -18,11 +31,11 @@ exports.blogPost = async (req, res) => {
 exports.getAllBlogPending = async (req, res) => {
     try {
         const list = await blogModel.getAllBlogPending();
-        const blogs = list.map(blog => ({
-            ...blog,
-            cover_img: blog.cover_img ? `/api/uploads/${blog.cover_img}` : null
-        }));
-        return res.json(blogs)
+        // const blogs = list.map(blog => ({
+        //     ...blog,
+        //     cover_img: blog.cover_img ? `../../uploads/${blog.cover_img}` : null
+        // }));
+        return res.json(list)
     } catch (error) {
         console.error("getAllBlogPending: ", error);
         res.status(500).json({ error: "Internal server error" });
@@ -33,11 +46,7 @@ exports.getAllBlogByMemberId = async (req, res) => {
     const member_id = req.params.member_id;
     try {
         const list = await blogModel.getAllBlogByMemberId(member_id);
-        const blogs = list.map(blog => ({
-            ...blog,
-            cover_img: blog.cover_img ? `/api/uploads/${blog.cover_img}` : null
-        }));
-        return res.json(blogs)
+        return res.json(list)
     } catch (error) {
         console.error("getAllBlogByMemberId: ", error);
         res.status(500).json({ error: "Internal server error" });
@@ -61,14 +70,12 @@ exports.approvalBlog = async (req, res) => {
 
 exports.rejectblog = async (req, res) => {
     const { manager_id, blog_id } = req.params;
-    console.log(manager_id, blog_id)
-    const { reason } = req.body;
-    console.log(reason)
+    const reject_reason = req.body.reject_reason;
     try {
         const blog = await blogModel.getBlogById(blog_id);
         if (blog.status === 'Rejected')
             return res.json('This blog has been rejected.')
-        const isRejected = await blogModel.rejectBlog(manager_id, blog_id, reason)
+        const isRejected = await blogModel.rejectBlog(manager_id, blog_id, reject_reason)
         if (isRejected) return res.json('Rejected successfully')
         res.json('Refused to fail')
     } catch (error) {

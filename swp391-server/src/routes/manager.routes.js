@@ -37,6 +37,6 @@ router.patch('/users/:id/active', protectManager, restrictTo('manager', 'admin')
 // Tạo user mới
 router.post('/create-user', protectManager, restrictTo('manager', 'admin'), managerController.createUser);
 
-router.put('/users/:id', protectManager, restrictTo('manager', 'admin'), managerController.updateUser);
+router.put('/users/:id', protectManager, restrictTo('manager', 'consultant'), managerController.updateUser);
 
 module.exports = router;

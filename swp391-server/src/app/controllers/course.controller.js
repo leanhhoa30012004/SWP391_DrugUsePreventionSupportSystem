@@ -25,10 +25,17 @@ exports.getCourseByName = async (req, res) => {
 }
 exports.checkEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
+    console.log('checkEnrollmentCourse params: ', req.params)
 
     try {
         const check = await courseModel.checkEnrollmentCourse(member_id, course_id, enroll_version);
-        res.json({ isEnrolled: check });
+        if (check) {
+            return res.json({
+                isEnrolled: true,
+                status: check.status
+            });
+        }
+        return res.json({ isEnrolled: false });
     } catch (error) {
         console.log('checkEnrollmentCOurse error: ', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
@@ -81,8 +88,12 @@ exports.createMemberEnrollmentCourse = async (req, res) => {
     const { member_id, course_id, enroll_version } = req.params;
 
     try {
-        if (await courseModel.checkEnrollmentCourse(member_id, course_id, enroll_version)) {
-            return res.status(400).json({ error: "You have already enrolled in this course" });
+        const checkEnrollment = await courseModel.checkEnrollmentCourse(member_id, course_id, enroll_version);
+        if (checkEnrollment) {
+            return res.status(400).json({
+                message: "You have already enrolled in this course",
+                status: checkEnrollment.status
+            });
         }
         const enrollment = await courseModel.createMemberEnrollmentCourse(member_id, course_id, enroll_version)
         if (!enrollment) {
@@ -149,6 +160,20 @@ exports.getAllCourseForMemberByMemberId = async (req, res) => {
         return res.json(listOfCourse)
     } catch (error) {
         console.error('getAllCourseForMemberByMemberId error:', error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+exports.getLearningProcessByCourseIdAndMemberId = async (req, res) => {
+    const { member_id, course_id } = req.params;
+    try {
+        const learningProcess = await courseModel.getLearningProcessByCourseIdAndMemberId(member_id, course_id);
+        if (!learningProcess || learningProcess.length === 0) {
+            return res.status(404).json({ error: "No learning process found for this course and member" });
+        }
+        res.json(learningProcess);
+    } catch (error) {
+        console.error('getLearningProcessByCoureseIdAndMemberId error:', error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 }

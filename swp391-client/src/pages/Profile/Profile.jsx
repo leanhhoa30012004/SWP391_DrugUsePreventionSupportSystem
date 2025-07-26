@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
 import Logo from "../../assets/logo-WeHope.png";
+import Navbar from "../../components/Navbar/Navbar";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -198,6 +199,18 @@ const Profile = () => {
     }
   };
 
+
+  function formatDateTime(isoString) {
+    const date = new Date(isoString);
+    date.setHours(date.getHours());
+    
+
+    const dd = String(date.getDate()).padStart(2, '0');
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    
+    return `${dd}/${MM}/${yyyy}`;
+}
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -271,17 +284,12 @@ const Profile = () => {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-6">
-            <img
-              src={Logo}
-              alt="WeHope Logo"
-              className="w-48 h-auto mx-auto drop-shadow-lg hover:scale-105 transition-transform duration-200"
-            />
-          </Link>
           <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-700 to-red-800 mb-2">
             My Profile
           </h1>
@@ -293,7 +301,7 @@ const Profile = () => {
         {/* Profile Card */}
         <div className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl overflow-hidden border border-white/20 mb-8">
           {/* Header */}
-          <div className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 px-8 py-12 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-red-300 via-red-400 to-red-400 px-8 py-12 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16"></div>
             <div className="relative z-10 flex flex-col sm:flex-row items-center text-center sm:text-left">
@@ -491,7 +499,7 @@ const Profile = () => {
                         <>
                           <button
                             onClick={() => setEditMode(true)}
-                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                            className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -500,7 +508,7 @@ const Profile = () => {
                           </button>
                           <button
                             onClick={handleChangePassword}
-                            className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                            className="bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -839,17 +847,23 @@ const Profile = () => {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consultant name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Link Meet</th>
                             <th className="px-6 py-3"></th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {bookings.map((b) => (
                             <tr key={b.appointment_id}>
-                              <td className="px-6 py-4 whitespace-nowrap">{b.appointment_date}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">{b.appointment_time}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <td className="px-4 py-4 whitespace-nowrap">{b.fullname}</td>
+                              <td className="px-4 py-4 whitespace-nowrap">{formatDateTime(b.appointment_date)}</td >
+                              <td className="px-4 py-4 whitespace-nowrap">{b.appointment_time}</td>
+                              <td className="px-4py-4 whitespace-nowrap">
+                                <a href={b.meeting_link} style={{color: "blue"}}>{b.meeting_link}</a>
+                                </td>
+                              <td className="px-3 py-4 whitespace-nowrap text-right">
                                 <button onClick={() => handleCancelBooking(b.appointment_id)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium">Cancel</button>
                               </td>
                             </tr>
@@ -865,6 +879,7 @@ const Profile = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

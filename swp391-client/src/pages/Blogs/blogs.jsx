@@ -41,6 +41,8 @@ const Blogs = () => {
             });
     };
 
+
+
     // Lấy comment cho blog
     const fetchComments = async (blogId) => {
         setCommentLoading(prev => ({ ...prev, [blogId]: true }));
@@ -115,7 +117,7 @@ const Blogs = () => {
         author: blog.fullname || `User #${blog.author}` || 'Unknown',
         date: blog.approval_date || blog.post_date || blog.date,
         category: blog.tags ? blog.tags.split(',')[0]?.trim().toLowerCase().replace(/\s/g, '-') : 'other',
-        image: blog.cover_img ? import.meta.env.VITE_API_URL + `/uploads/${blog.cover_img}` : null,
+        image: blog.cover_img || null, // Sử dụng trực tiếp Cloudinary URL từ backend
         readTime: '5 min read',
         views: blog.views || 0,
         likes: blog.likes || 0,
@@ -237,6 +239,8 @@ const Blogs = () => {
                 <div className="mx-auto px-2 py-10 max-w-[700px]">
                     {/* Create Blog Form */}
                     <CreateBlogForm onPostSuccess={fetchBlogs} />
+
+
 
                     {/* Newsfeed Blogs */}
                     {sortedBlogs.length === 0 ? (

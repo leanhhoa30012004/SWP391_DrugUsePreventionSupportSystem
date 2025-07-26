@@ -125,21 +125,21 @@ const Navbar = () => {
         />
       </button>
 
-      {/* Notification Dropdown */}
-      {isNotificationOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+{/* Notification Dropdown */}
+{isNotificationOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-96 overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Notifications</h3>
-              <div className="flex items-center space-x-2">
+              <h3 className="font-bold text-gray-900 text-lg">Notifications</h3>
+              <div className="flex items-center space-x-3">
                 {unreadCount > 0 && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       markAllAsRead();
                     }}
-                    className="text-sm text-[#E53935] hover:text-[#E53935]/80 flex items-center space-x-1 transition-colors"
+                    className="text-sm text-[#E53935] hover:text-[#E53935]/80 flex items-center space-x-1.5 transition-all duration-200 hover:scale-105 font-medium"
                     title="Mark all as read"
                   >
                     <CheckCheck className="w-4 h-4" />
@@ -148,7 +148,7 @@ const Navbar = () => {
                 )}
                 <button
                   onClick={() => setIsNotificationOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-gray-200"
                   title="Close"
                 >
                   <X className="w-4 h-4" />
@@ -158,54 +158,90 @@ const Navbar = () => {
           </div>
 
           {/* Notifications List */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {loading ? (
-              <div className="p-4 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E53935] mx-auto"></div>
-                <p className="mt-2">Loading...</p>
+              <div className="p-6 text-center text-gray-500">
+                <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#E53935] border-t-transparent mx-auto"></div>
+                <p className="mt-3 font-medium">Loading notifications...</p>
               </div>
             ) : error ? (
-              <div className="p-4 text-center text-red-500">
-                <p>Error loading notifications</p>
+              <div className="p-6 text-center text-red-500">
+                <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
+                  <X className="w-6 h-6 text-red-500" />
+                </div>
+                <p className="font-medium mb-3">Error loading notifications</p>
                 <button 
                   onClick={fetchNotifications}
-                  className="mt-2 px-3 py-1 bg-[#E53935] text-white rounded text-sm hover:bg-[#E53935]/80 transition-colors"
+                  className="px-4 py-2 bg-[#E53935] text-white rounded-lg text-sm hover:bg-[#E53935]/90 transition-all duration-200 hover:scale-105 font-medium shadow-md"
                 >
                   Try again
                 </button>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p>No notifications</p>
+              <div className="p-6 text-center text-gray-500">
+                <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Bell className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="font-medium text-gray-600">No notifications</p>
+                <p className="text-sm text-gray-400 mt-1">You're all caught up!</p>
               </div>
             ) : (
-              notifications.map((n) => (
+              notifications.map((n, index) => (
                 <div
                   key={n.id}
-                  className={`px-4 py-3 cursor-pointer transition-colors duration-150 ${
+                  className={`px-4 py-3 cursor-pointer transition-all duration-200 hover:transform hover:scale-[1.02] ${
                     n.is_read
                       ? "bg-white hover:bg-gray-50"
-                      : "bg-blue-50 hover:bg-blue-100 font-semibold text-blue-900"
-                  }`}
+                      : "bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-red-100 hover:to-indigo-100 border-l-4 border-red-500"
+                  } ${index !== notifications.length - 1 ? 'border-b border-gray-50' : ''}`}
                   onClick={() => {
                     markAsRead(n.id);
                     if (n.redirect_url) window.location.href = n.redirect_url;
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="truncate max-w-[70%]">{n.title}</span>
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className={`font-medium leading-tight ${
+                      n.is_read ? 'text-gray-900' : 'text-red-900 font-semibold'
+                    }`}>
+                      {n.title}
+                    </h4>
                     {!n.is_read && (
-                      <span className="ml-2 inline-block w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="ml-2 mt-1 inline-block w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0 animate-pulse" />
                     )}
                   </div>
-                  <div className="text-sm text-gray-700 mt-1 truncate">{n.message}</div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {n.date
-                      ? new Date(n.date).toLocaleString()
-                      : n.created_at
-                      ? new Date(n.created_at).toLocaleString()
-                      : ""}
+                  
+                  <div className={`text-sm leading-relaxed mb-2 ${
+                    n.is_read ? 'text-gray-600' : 'text-blue-800'
+                  }`}>
+                    {n.message}
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-400 font-medium">
+                      {n.date
+                        ? new Date(n.date).toLocaleString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : n.created_at
+                        ? new Date(n.created_at).toLocaleString('vi-VN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : ""}
+                    </div>
+                    
+                    {n.redirect_url && (
+                      <div className="text-xs text-[#E53935] font-medium">
+                        Click to view →
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -214,10 +250,10 @@ const Navbar = () => {
 
           {/* Footer */}
           {/* {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-200 bg-gray-50">
+            <div className="p-3 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
               <Link
                 to="/notifications"
-                className="w-full text-center text-sm text-[#E53935] hover:text-[#E53935]/80 block font-medium transition-colors"
+                className="w-full text-center text-sm text-[#E53935] hover:text-[#E53935]/80 block font-semibold transition-all duration-200 hover:scale-105 py-1 px-3 rounded-lg hover:bg-white"
                 onClick={() => setIsNotificationOpen(false)}
               >
                 View all notifications
@@ -314,13 +350,13 @@ const Navbar = () => {
                     to="/login"
                     className="px-4 py-2 text-sm text-[#E53935] border border-[#E53935] rounded-lg transition-colors duration-200 hover:bg-[#E53935] hover:text-white whitespace-nowrap"
                   >
-                    Đăng nhập
+                    Sign in
                   </Link>
                   <Link
                     to="/register"
                     className="px-4 py-2 text-sm bg-[#E53935] text-white rounded-lg transition-colors duration-200 hover:bg-white hover:text-[#E53935] border border-[#E53935] whitespace-nowrap"
                   >
-                    Đăng ký
+                    Sign up
                   </Link>
                 </div>
               )}

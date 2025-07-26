@@ -47,7 +47,7 @@ const updatePassword = async (id, newPassword) => {
 
 const findById = async (id) => {
   const [rows] = await db.execute(
-    "SELECT * FROM Users WHERE user_id = ? AND role = 'member' AND is_active = 1",
+    "SELECT * FROM Users WHERE user_id = ? AND is_active = 1",
     [id]
   );
   return rows[0];

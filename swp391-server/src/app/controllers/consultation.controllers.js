@@ -2,6 +2,8 @@ const consultationModel = require('../models/consultation.model');
 const memberModel = require('../models/member.model');
 const createMeetConfig = require('../../config/createMeet.config');
 const { pushNotice } = require('../models/notice.helper.model');
+const cloudinary = require('../../service/cloudinary.service')
+const fs = require('fs')
 
 exports.checkAppointment = async (req, res) => {
     const { member_id, appointment_date, appointment_time } = req.params;
@@ -174,5 +176,95 @@ exports.completeAppointment = async (req, res) => {
         console.error('completeAppointment:', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
     }
+}
 
+exports.updateCertificate = async (req, res) => {
+    const { certificate_name, expired, certificate_id } = req.body;
+    let certificate_img = '';
+    try {
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'uploads'
+            })
+            // get url from cloudinary
+            certificate_img = result.secure_url;
+            console.log(certificate_img)
+            // delete local uploads
+            fs.unlinkSync(req.file.path)
+        }
+        const certificate = { certificate_name, expired, certificate_id, certificate_img }
+
+        const isUpdate = await consultationModel.updateConsultantProfile(certificate);
+        if (!isUpdate)
+            res.json('Update failed!')
+        res.json('Updated sucessfully!')
+    } catch (error) {
+        console.error('updateCertificate:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
+exports.addCertificate = async (req, res) => {
+    const { consultant_id, certificate_name, expired, certificate_id } = req.body;
+    let certificate_img = ''
+    try {
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'uploads'
+            })
+            certificate_img = result.secure_url;
+            console.log(certificate_img)
+            fs.unlinkSync(req.file.path)
+        }
+        const certificate = { consultant_id, certificate_name, expired, certificate_id, certificate_img }
+
+
+        const isAdd = await consultationModel.addConsultantProfile(certificate)
+        if (!isAdd)
+            res.json('Add failed!')
+        res.json('Added Successfully!')
+    } catch (error) {
+        console.error('addCertificate:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
+exports.getCertificateByConsultantId = async (req, res) => {
+    const consultant_id = req.params.consultant_id;
+    try {
+        const certificates = await consultationModel.getConsultantProfileByConsultantId(consultant_id)
+        if (!certificates)
+            res.json("This consultant doesn't have any certificate")
+        res.json(certificates)
+    } catch (error) {
+        console.error('findCertificateByConsultantId:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
+exports.approveCertificateRequest = async (req, res) => {
+    const certificate_id = req.params.certificate_id;
+    try {
+        const isApprove = await consultationModel.approveCertificateRequest(certificate_id)
+        if (!isApprove)
+            res.json('Approve failed!')
+        res.json('Approved successfully!')
+    } catch (error) {
+        console.error('approveCertificateRequest:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
+exports.rejectCertificateRequest = async (req, res) => {
+    const certificate_id = req.params.certificate_id;
+    const { reject_reason } = req.body;
+    try {
+        const isReject = await consultationModel.rejectCertificateRequest(certificate_id, reject_reason);
+        if (!isReject)
+            res.json('Reject failed!')
+        res.json('Rejected successfully!')
+    } catch (error) {
+        console.error('rejectCertificateRequest:', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
 }
