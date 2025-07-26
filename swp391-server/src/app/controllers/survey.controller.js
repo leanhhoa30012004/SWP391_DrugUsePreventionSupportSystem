@@ -100,6 +100,7 @@ exports.getSurveyHistoryByMember = async (req, res) => {
                             `Survey content not found for ID: ${historySurvey.survey_id}`
                         );
                         return {
+                            survey_enrollment_id: historySurvey.survey_enrollment_id,
                             survey_id: historySurvey.survey_id,
                             memberName: historySurvey.fullname,
                             score: 0, // Default score
@@ -122,6 +123,7 @@ exports.getSurveyHistoryByMember = async (req, res) => {
                     const score = surveyModel.calculateScore(surveyData.content, answers);
 
                     return {
+                        survey_enrollment_id: historySurvey.survey_enrollment_id,
                         survey_id: historySurvey.survey_id,
                         memberName: historySurvey.fullname,
                         score: score,
@@ -134,6 +136,7 @@ exports.getSurveyHistoryByMember = async (req, res) => {
                         itemError
                     );
                     return {
+                        survey_enrollment_id: historySurvey.survey_enrollment_id,
                         survey_id: historySurvey.survey_id,
                         memberName: historySurvey.fullname,
                         score: 0,
