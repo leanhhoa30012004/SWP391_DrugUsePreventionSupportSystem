@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaClipboardList, FaChartBar, FaUsers, FaClock, FaPercentage, FaQuestionCircle, FaListAlt, FaDatabase, FaSave, FaVideo, FaCog } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaClipboardList, FaChartBar, FaUsers, FaClock, FaPercentage, FaQuestionCircle, FaListAlt, FaDatabase, FaSave, FaVideo, FaCog, FaSync, FaSyncAlt } from 'react-icons/fa';
 import axios from 'axios';
 
 const surveyTypes = ['All', 'ASSIST', 'CRAFFT', 'Education', 'Feedback', 'Assessment'];
@@ -46,10 +46,17 @@ const SurveyManagement = () => {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
 
-  // Fetch existing surveys from database
-  const fetchExistingSurveys = async () => {
+  // Real-time update states
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [hasNewData, setHasNewData] = useState(false);
+
+  // Fetch existing surveys from database with real-time updates
+  const fetchExistingSurveys = async (showLoading = true) => {
     try {
-      setLoadingExisting(true);
+      if (showLoading) {
+        setLoadingExisting(true);
+      }
       setErrorExisting(null);
       
       const response = await fetch('http://localhost:3000/api/survey/view-survey', {
@@ -84,13 +91,24 @@ const SurveyManagement = () => {
         lastResponse: survey.last_response || 'N/A'
       })) : [];
       
+      // Check if data has changed (for real-time indicator)
+      const hasChanged = JSON.stringify(transformedData) !== JSON.stringify(existingSurveys);
+      if (hasChanged && !showLoading) {
+        setHasNewData(true);
+        setTimeout(() => setHasNewData(false), 3000); // Clear indicator after 3 seconds
+      }
+      
       setExistingSurveys(transformedData);
+      setLastUpdate(new Date());
     } catch (err) {
       console.error('Error fetching existing surveys:', err);
       setErrorExisting('Failed to fetch existing surveys');
       setExistingSurveys([]);
     } finally {
-      setLoadingExisting(false);
+      if (showLoading) {
+        setLoadingExisting(false);
+      }
+      setIsRefreshing(false);
     }
   };
 
@@ -439,6 +457,17 @@ const SurveyManagement = () => {
     setEditingItem({ ...editingItem });
   };
 
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchExistingSurveys(false);
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchExistingSurveys();
+  }, []);
+
   return (
     <div className="h-full w-full flex flex-col bg-gradient-to-br from-[#faf5ff] via-[#f3e8ff] to-[#f8fafc] p-0 rounded-2xl shadow-lg">
       {/* Header with purple gradient and large clipboard icon */}
@@ -449,7 +478,7 @@ const SurveyManagement = () => {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Survey Management</h1>
-            <p className="text-[#be123c] text-sm md:text-base max-w-xl font-medium">
+            <p className="text-black text-sm md:text-base max-w-xl font-medium">
               View, create, edit and analyze surveys for your community. All in one place.
             </p>
           </div>
@@ -458,38 +487,14 @@ const SurveyManagement = () => {
           className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
           onClick={() => setCreateSurveyModal(true)}
         >
-          <FaPlus /> Create New Survey
+          <FaPlus className="text-white" /> <span className="text-white">Create New Survey</span>
         </button>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex bg-[#fff] border-b-4 border-[#e11d48] px-8 mt-0 z-10 relative">
-        <button
-          className={`flex items-center gap-2 px-6 pb-4 pt-3 font-semibold transition-all duration-200
-            ${activeTab === 'existing'
-              ? 'text-[#e11d48] bg-[#fff1f2] font-extrabold z-10'
-              : 'text-gray-500 hover:text-[#e11d48] hover:bg-[#fff1f2]'}
-          `}
-          onClick={() => setActiveTab('existing')}
-        >
-          <FaDatabase className="text-lg" />
-          Existing Surveys ({existingSurveys.length})
-        </button>
-        <button
-          className={`flex items-center gap-2 px-6 pb-4 pt-3 font-semibold transition-all duration-200
-            ${activeTab === 'managed'
-              ? 'text-[#e11d48] bg-[#fff1f2] font-extrabold z-10'
-              : 'text-gray-500 hover:text-[#e11d48] hover:bg-[#fff1f2]'}
-          `}
-          onClick={() => setActiveTab('managed')}
-        >
-          <FaListAlt className="text-lg" />
-          Managed Surveys ({managedSurveys.length})
-        </button>
-      </div>
 
-      {/* Toolbar: Search & Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-4 bg-white border-b border-[#e11d48]/10">
+
+      {/* Toolbar: Search & Filters & Real-time Controls */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-6 py-3 bg-white border-b border-[#e11d48]/10">
         <div className="flex items-center gap-2 bg-[#fff1f2] rounded-xl px-3 py-2 shadow w-full md:w-1/3 border border-[#e11d48]/10">
           <FaSearch className="text-[#e11d48]" />
           <input
@@ -500,7 +505,7 @@ const SurveyManagement = () => {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <select
             className="rounded-lg border border-[#e11d48]/20 px-3 py-2 text-sm text-black focus:ring-[#e11d48] focus:border-[#e11d48]"
             value={typeFilter}
@@ -519,20 +524,29 @@ const SurveyManagement = () => {
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
-          {activeTab === 'existing' && (
+          
+          {/* Manual Refresh Control */}
+          <div className="flex items-center gap-2 ml-4">
             <button
-              onClick={fetchExistingSurveys}
-              className="px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c] transition-colors flex items-center gap-2 font-bold shadow"
+              className="p-2 rounded-lg bg-[#e11d48] text-white border border-[#e11d48] hover:bg-[#be123c] transition-all duration-200 disabled:opacity-50"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              title="Refresh data"
             >
-              <FaDatabase className="text-sm" />
-              Refresh
+              <FaSyncAlt className={`text-sm ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
-          )}
+            <div className="text-xs text-gray-500 ml-2 flex items-center gap-1">
+              <span>Last: {lastUpdate.toLocaleTimeString()}</span>
+              {hasNewData && (
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" title="New data available"></span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Survey Table */}
-      <div className="overflow-auto rounded-b-3xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
+      <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
@@ -550,7 +564,7 @@ const SurveyManagement = () => {
                 <td colSpan={5} className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#e11d48] mx-auto"></div>
                   <p className="mt-2 text-gray-500">
-                    {activeTab === 'existing' ? 'Loading existing surveys...' : 'Loading managed surveys...'}
+                    Loading managed surveys...
                   </p>
                 </td>
               </tr>
@@ -558,23 +572,12 @@ const SurveyManagement = () => {
               <tr>
                 <td colSpan={5} className="text-center py-8">
                   <p className="text-red-500">{error}</p>
-                  {activeTab === 'existing' && (
-                    <button 
-                      onClick={fetchExistingSurveys}
-                      className="mt-2 px-4 py-2 bg-[#e11d48] text-white rounded-lg hover:bg-[#be123c]"
-                    >
-                      Retry
-                    </button>
-                  )}
                 </td>
               </tr>
             ) : filteredSurveys.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center py-8 text-gray-400">
-                  {activeTab === 'existing' 
-                    ? 'No existing surveys found in database.' 
-                    : 'No managed surveys found. Create your first survey!'
-                  }
+                  No managed surveys found. Create your first survey!
                 </td>
               </tr>
             ) : (
@@ -586,13 +589,19 @@ const SurveyManagement = () => {
                         <FaClipboardList />
                       </div>
                       <div>
-                        <div className="font-semibold text-black">
+                        <div className="font-semibold text-black flex items-center gap-2">
                           {survey.name || survey.survey_type}
+                          {survey.lastResponse && survey.lastResponse !== 'N/A' && (
+                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Recent activity"></span>
+                          )}
                         </div>
                         <div className="text-xs text-gray-500 flex items-center gap-2">
                           <span className="inline-block px-2 py-1 rounded-full bg-[#e11d48]/20 text-[#e11d48] font-bold text-xs border border-[#e11d48]/30">
                             {survey.type || survey.survey_type}
                           </span>
+                          {survey.lastResponse && survey.lastResponse !== 'N/A' && (
+                            <span className="text-green-600">● Recent</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -671,7 +680,7 @@ const SurveyManagement = () => {
       {/* Create Survey Modal */}
       {createSurveyModal && (
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-0 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden animate-fade-in border border-gray-100">
+          <div className="bg-white p-0 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden animate-fade-in border border-gray-100">
             {/* Header Section */}
             <div className="bg-[#e11d48] px-8 py-6 flex justify-between items-center border-b border-[#e11d48]/20">
               <div>

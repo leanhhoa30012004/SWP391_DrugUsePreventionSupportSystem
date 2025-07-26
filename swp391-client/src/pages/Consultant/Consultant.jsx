@@ -158,7 +158,6 @@ const ConsultantBooking = () => {
     }
   };
 
-  // Helper: Check if a time slot is in the past (local time, today only)
   const isPastTimeSlot = (dateStr, timeStr) => {
     if (!dateStr || !timeStr) return false;
     const today = new Date();

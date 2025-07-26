@@ -5,8 +5,6 @@ import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
 
 function CourseDetail() {
-    // const userId = localStorage.getItem('user');
-    // console.log('du lieu id:', JSON.parse(userId).user_id)
     const location = useLocation();
     const course_name = location.course_name;
     const course_version = location.state.course_version;
@@ -19,7 +17,6 @@ function CourseDetail() {
     const [activeTab, setActiveTab] = useState('overview');
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
     const [isCompleted, setIsCompleted] = useState(false);
-    // console.log('du lieu id:', uid)
 
     // Fetch course details
     useEffect(() => {
@@ -64,9 +61,6 @@ function CourseDetail() {
     // Check enrollment status
     const checkEnrollmentStatus = async (course_id, course_version) => {
         try {
-            // const token = localStorage.getItem('token');
-            // if (!token) return;
-
             const response = await axios.get(`http://localhost:3000/api/course/check-enrollment-course/${uid}/${course_id}/${course_version}`
             );
             console.log('du lieu response:', response)
@@ -79,10 +73,8 @@ function CourseDetail() {
 
     // Handle course enrollment
     const handleEnroll = async (course_id, course_version) => {
-
         try {
             setEnrolling(true);
-            // console.log(`http://localhost:3000/api/course/enroll-course/${userId}/${course_id}/${course_version}`)
             const response = await axios.get(
                 `http://localhost:3000/api/course/enroll-course/${uid}/${course_id}/${course_version}`
             );
@@ -107,39 +99,6 @@ function CourseDetail() {
         } finally {
             setEnrolling(false);
         }
-    };
-
-    // Parse course content into curriculum
-    const parseCurriculum = (content) => {
-        if (!content) return [];
-
-        // Try to parse JSON if it's a string
-        if (typeof content === 'string') {
-            try {
-                const parsed = JSON.parse(content);
-                if (Array.isArray(parsed)) return parsed;
-            } catch (e) {
-                // If not JSON, split by lines and create basic structure
-                return content.split('\n').filter(line => line.trim()).map((line, index) => ({
-                    id: index + 1,
-                    title: line.trim(),
-                    duration: '30 min',
-                    type: 'lesson'
-                }));
-            }
-        }
-
-        // If already an array
-        if (Array.isArray(content)) return content;
-
-        // Default curriculum structure
-        return [
-            { id: 1, title: 'Introduction to Anti-Drug Awareness', duration: '45 min', type: 'video' },
-            { id: 2, title: 'Understanding Drug Effects', duration: '30 min', type: 'lesson' },
-            { id: 3, title: 'Prevention Strategies', duration: '40 min', type: 'interactive' },
-            { id: 4, title: 'Support Systems', duration: '25 min', type: 'lesson' },
-            { id: 5, title: 'Final Assessment', duration: '20 min', type: 'quiz' }
-        ];
     };
 
     if (loading) {
@@ -176,8 +135,6 @@ function CourseDetail() {
             </>
         );
     }
-
-    const curriculum = parseCurriculum(course.content);
 
     return (
         <>
@@ -257,9 +214,14 @@ function CourseDetail() {
                                         ) : isEnrolled ? (
                                             <button
                                                 onClick={() => navigate(`/learning/${course_id}`)}
-                                                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"
+                                                className={`w-full py-3 rounded-lg font-semibold transition-colors duration-200 ${
+                                                  (course?.status === 'completed' || isCompleted)
+                                                    ? 'bg-green-500 text-white cursor-default' 
+                                                    : 'bg-green-600 text-white hover:bg-green-700'
+                                                }`}
+                                                disabled={course?.status === 'completed' || isCompleted}
                                             >
-                                                Continue Learning
+                                                {(course?.status === 'completed' || isCompleted) ? 'Completed' : 'Continue Learning'}
                                             </button>
                                         ) : (
                                             <button
@@ -306,7 +268,6 @@ function CourseDetail() {
                         <div className="flex border-b border-gray-200 mb-8">
                             {[
                                 { id: 'overview', label: 'Overview', icon: '📋' },
-                                { id: 'curriculum', label: 'Curriculum', icon: '📚' },
                                 { id: 'instructor', label: 'Instructor', icon: '👨‍🏫' },
                                 { id: 'reviews', label: 'Reviews', icon: '⭐' }
                             ].map(tab => (
@@ -347,46 +308,6 @@ function CourseDetail() {
                                             <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-3">Prerequisites</h3>
                                             <p>No prior experience required. This course is suitable for educators, parents, community leaders, and anyone interested in drug prevention and awareness.</p>
                                         </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Curriculum Tab */}
-                            {activeTab === 'curriculum' && (
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Course Curriculum</h2>
-                                    <div className="space-y-4">
-                                        {curriculum.map((item, index) => (
-                                            <div key={item.id || index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center">
-                                                        <div className="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm font-semibold mr-4">
-                                                            {index + 1}
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="font-semibold text-gray-800">
-                                                                {item.title}
-                                                            </h3>
-                                                            <div className="flex items-center text-sm text-gray-600 mt-1">
-                                                                <span className="mr-4">
-                                                                    {item.type === 'video' && '🎥 Video'}
-                                                                    {item.type === 'lesson' && '📖 Lesson'}
-                                                                    {item.type === 'interactive' && '🎯 Interactive'}
-                                                                    {item.type === 'quiz' && '❓ Quiz'}
-                                                                    {!item.type && '📚 Content'}
-                                                                </span>
-                                                                <span>⏱ {item.duration}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {isEnrolled && (
-                                                        <button className="text-red-600 hover:text-red-700 font-medium">
-                                                            Start →
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
                             )}

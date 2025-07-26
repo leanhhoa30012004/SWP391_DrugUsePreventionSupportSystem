@@ -19,16 +19,16 @@ function Programs() {
     const [currentPage, setCurrentPage] = useState(1);
     const programsPerPage = 6;
 
-    // NEW: Auto-detection state
+
     const [checkedPrograms, setCheckedPrograms] = useState(new Set());
     const [previousStatuses, setPreviousStatuses] = useState(new Map());
     const [checkInReminders, setCheckInReminders] = useState(new Set());
     const intervalRef = useRef(null);
     const checkInIntervalRef = useRef(null);
 
-    // NEW: Request notification permission on component mount
+
     useEffect(() => {
-        // Request notification permission when component mounts
+
         if (Notification.permission === 'default') {
             Swal.fire({
                 icon: 'question',
@@ -820,11 +820,10 @@ function Programs() {
                                                             View Details
                                                         </button>
                                                         <button
-                                                            onClick={() => handleCheckInOut(program)}
-                                                            className={`text-sm border px-3 py-2 rounded-lg transition-colors duration-200 font-medium flex-1 ${getButtonColor(program)}`}
-                                                            disabled={checkProgramStatus(program.start_date, program.end_date) === 'not started'}
+                                                            onClick={() => handleViewProgram(program.program_id)}
+                                                            className="text-sm text-green-600 border border-green-600 hover:bg-green-50 px-3 py-2 rounded-lg transition-colors duration-200 font-medium flex-1"
                                                         >
-                                                            {getButtonText(program)}
+                                                            Register
                                                         </button>
                                                     </div>
                                                 </div>
