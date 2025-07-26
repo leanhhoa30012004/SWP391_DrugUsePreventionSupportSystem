@@ -741,14 +741,22 @@ const Profile = () => {
                               </p>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                Enrolled
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                course.status === 'completed' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {course.status === 'completed' ? 'Completed' : 'Enrolled'}
                               </span>
                               <button
-                                onClick={() => navigate(`/course-learning/${course.member_id || userInfo.member_id}/${course.course_id}`)}
-                                className="text-red-600 hover:text-red-700 text-sm font-medium"
+                                onClick={() => navigate(`/learning/${course.course_id}`)}
+                                className={`text-sm font-medium ${
+                                  course.status === 'completed'
+                                    ? 'text-green-600 hover:text-green-700'
+                                    : 'text-red-600 hover:text-red-700'
+                                }`}
                               >
-                                Continue Learning
+                                {course.status === 'completed' ? 'Completed' : 'Continue Learning'}
                               </button>
                             </div>
                           </div>
@@ -812,7 +820,7 @@ const Profile = () => {
                           )}
                           <div className="mt-4 flex space-x-3">
                             <button
-                              onClick={() => navigate(`/survey/result/${survey.survey_id}`)}
+                              onClick={() => navigate(`/resultsurvey/${survey.survey_id}`)}
                               className="text-red-600 hover:text-red-700 text-sm font-medium"
                             >
                               View Details
