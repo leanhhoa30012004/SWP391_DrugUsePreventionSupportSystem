@@ -125,7 +125,7 @@ function App() {
         <Route path="/survey" element={<SurveySelectionPage />} />
         <Route path="/survey/:sid" element={<Survey />} />
         <Route path="/survey/history/:memberId/:id" element={<SurveyHistoryPage />} />
-        <Route path="/resultsurvey/:sid" element={<ResultSurvey/>} />
+        <Route path="/resultsurvey/:userId/:sid" element={<ResultSurvey/>} />
         <Route path="/about" element={<AboutUsPage />} />
 
         {/* Consultant Routes */}
