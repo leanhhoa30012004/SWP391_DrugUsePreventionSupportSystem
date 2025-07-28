@@ -1,72 +1,90 @@
 import React, { useState, useRef, useEffect } from 'react';
-
-import './Chatbot.css';
-
-// Icon Components
-const ChatbotIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 2C6.48 2 2 6.48 2 12c0 2.85 1.2 5.41 3.11 7.24L3 23l3.76-2.11C8.59 22.8 10.24 23 12 23c5.52 0 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/>
-  </svg>
-);
-
-const SendIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-  </svg>
-);
-
-const CloseIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-  </svg>
-);
-
-const RobotIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm7 19h-2v-2c0-2.8-2.2-5-5-5s-5 2.2-5 5v2H5v-2c0-3.9 3.1-7 7-7s7 3.1 7 7v2zM8 11h8v2H8v-2zm2-4h4v2h-4V7z"/>
-  </svg>
-);
-
-const UserIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-  </svg>
-);
-
-const GlobeIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/>
-  </svg>
-);
-
-const ConversationalChatbot = () => {
-
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaUser, FaGlobe } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom'; // Thêm import
+import { useNavigate } from 'react-router-dom';
 import './Chatbot.css';
 
 const Chatbot = () => {
-  const navigate = useNavigate(); // Thêm hook
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [language, setLanguage] = useState('vi');
+  const [language, setLanguage] = useState('en');
   const messagesEndRef = useRef(null);
 
-  // Auto scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // Thêm state trong component Chatbot
+  const [conversationContext, setConversationContext] = useState({
+    waitingForDate: false,
+    waitingForTime: false,
+    selectedDate: null,
+    availableSlots: [],
+    action: null // 'booking_date', 'booking_time', etc.
+  });
 
-  // Welcome message when chatbot opens
+  // Fallback responses khi AI không hoạt động
+  const fallbackResponses = {
+    en: {
+      greetings: [
+        "Hello! I'm here to help you with drug prevention and support. How can I assist you today?",
+        "Hi there! Welcome to our drug prevention support system. What would you like to know?",
+        "Greetings! I'm your AI assistant for drug prevention education. How can I help?"
+      ],
+      drug_info: [
+        "Drugs can have serious effects on your health, relationships, and future. It's important to stay informed and make healthy choices.",
+        "Understanding the risks of drug use is crucial. Drugs can affect your brain, body, and mental health in harmful ways.",
+        "Drug prevention starts with education. Knowing the facts helps you make informed decisions about your health and well-being."
+      ],
+      support: [
+        "If you or someone you know is struggling with drug use, there are many resources and people who want to help. You're not alone.",
+        "Seeking help is a sign of strength, not weakness. Professional counselors and support groups are available to assist you.",
+        "Remember, recovery is possible and there are many success stories. Don't hesitate to reach out for support."
+      ],
+      prevention: [
+        "Prevention strategies include building strong relationships, developing healthy coping skills, and staying connected with supportive communities.",
+        "Setting clear boundaries, practicing stress management, and having open communication with family and friends are key prevention tools.",
+        "Education, awareness, and early intervention are the best ways to prevent drug use and promote healthy lifestyles."
+      ],
+      default: [
+        "That's an interesting question about drug prevention. Let me help you find the information you need.",
+        "I'm here to support you with drug prevention education. Could you tell me more about what you'd like to know?",
+        "Thank you for reaching out. I'm dedicated to helping with drug prevention and support topics."
+      ]
+    },
+    vi: {
+      greetings: [
+        "Xin chào! Tôi ở đây để giúp bạn về phòng chống ma túy và hỗ trợ. Tôi có thể hỗ trợ bạn như thế nào hôm nay?",
+        "Chào bạn! Chào mừng đến hệ thống hỗ trợ phòng chống ma túy. Bạn muốn biết gì?",
+        "Xin chào! Tôi là trợ lý AI cho giáo dục phòng chống ma túy. Tôi có thể giúp gì cho bạn?"
+      ],
+      drug_info: [
+        "Ma túy có thể gây ảnh hưởng nghiêm trọng đến sức khỏe, các mối quan hệ và tương lai của bạn. Việc được thông tin và đưa ra lựa chọn lành mạnh rất quan trọng.",
+        "Hiểu biết về rủi ro của việc sử dụng ma túy là rất quan trọng. Ma túy có thể ảnh hưởng đến não, cơ thể và sức khỏe tâm thần theo những cách có hại.",
+        "Phòng chống ma túy bắt đầu từ giáo dục. Biết được các sự thật giúp bạn đưa ra quyết định sáng suốt về sức khỏe và hạnh phúc của mình."
+      ],
+      support: [
+        "Nếu bạn hoặc ai đó bạn biết đang gặp khó khăn với việc sử dụng ma túy, có nhiều nguồn lực và người muốn giúp đỡ. Bạn không đơn độc.",
+        "Tìm kiếm sự giúp đỡ là dấu hiệu của sức mạnh, không phải yếu đuối. Các chuyên gia tư vấn và nhóm hỗ trợ có sẵn để hỗ trợ bạn.",
+        "Hãy nhớ rằng, phục hồi là có thể và có nhiều câu chuyện thành công. Đừng ngần ngại tìm kiếm sự hỗ trợ."
+      ],
+      prevention: [
+        "Các chiến lược phòng ngừa bao gồm xây dựng các mối quan hệ mạnh mẽ, phát triển kỹ năng đối phó lành mạnh và duy trì kết nối với cộng đồng hỗ trợ.",
+        "Thiết lập ranh giới rõ ràng, thực hành quản lý căng thẳng và có giao tiếp cởi mở với gia đình và bạn bè là những công cụ phòng ngừa chính.",
+        "Giáo dục, awareness và can thiệp sớm là những cách tốt nhất để ngăn chặn việc sử dụng ma túy và thúc đẩy lối sống lành mạnh."
+      ],
+      default: [
+        "Đó là một câu hỏi thú vị về phòng chống ma túy. Hãy để tôi giúp bạn tìm thông tin bạn cần.",
+        "Tôi ở đây để hỗ trợ bạn với giáo dục phòng chống ma túy. Bạn có thể cho tôi biết thêm về những gì bạn muốn biết không?",
+        "Cảm ơn bạn đã liên hệ. Tôi tận tâm giúp đỡ với các chủ đề phòng chống ma túy và hỗ trợ."
+      ]
+    }
+  };
+
+  // Welcome message
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const welcomeMsg = {
         id: 1,
-        text: language === 'vi' 
-          ? "Xin chào! Tôi là AI Assistant của WeHope - hệ thống hỗ trợ phòng chống ma túy. Tôi có thể giúp bạn tìm hiểu về các biện pháp phòng ngừa, tác hại của ma túy, hoặc hỗ trợ tư vấn. Bạn có câu hỏi gì muốn thảo luận không?"
-          : "Hello! I'm WeHope's AI Assistant - a drug prevention support system. I can help you learn about prevention measures, drug-related harms, or provide consultation support. What would you like to discuss?",
+        text: fallbackResponses[language].greetings[Math.floor(Math.random() * fallbackResponses[language].greetings.length)],
         sender: 'bot',
         timestamp: new Date()
       };
@@ -74,79 +92,10 @@ const Chatbot = () => {
     }
   }, [isOpen, language]);
 
-  // Function to call Claude API for natural AI conversation
-  const getAIResponse = async (userMessage, conversationHistory) => {
-    try {
-      const systemPrompt = language === 'vi' 
-        ? `Bạn là một AI Assistant chuyên về lĩnh vực phòng chống ma túy, thuộc hệ thống WeHope - Drug Use Prevention Support System.
-
-
-THÔNG TIN VỀ WEHOPE:
-- Hệ thống hỗ trợ phòng chống sử dụng ma túy
-- Cung cấp các tính năng: khảo sát đánh giá, tư vấn trực tuyến, khóa học giáo dục, tin tức cập nhật
-- Mục tiêu: Giúp cộng đồng có kiến thức và kỹ năng phòng chống tệ nạn xã hội
-
-VAI TRÒ CỦA BẠN:
-- Là một AI assistant thông minh, có kiến thức chuyên sâu về phòng chống ma túy
-- Cung cấp thông tin chính xác, khoa học về tác hại của ma túy
-- Hỗ trợ tư vấn các biện pháp phòng ngừa phù hợp
-- Lắng nghe và đưa ra lời khuyên tích cực, xây dựng
-- Có thể thảo luận về các chủ đề liên quan: tâm lý học, xã hội học, y học
-
-CÁCH PHẢN HỒI:
-- Trả lời một cách tự nhiên như một AI thông minh
-- Sử dụng kiến thức chuyên môn để giải thích rõ ràng
-- Có thể đặt câu hỏi phản biện để hiểu rõ hơn vấn đề
-- Đưa ra lời khuyên thực tế, có thể áp dụng
-- Khuyến khích sự tích cực và hy vọng
-- Không giả vờ là con người, thừa nhận mình là AI khi được hỏi
-
-Hãy trả lời một cách chuyên nghiệp và hữu ích.`
-        : `You are an AI Assistant specializing in drug prevention, part of the WeHope - Drug Use Prevention Support System.
-
-ABOUT WEHOPE:
-- Drug use prevention support system
-- Provides features: assessment surveys, online consultation, educational courses, news updates
-- Goal: Help the community gain knowledge and skills to prevent social evils
-
-YOUR ROLE:
-- An intelligent AI assistant with deep knowledge about drug prevention
-- Provide accurate, scientific information about drug-related harms
-- Support consultation on appropriate prevention measures
-- Listen and provide positive, constructive advice
-- Can discuss related topics: psychology, sociology, medicine
-
-HOW TO RESPOND:
-- Reply naturally as an intelligent AI
-- Use professional knowledge to explain clearly
-- Can ask counter-questions to better understand issues
-- Provide practical, applicable advice
-- Encourage positivity and hope
-- Don't pretend to be human, acknowledge being AI when asked
-
-Please respond professionally and helpfully.`;
-
-      // Create conversation context from chat history
-      const conversationContext = conversationHistory
-        .slice(-8) // Take last 8 messages for context
-        .map(msg => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
-        }));
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [
-            ...conversationContext,
-            { role: "user", content: userMessage }
-          ],
-          system: systemPrompt
+  // Auto scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Thay thế hàm getAIResponse trong component Chatbot của bạn
   const getAIResponse = async (userMessage) => {
@@ -158,56 +107,259 @@ Please respond professionally and helpfully.`;
         const courses = await fetchCourses();
         if (courses.length > 0) {
           const courseList = courses.slice(0, 3).map(course => {
-            const courseId = course.course_id || course.id;
             const courseName = course.course_name || course.title;
             const ageGroup = course.age_group || 'All ages';
-            const version = course.version || course.course_version || '1.0';
-            const encodedName = encodeURIComponent(courseName);
+            return `• ${courseName} (${ageGroup})`;
+          }).join('\n');
 
-            // URL với đầy đủ params để đảm bảo hoạt động
-            const courseUrl = `${window.location.origin}/courses/${courseId}?version=${version}&name=${encodedName}`;
-
-            return `• ${courseName} (${ageGroup})\n  🔗 ${courseUrl}`;
-          }).join('\n\n');
+          const coursesUrl = `${window.location.origin}/courses`;
 
           return language === 'en'
-            ? `Here are some available courses:\n\n${courseList}\n\nClick on the links above to view course details directly.`
-            : `Đây là một số khóa học có sẵn:\n\n${courseList}\n\nBấm vào các liên kết trên để xem chi tiết khóa học.`;
+            ? `Here are some available courses:\n\n${courseList}\n\n🔗 View all courses: ${coursesUrl}\n\nVisit our Courses page to explore details and enroll.`
+            : `Đây là một số khóa học có sẵn:\n\n${courseList}\n\n🔗 Xem tất cả khóa học: ${coursesUrl}\n\nTruy cập trang Khóa học để khám phá chi tiết và đăng ký.`;
         }
       } catch (error) {
+        const coursesUrl = `${window.location.origin}/courses`;
         return language === 'en'
-          ? "I can help you find courses about drug prevention. Please visit our Courses page to see all available options."
-          : "Tôi có thể giúp bạn tìm khóa học về phòng chống ma túy. Vui lòng truy cập trang Khóa học để xem tất cả lựa chọn.";
+          ? `I can help you find courses about drug prevention.\n\n🔗 Visit our Courses page: ${coursesUrl}`
+          : `Tôi có thể giúp bạn tìm khóa học về phòng chống ma túy.\n\n🔗 Truy cập trang Khóa học: ${coursesUrl}`;
       }
     }
 
     // 2. Appointment booking
-    if (lowerMsg.includes('appointment') || lowerMsg.includes('book') || lowerMsg.includes('đặt lịch') || lowerMsg.includes('tư vấn')) {
-      if (lowerMsg.includes('today') || lowerMsg.includes('hôm nay')) {
-        try {
-          const today = new Date().toISOString().split('T')[0];
-          const timeSlots = await fetchAvailableTimeSlots(today);
+    if (lowerMsg.includes('appointment') || lowerMsg.includes('book') || lowerMsg.includes('đặt lịch') || lowerMsg.includes('tư vấn') || lowerMsg.includes('consultation')) {
+      console.log('User wants to book an appointment'); // Debug log
+      // Nếu đang đợi user nhập ngày
+      console.log('Already waiting for date input:', conversationContext.waitingForDate); // Debug log
+      if (conversationContext.waitingForDate) {
+        console.log('Processing date input:', userMessage); // Debug log
 
-          if (timeSlots.length > 0) {
-            const slots = timeSlots.slice(0, 3).join(', ');
+        const dateMatch = userMessage.match(
+          /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})|(\d{2,4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/
+        );
+        const todayMatch = lowerMsg.includes('today') || lowerMsg.includes('hôm nay');
+        const tomorrowMatch = lowerMsg.includes('tomorrow') || lowerMsg.includes('ngày mai');
+
+        let selectedDate = null;
+
+        if (todayMatch) {
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          selectedDate = `${year}-${month}-${day}`;
+          console.log('✅ Today formatted:', selectedDate);
+        } else if (tomorrowMatch) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const year = tomorrow.getFullYear();
+          const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+          const day = String(tomorrow.getDate()).padStart(2, '0');
+          selectedDate = `${year}-${month}-${day}`;
+          console.log('✅ Tomorrow formatted:', selectedDate);
+        } else if (dateMatch) {
+          // Parse date từ input với validation tốt hơn
+          const [full, d1, m1, y1, y2, m2, d2] = dateMatch;
+          const day = String(d1 || d2).padStart(2, '0');
+          const month = String(m1 || m2).padStart(2, '0');
+          const year = y1 || y2;
+
+          // Validate năm
+          if (year < 2024 || year > 2030) {
             return language === 'en'
-              ? `Available time slots for today: ${slots}. To book an appointment, please visit our Consultation page or tell me your preferred time.`
-              : `Các khung giờ có sẵn hôm nay: ${slots}. Để đặt lịch hẹn, vui lòng truy cập trang Tư vấn hoặc cho tôi biết thời gian bạn muốn.`;
-          } else {
-            return language === 'en'
-              ? "No available slots for today. Would you like to check tomorrow or another date?"
-              : "Không có khung giờ nào trống hôm nay. Bạn có muốn kiểm tra ngày mai hoặc ngày khác không?";
+              ? "❌ Please provide a valid year (2024-2030)."
+              : "❌ Vui lòng cung cấp năm hợp lệ (2024-2030).";
           }
-        } catch (error) {
+
+          selectedDate = `${year}-${month}-${day}`;
+          console.log('✅ Custom date formatted:', selectedDate);
+        }
+
+        // SỬA: Kiểm tra selectedDate có hợp lệ không
+        if (!selectedDate || selectedDate.includes('undefined') || selectedDate.includes('NaN')) {
+          console.log('❌ Invalid date format:', selectedDate);
           return language === 'en'
-            ? "I can help you book a consultation appointment. Please visit our Consultation page for real-time availability."
-            : "Tôi có thể giúp bạn đặt lịch tư vấn. Vui lòng truy cập trang Tư vấn để xem lịch trống theo thời gian thực.";
+            ? "❌ Invalid date format. Please try again with format DD/MM/YYYY or say 'today'/'tomorrow'."
+            : "❌ Định dạng ngày không hợp lệ. Vui lòng thử lại với định dạng DD/MM/YYYY hoặc nói 'hôm nay'/'ngày mai'.";
+        }
+
+        if (selectedDate) {
+          try {
+            const userData = localStorage.getItem('user');
+            console.log('Raw user data from localStorage:', userData);
+
+            if (!userData) {
+              console.log('❌ No user data in localStorage');
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: false,
+                selectedDate: null,
+                availableSlots: [],
+                action: null
+              });
+
+              return language === 'en'
+                ? "❌ Please log in first to check appointment availability."
+                : "❌ Vui lòng đăng nhập trước để kiểm tra lịch hẹn.";
+            }
+
+            const user = JSON.parse(userData);
+            console.log('Parsed user object:', user);
+
+            // SỬA: Kiểm tra nhiều trường có thể
+            const memberId = user.user_id || user.id || user.userId || user.member_id;
+            console.log('Found member ID:', memberId);
+
+            if (!memberId) {
+              console.log('❌ No member ID found in user object');
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: false,
+                selectedDate: null,
+                availableSlots: [],
+                action: null
+              });
+
+              return language === 'en'
+                ? "❌ User ID not found. Please log in again."
+                : "❌ Không tìm thấy ID người dùng. Vui lòng đăng nhập lại.";
+            }
+
+            console.log('✅ Using member ID:', memberId, 'for date:', selectedDate);
+
+            // Tiếp tục check slots với memberId và selectedDate hợp lệ
+            const availableSlots = await checkAvailableSlots(memberId, selectedDate);
+
+            console.log('Available slots found:', availableSlots);
+
+            if (availableSlots.length > 0) {
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: true,
+                selectedDate: selectedDate,
+                availableSlots: availableSlots,
+                action: 'booking_time'
+              });
+
+              const slotsList = availableSlots.map(slot => `• ${slot}`).join('\n');
+
+              return language === 'en'
+                ? `Available time slots for ${selectedDate}:\n\n${slotsList}\n\nPlease choose your preferred time slot.`
+                : `Các khung giờ trống cho ngày ${selectedDate}:\n\n${slotsList}\n\nVui lòng chọn khung giờ bạn muốn.`;
+            } else {
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: false,
+                selectedDate: null,
+                availableSlots: [],
+                action: null
+              });
+
+              return language === 'en'
+                ? `No available slots for ${selectedDate}. Please try another date or visit our Consultation page.`
+                : `Không có khung giờ trống cho ngày ${selectedDate}. Vui lòng thử ngày khác hoặc truy cập trang Tư vấn.`;
+            }
+          } catch (error) {
+            console.error('Error checking availability:', error);
+            setConversationContext({
+              waitingForDate: false,
+              waitingForTime: false,
+              selectedDate: null,
+              availableSlots: [],
+              action: null
+            });
+
+            return language === 'en'
+              ? "Sorry, I couldn't check availability right now. Please visit our Consultation page."
+              : "Xin lỗi, tôi không thể kiểm tra lịch trống ngay bây giờ. Vui lòng truy cập trang Tư vấn.";
+          }
+        } else {
+          return language === 'en'
+            ? "Please provide a valid date (e.g., 25/12/2024, today, tomorrow)."
+            : "Vui lòng cung cấp ngày hợp lệ (ví dụ: 25/12/2024, hôm nay, ngày mai).";
         }
       }
 
+      // Nếu đang đợi user chọn giờ
+      if (conversationContext.waitingForTime) {
+        const timeInput = userMessage.trim();
+        console.log('Processing time input:', timeInput);
+        console.log('Available slots:', conversationContext.availableSlots);
+
+        // Kiểm tra xem input có match với available slots không
+        const matchedSlot = conversationContext.availableSlots.find(slot =>
+          timeInput.includes(slot) || slot.includes(timeInput)
+        );
+
+        if (matchedSlot) {
+          // Tiến hành booking
+          try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const memberId = user.user_id || user.id;
+
+            console.log('Booking appointment:', {
+              memberId,
+              date: conversationContext.selectedDate,
+              time: matchedSlot
+            });
+
+            const bookingResult = await bookSpecificAppointment(
+              memberId,
+              conversationContext.selectedDate,
+              matchedSlot
+            );
+
+            setConversationContext({
+              waitingForDate: false,
+              waitingForTime: false,
+              selectedDate: null,
+              availableSlots: [],
+              action: null
+            });
+
+            if (bookingResult.success) {
+              return language === 'en'
+                ? `✅ Appointment booked successfully!\n\nDate: ${conversationContext.selectedDate}\nTime: ${matchedSlot}\n\nYou'll receive a confirmation email shortly.`
+                : `✅ Đặt lịch hẹn thành công!\n\nNgày: ${conversationContext.selectedDate}\nGiờ: ${matchedSlot}\n\nBạn sẽ nhận được email xác nhận sớm.`;
+            } else {
+              return language === 'en'
+                ? `❌ Booking failed. The time slot might be taken. Please try again.`
+                : `❌ Đặt lịch thất bại. Khung giờ có thể đã được đặt. Vui lòng thử lại.`;
+            }
+          } catch (error) {
+            console.error('Booking error:', error);
+            setConversationContext({
+              waitingForDate: false,
+              waitingForTime: false,
+              selectedDate: null,
+              availableSlots: [],
+              action: null
+            });
+
+            return language === 'en'
+              ? "Booking failed. Please visit our Consultation page to book directly."
+              : "Đặt lịch thất bại. Vui lòng truy cập trang Tư vấn để đặt trực tiếp.";
+          }
+        } else {
+          const slotsList = conversationContext.availableSlots.map(slot => `• ${slot}`).join('\n');
+          return language === 'en'
+            ? `Please choose from these available time slots:\n\n${slotsList}`
+            : `Vui lòng chọn từ các khung giờ trống sau:\n\n${slotsList}`;
+        }
+      }
+
+      // Bắt đầu flow booking mới
+      setConversationContext({
+        waitingForDate: true,
+        action: 'booking_date',
+        waitingForTime: false,
+        selectedDate: null,
+        availableSlots: []
+      });
+
       return language === 'en'
-        ? "I can help you schedule a consultation appointment. What date would you prefer? You can also visit our Consultation page to see all available time slots."
-        : "Tôi có thể giúp bạn đặt lịch tư vấn. Bạn muốn đặt vào ngày nào? Bạn cũng có thể truy cập trang Tư vấn để xem tất cả khung giờ trống.";
+        ? "I can help you book a consultation appointment.\n\nPlease tell me your preferred date (e.g., 25/12/2024, today, tomorrow)."
+        : "Tôi có thể giúp bạn đặt lịch tư vấn.\n\nVui lòng cho tôi biết ngày bạn muốn (ví dụ: 25/12/2024, hôm nay, ngày mai).";
     }
 
     // 3. Specific course info
@@ -308,28 +460,17 @@ CÂU HỎI NGƯỜI DÙNG: `;
             { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
             { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
           ]
-
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-
-        return data.content[0].text;
-      } else {
-        throw new Error('Claude API not available');
-      }
-    } catch (error) {
-      console.log('Claude API Error:', error);
-      return getEmergencyResponse(userMessage);
-
         if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
           return data.candidates[0].content.parts[0].text.trim();
         }
       }
     } catch (error) {
       console.log('Gemini AI Error:', error.message);
-
     }
 
     // Fallback responses...
@@ -343,21 +484,6 @@ CÂU HỎI NGƯỜI DÙNG: `;
     return responses.default[Math.floor(Math.random() * responses.default.length)];
   };
 
-  // Emergency response when API is not working
-  const getEmergencyResponse = (userMessage) => {
-    const responses = language === 'vi' ? [
-      "Xin lỗi, hiện tại tôi đang gặp sự cố kỹ thuật. Để được hỗ trợ tốt nhất về phòng chống ma túy, bạn có thể truy cập trực tiếp website WeHope hoặc liên hệ với đội ngũ tư vấn của chúng tôi.",
-      "Tôi đang trong quá trình khôi phục hệ thống. Trong thời gian này, bạn có thể tìm hiểu thêm thông tin về dự án WeHope và các khóa học phòng chống ma túy trên website chính thức.",
-      "Rất tiếc, kết nối của tôi hiện đang bị gián đoạn. Bạn có thể thử lại sau hoặc liên hệ trực tiếp với team WeHope để được hỗ trợ kịp thời."
-    ] : [
-      "I apologize, but I'm currently experiencing technical difficulties. For the best support regarding drug prevention, you can visit the WeHope website directly or contact our consultation team.",
-      "I'm in the process of system recovery. During this time, you can learn more about the WeHope project and drug prevention courses on our official website.",
-      "Unfortunately, my connection is currently interrupted. You can try again later or contact the WeHope team directly for timely support."
-    ];
-    
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
@@ -368,20 +494,13 @@ CÂU HỎI NGƯỜI DÙNG: `;
       timestamp: new Date()
     };
 
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsTyping(true);
 
     try {
-
-      // Send entire conversation history for AI context
-      const aiResponseText = await getAIResponse(inputMessage, newMessages);
-      
-
       // Gọi AI thực thụ
       const aiResponseText = await getAIResponse(inputMessage);
-
 
       const aiResponse = {
         id: messages.length + 2,
@@ -394,16 +513,14 @@ CÂU HỎI NGƯỜI DÙNG: `;
     } catch (error) {
       console.error('Error getting AI response:', error);
 
-
       // Fallback response nếu có lỗi
       const fallbackText = language === 'en'
         ? "I'm having trouble connecting to my AI service right now. Please try again in a moment, or feel free to ask me about drug prevention topics."
         : "Tôi đang gặp khó khăn kết nối với dịch vụ AI ngay bây giờ. Vui lòng thử lại sau, hoặc hỏi tôi về các chủ đề phòng chống ma túy.";
 
-
       const fallbackResponse = {
         id: messages.length + 2,
-        text: getEmergencyResponse(inputMessage),
+        text: fallbackText,
         sender: 'bot',
         timestamp: new Date()
       };
@@ -422,8 +539,7 @@ CÂU HỎI NGƯỜI DÙNG: `;
   };
 
   const toggleLanguage = () => {
-    const newLang = language === 'vi' ? 'en' : 'vi';
-    setLanguage(newLang);
+    setLanguage(language === 'en' ? 'vi' : 'en');
     setMessages([]); // Clear messages when changing language
   };
 
@@ -498,6 +614,115 @@ CÂU HỎI NGƯỜI DÙNG: `;
     }
   };
 
+  // Thêm vào phần API functions
+  const checkAvailableSlots = async (memberId, date) => {
+    try {
+      console.log('=== CHECKING AVAILABLE SLOTS ===');
+      console.log('Member ID:', memberId, '(type:', typeof memberId, ')');
+      console.log('Date:', date, '(type:', typeof date, ')');
+      console.log('Base API URL:', import.meta.env.VITE_API_URL);
+
+      // SỬA: Kiểm tra input parameters
+      if (!memberId || memberId === 'undefined' || memberId === undefined) {
+        console.error('❌ Invalid member ID:', memberId);
+        return [];
+      }
+
+      if (!date || date === 'undefined' || date === undefined || date.includes('undefined')) {
+        console.error('❌ Invalid date:', date);
+        return [];
+      }
+
+      const timeSlots = [
+        '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+        '11:00', '11:30', '13:00', '13:30', '14:00', '14:30',
+        '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+      ];
+
+      const availableSlots = [];
+
+      // Check từng time slot
+      for (const time of timeSlots) {
+        try {
+          console.log(`\n--- Checking slot: ${time} ---`);
+          const url = `${import.meta.env.VITE_API_URL}/consultation/check-appointment/${memberId}/${date}/${time}`;
+          console.log('Full URL:', url);
+
+          // SỬA: Kiểm tra URL có hợp lệ không
+          if (url.includes('undefined')) {
+            console.error('❌ URL contains undefined:', url);
+            continue;
+          }
+
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          console.log(`Response status for ${time}:`, response.status);
+          console.log(`Response ok for ${time}:`, response.ok);
+
+          if (!response.ok) {
+            console.log(`❌ HTTP error for ${time}:`, response.status, response.statusText);
+            continue;
+          }
+
+          const data = await response.json();
+          console.log(`✅ Response data for ${time}:`, data);
+
+          // Kiểm tra theo format: {status: 'success', booked: false}
+          if (data.status === 'success' && data.booked === false) {
+            availableSlots.push(time);
+            console.log(`🟢 Slot ${time} is AVAILABLE`);
+          } else {
+            console.log(`🔴 Slot ${time} is NOT AVAILABLE - Status: ${data.status}, Booked: ${data.booked}`);
+          }
+
+        } catch (error) {
+          console.error(`💥 Error checking slot ${time}:`, error);
+        }
+      }
+
+      console.log('\n=== FINAL RESULT ===');
+      console.log('Available slots found:', availableSlots);
+      console.log('Total available slots:', availableSlots.length);
+      console.log('====================\n');
+
+      return availableSlots;
+
+    } catch (error) {
+      console.error('💥 Error in checkAvailableSlots:', error);
+      return [];
+    }
+  };
+
+  const bookSpecificAppointment = async (memberId, date, time) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/consultation/addAppointment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          member_id: memberId,
+          appointment_date: date,
+          appointment_time: time
+        })
+      });
+
+      const data = await response.json();
+      return { success: response.ok, data };
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      return { success: false, message: 'Booking failed' };
+    }
+  };
+
   // Component để render message với clickable links
   const MessageText = ({ text }) => {
     const renderTextWithLinks = (text) => {
@@ -514,24 +739,11 @@ CÂU HỎI NGƯỜI DÙNG: `;
               onClick={(e) => {
                 e.preventDefault();
 
-                // Kiểm tra nếu là internal link
                 if (part.includes(window.location.origin)) {
                   const url = new URL(part);
                   const path = url.pathname;
-                  const search = url.search; // Lấy query params
-
-                  // Điều hướng với cả path và search params
-                  if (path.startsWith('/courses/') && path.split('/').length > 2) {
-                    // Điều hướng trực tiếp với query params
-                    navigate(path + search);
-                  } else {
-                    // Điều hướng bình thường
-                    navigate();
-
-
-                  }
+                  navigate(path); // Điều hướng đơn giản
                 } else {
-                  // External link - mở tab mới
                   window.open(part, '_blank');
                 }
               }}
@@ -552,11 +764,11 @@ CÂU HỎI NGƯỜI DÙNG: `;
   };
 
   return (
-    <div>
+    <>
       {/* Chatbot Toggle Button */}
-      <button className="chatbot-toggle" onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? <CloseIcon className="w-6 h-6" /> : <ChatbotIcon className="w-6 h-6" />}
-      </button>
+      <div className="chatbot-toggle" onClick={() => setIsOpen(!isOpen)}>
+        {isOpen ? <FaTimes /> : <FaComments />}
+      </div>
 
       {/* Chatbot Window */}
       {isOpen && (
@@ -565,28 +777,28 @@ CÂU HỎI NGƯỜI DÙNG: `;
           <div className="chatbot-header">
             <div className="chatbot-header-left">
               <div className="chatbot-avatar">
-                <RobotIcon className="w-5 h-5" />
+                <FaRobot />
               </div>
               <div className="chatbot-info">
-                <h3>WeHope AI</h3>
-                <span className="chatbot-status">{language === 'vi' ? 'Đang online' : 'Online'}</span>
+                <h3>WeHope AI Assistant</h3>
+                <span className="chatbot-status">Online</span>
               </div>
             </div>
             <div className="chatbot-header-right">
               <button
                 className="language-toggle"
                 onClick={toggleLanguage}
-                title={language === 'vi' ? 'Chuyển sang tiếng Anh' : 'Switch to Vietnamese'}
+                title={language === 'en' ? 'Switch to Vietnamese' : 'Chuyển sang tiếng Anh'}
               >
-                <GlobeIcon className="w-3 h-3" />
-                <span>{language === 'vi' ? 'EN' : 'VI'}</span>
+                <FaGlobe />
+                <span>{language === 'en' ? 'VI' : 'EN'}</span>
               </button>
               <button
                 className="close-button"
                 onClick={() => setIsOpen(false)}
                 title="Close"
               >
-                <CloseIcon className="w-4 h-4" />
+                <FaTimes />
               </button>
             </div>
           </div>
@@ -599,10 +811,7 @@ CÂU HỎI NGƯỜI DÙNG: `;
                 className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
               >
                 <div className="message-avatar">
-                  {message.sender === 'user' ? 
-                    <UserIcon className="w-4 h-4" /> : 
-                    <RobotIcon className="w-4 h-4" />
-                  }
+                  {message.sender === 'user' ? <FaUser /> : <FaRobot />}
                 </div>
                 <div className="message-content">
                   <MessageText text={message.text} />
@@ -612,12 +821,11 @@ CÂU HỎI NGƯỜI DÙNG: `;
                 </div>
               </div>
             ))}
-            {/* Typing Indicator */}
 
             {isTyping && (
               <div className="message bot-message">
                 <div className="message-avatar">
-                  <RobotIcon className="w-4 h-4" />
+                  <FaRobot />
                 </div>
                 <div className="message-content">
                   <div className="typing-indicator">
@@ -657,7 +865,7 @@ CÂU HỎI NGƯỜI DÙNG: `;
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={language === 'vi' ? "Nhập tin nhắn..." : "Type your message..."}
+              placeholder={language === 'en' ? "Type your message..." : "Nhập tin nhắn..."}
               disabled={isTyping}
             />
             <button
@@ -665,17 +873,13 @@ CÂU HỎI NGƯỜI DÙNG: `;
               disabled={!inputMessage.trim() || isTyping}
               className="send-button"
             >
-              <SendIcon className="w-4 h-4" />
+              <FaPaperPlane />
             </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
-
-export default ConversationalChatbot;
-
 export default Chatbot;
-

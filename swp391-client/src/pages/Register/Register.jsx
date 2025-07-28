@@ -25,6 +25,28 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Check birthday is not in the future
+    const today = new Date();
+    const birthdayDate = new Date(formData.birthday);
+    if (birthdayDate > today) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Birthday",
+        text: "Birthday cannot be in the future.",
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
+    // Check password length
+    if (!formData.password || formData.password.length < 6) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Password",
+        text: "Password must be at least 6 characters.",
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
     setLoading(true);
 
     try {
