@@ -59,7 +59,7 @@ function CourseDetail() {
             );
             console.log('du lieu response:', response)
             setIsEnrolled(response.data.isEnrolled || false);
-            setIsCompleted(response.data.status || false);
+            setIsCompleted(response.data.status === 'completed' || false);
 
         } catch (err) {
             console.error("Enrollment check error:", err);
