@@ -25,6 +25,18 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Check birthday is not in the future
+    const today = new Date();
+    const birthdayDate = new Date(formData.birthday);
+    if (birthdayDate > today) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Birthday",
+        text: "Birthday cannot be in the future.",
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -37,7 +49,6 @@ const Register = () => {
       });
 
       const response = await axios.post('http://localhost:3000/api/auth/register', {
-
         username: formData.username,
         password: formData.password,
         email: formData.email,
