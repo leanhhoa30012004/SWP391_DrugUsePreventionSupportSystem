@@ -37,6 +37,16 @@ const Register = () => {
       });
       return;
     }
+    // Check password length
+    if (!formData.password || formData.password.length < 6) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Password",
+        text: "Password must be at least 6 characters.",
+        confirmButtonColor: "#ef4444",
+      });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -49,6 +59,7 @@ const Register = () => {
       });
 
       const response = await axios.post('http://localhost:3000/api/auth/register', {
+
         username: formData.username,
         password: formData.password,
         email: formData.email,
