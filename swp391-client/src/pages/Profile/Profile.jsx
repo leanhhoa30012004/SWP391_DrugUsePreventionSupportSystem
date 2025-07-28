@@ -771,104 +771,104 @@ const Profile = () => {
 
               {/* Surveys Tab */}
               {activeTab === 'surveys' && (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">My Surveys</h2>
-      {surveys.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17,9H7V7H17M17,13H7V11H17M14,17H7V15H14M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5H8V18A2,2 0 0,0 10,20H16A2,2 0 0,0 18,18V8L13,3H12Z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Surveys Yet</h3>
-          <p className="text-gray-500">Complete surveys to track your progress and earn certificates.</p>
-          <button
-            onClick={() => navigate('/survey')}
-            className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            Take Survey
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {surveys.map((survey) => {
-            // Debug log để kiểm tra structure của survey object
-            console.log('Survey object:', survey);
-            console.log('Available keys:', Object.keys(survey));
-            
-            return (
-              <div key={survey.survey_id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{survey.title}</h3>
-                    <p className="text-sm text-gray-600">
-                      Completed on {new Date(survey.completed_date).toLocaleDateString('vi-VN')}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl font-bold text-red-600">{survey.score}</span>
-                      <span className="text-sm text-gray-500">/ {survey.total_questions}</span>
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900">My Surveys</h2>
+                  {surveys.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
+                        <svg fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17,9H7V7H17M17,13H7V11H17M14,17H7V15H14M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5H8V18A2,2 0 0,0 10,20H16A2,2 0 0,0 18,18V8L13,3H12Z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Surveys Yet</h3>
+                      <p className="text-gray-500">Complete surveys to track your progress and earn certificates.</p>
+                      <button
+                        onClick={() => navigate('/survey')}
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      >
+                        Take Survey
+                      </button>
                     </div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      survey.risk_level === 'low'
-                        ? 'bg-green-100 text-green-800'
-                        : survey.risk_level === 'medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                    }`}>
-                      {survey.risk_level === 'low' ? 'Low Risk' :
-                        survey.risk_level === 'medium' ? 'Medium Risk' : 'High Risk'}
-                    </span>
-                  </div>
-                </div>
-                {survey.recommendations && (
-                  <div className="bg-blue-50 p-4 rounded-md">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">Recommendations:</h4>
-                    <p className="text-sm text-blue-800">{survey.recommendations}</p>
-                  </div>
-                )}
-                <div className="mt-4 flex space-x-3">
-                  <button
-                    onClick={() => {
-                      // Debug trước khi navigate
-                      console.log('Navigating with:');
-                      console.log('Member ID:', survey.member_id || userInfo.member_id);
-                      console.log('Survey ID:', survey.survey_id || survey.id);
-                      
-                      // Sử dụng survey_id thay vì survey.id
-                      const memberId = survey.member_id || userInfo.member_id;
-                      const surveyId = survey.survey_id || survey.id;
-                      
-                      if (!memberId || !surveyId) {
-                        console.error('Missing required parameters:', { memberId, surveyId });
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Error',
-                          text: 'Missing required information to view survey history'
-                        });
-                        return;
-                      }
-                      
-                      navigate(`/survey/history/${memberId}/${surveyId}`);
-                    }}
-                    className="text-red-600 hover:text-red-700 text-sm font-medium"
-                  >
-                    View Details
-                  </button>
-                  {survey.certificate_eligible && (
-                    <button className="text-green-600 hover:text-green-700 text-sm font-medium">
-                      Claim Certificate
-                    </button>
+                  ) : (
+                    <div className="space-y-4">
+                      {surveys.map((survey) => {
+                        // Debug log để kiểm tra structure của survey object
+                        console.log('Survey object:', survey);
+                        console.log('Available keys:', Object.keys(survey));
+                        
+                        return (
+                          <div key={survey.survey_id} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                              <div>
+                                <h3 className="text-lg font-semibold text-gray-900">{survey.title}</h3>
+                                <p className="text-sm text-gray-600">
+                                  Completed on {new Date(survey.completed_date).toLocaleDateString('vi-VN')}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-2xl font-bold text-red-600">{survey.score}</span>
+                                  <span className="text-sm text-gray-500">/ {survey.total_questions}</span>
+                                </div>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  survey.risk_level === 'low'
+                                    ? 'bg-green-100 text-green-800'
+                                    : survey.risk_level === 'medium'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {survey.risk_level === 'low' ? 'Low Risk' :
+                                    survey.risk_level === 'medium' ? 'Medium Risk' : 'High Risk'}
+                                </span>
+                              </div>
+                            </div>
+                            {survey.recommendations && (
+                              <div className="bg-blue-50 p-4 rounded-md">
+                                <h4 className="text-sm font-medium text-blue-900 mb-2">Recommendations:</h4>
+                                <p className="text-sm text-blue-800">{survey.recommendations}</p>
+                              </div>
+                            )}
+                            <div className="mt-4 flex space-x-3">
+                              <button
+                                onClick={() => {
+                                  // Debug trước khi navigate
+                                  console.log('Navigating with:');
+                                  console.log('Member ID:', survey.member_id || userInfo.member_id);
+                                  console.log('Survey ID:', survey.survey_id || survey.id);
+                                  
+                                  // Sử dụng survey_id thay vì survey.id
+                                  const memberId = survey.member_id || userInfo.member_id;
+                                  const surveyId = survey.survey_id || survey.id;
+                                  
+                                  if (!memberId || !surveyId) {
+                                    console.error('Missing required parameters:', { memberId, surveyId });
+                                    Swal.fire({
+                                      icon: 'error',
+                                      title: 'Error',
+                                      text: 'Missing required information to view survey history'
+                                    });
+                                    return;
+                                  }
+                                  
+                                  navigate(`/survey/history/${memberId}/${surveyId}`);
+                                }}
+                                className="text-red-600 hover:text-red-700 text-sm font-medium"
+                              >
+                                View Details
+                              </button>
+                              {survey.certificate_eligible && (
+                                <button className="text-green-600 hover:text-green-700 text-sm font-medium">
+                                  Claim Certificate
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  )}
+              )}
 
               {/* Booking Tab */}
               {activeTab === 'booking' && (
