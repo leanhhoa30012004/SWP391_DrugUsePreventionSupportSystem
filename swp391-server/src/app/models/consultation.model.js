@@ -145,7 +145,7 @@ WHERE u.role = 'consultant'
 GROUP BY u.user_id
 ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appointment_date])
 
-    return rows[0];
+    return rows;
 }
 
 const getAppointmentById = async (appointment_id) => {
