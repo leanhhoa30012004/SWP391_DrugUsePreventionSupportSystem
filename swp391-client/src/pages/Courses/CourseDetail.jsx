@@ -7,8 +7,9 @@ import Navbar from '../../components/Navbar/Navbar';
 
 function CourseDetail() {
     const location = useLocation();
-    const course_name = location.course_name;
-    const course_version = location.state.course_version;
+    const course_name = location.state?.course_name;
+    console.log("course_name:", course_name);
+    const course_version = parseFloat(location?.state?.enroll_version || "1.0");
     const { course_id } = useParams()
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
@@ -135,114 +136,137 @@ function CourseDetail() {
         <>
             <Navbar />
             <div className="bg-white min-h-screen">
-                {/* Hero Section */}
-                <div className="bg-gradient-to-r from-red-600 to-red-800 text-white py-16">
-                    <div className="container mx-auto px-4">
-                        <div className="max-w-4xl mx-auto">
-                            <div className="flex flex-col lg:flex-row gap-8 items-start">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <span className="bg-red-500 text-white text-sm px-3 py-1 rounded-full">
+                {/* Hero Section with Image Background */}
+                <div className="relative min-h-[80vh] flex items-center">
+                    {/* Background Image */}
+                    <div 
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat backdrop-blur-md"
+                        style={{
+                            backgroundImage: `url(${'https://i.pinimg.com/736x/df/e8/26/dfe8263d1adbf192a3f9d6572a875020.jpg'})`,
+                        }}
+                    >
+                        {/* Dark overlay for better text readability */}
+                        <div className="absolute inset-0 bg-opacity-60 backdrop-blur-sm"></div>
+                    </div>
+
+                    <div className="relative z-10 container mx-auto px-4 py-16">
+                        <div className="max-w-6xl mx-auto">
+                            <div className="grid lg:grid-cols-3 gap-12 items-start">
+                                {/* Course Info - Takes 2 columns */}
+                                <div className="lg:col-span-2 text-white">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <span className="bg-red-600 text-white text-sm px-4 py-2 rounded-full font-medium">
                                             {course.category || course.age_group || 'Anti-Drug Training'}
                                         </span>
-                                        <div className="flex items-center text-yellow-400">
+                                        <div className="flex items-center text-yellow-400 bg-black bg-opacity-30 px-3 py-1 rounded-full">
                                             <span>⭐</span>
-                                            <span className="ml-1">{course.rating || '4.5'}</span>
-                                            <span className="ml-2 text-red-200">({course.reviews || '1,234'} reviews)</span>
+                                            <span className="ml-1 font-semibold">{course.rating || '4.5'}</span>
+                                            <span className="ml-2 text-white opacity-80 text-sm">({course.reviews || '1,234'} reviews)</span>
                                         </div>
                                     </div>
-                                    <h1 className="text-4xl font-bold mb-4">
-                                        {course.title || course.course_name}
+                                    
+                                    <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                                        {course_name}
                                     </h1>
-                                    <p className="text-red-100 text-lg mb-6 leading-relaxed">
+                                    <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl">
                                         {course.description || 'Comprehensive anti-drug training program designed to educate and prevent substance abuse through evidence-based approaches and interactive learning.'}
                                     </p>
-                                    <div className="flex flex-wrap gap-6 text-sm">
-                                        <div className="flex items-center">
-                                            <span className="mr-2">👥</span>
-                                            <span>{course.students || '2,150'} students enrolled</span>
+                                    <div className="flex flex-wrap gap-8 text-lg font-medium mt-6">
+                                        <div className="flex items-center gap-2">
+                                            <span>👥</span>
+                                            <span>{course.students || '2,150'} students</span>
                                         </div>
-                                        <div className="flex items-center">
-                                            <span className="mr-2">⏱</span>
-                                            <span>{course.duration || '6 weeks'} duration</span>
+                                        <div className="flex items-center gap-2">
+                                            <span>⏱</span>
+                                            <span>{course.duration || '6 weeks'}</span>
                                         </div>
-                                        <div className="flex items-center">
-                                            <span className="mr-2">📊</span>
+                                        <div className="flex items-center gap-2">
+                                            <span>📊</span>
                                             <span>{course.level || 'All levels'}</span>
                                         </div>
-                                        <div className="flex items-center">
-                                            <span className="mr-2">🌐</span>
+                                        <div className="flex items-center gap-2">
+                                            <span>🌐</span>
                                             <span>Online + Offline</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Course Card */}
+                                {/* Course Card - Takes 1 column */}
                                 {console.log("isCompleted>>>>>>>>>>>>>", isCompleted)}
-                                <div className="w-full lg:w-80 bg-white rounded-xl shadow-2xl overflow-hidden">
-                                    <img
-                                        src={course.image}
-                                        alt={course.title || course.course_name}
-                                        className="w-full h-48 object-cover"
-                                        onError={(e) => {
-                                            e.target.src = `https://source.unsplash.com/400x250/?education,training`;
-                                        }}
-                                    />
-                                    <div className="p-6">
-                                        <div className="text-center mb-6">
-                                            <span className="text-3xl font-bold text-red-600">
-                                                {course.price || 'Free'}
-                                            </span>
-                                            {course.original_price && (
-                                                <span className="text-gray-500 line-through ml-2">
-                                                    ${course.original_price}
-                                                </span>
-                                            )}
+                                <div className="lg:col-span-1">
+                                    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-opacity-95">
+                                        <div className="aspect-video relative overflow-hidden">
+                                            
+                                            <div className="absolute inset-0 bg-gradient-to-t from-gray-400 via-transparent to-transparent flex items-center justify-center">
+                                                <img 
+                                                    src="https://i.pinimg.com/1200x/33/fe/4f/33fe4feb099764b201a6128d465a8c56.jpg" 
+                                                    alt="Play Button" 
+                                                    className="w-16 h-16 bg-white bg-opacity-90 rounded-full p-4 transition-all duration-200 cursor-pointer" 
+                                                />
+                                            </div>
                                         </div>
-
-                                        {isCompleted ? (
-                                            <button
-                                                onClick={() => navigate(`/learning/${course_id}`)}
-                                                className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold hover:bg-gray-500 transition-colors duration-200"
-                                            >
-                                                Review Course
-                                            </button>
-                                        ) : isEnrolled ? (
-                                            <button
-                                                onClick={() => navigate(`/learning/${course_id}`)}
-                                                className="w-full py-3 rounded-lg font-semibold transition-colors duration-200 bg-green-600 text-white hover:bg-green-700"
-                                            >
-                                                Continue Learning
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleEnroll(course_id, course_version)}
-                                                disabled={enrolling}
-                                                className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 disabled:bg-red-400 transition-colors duration-200 flex items-center justify-center"
-                                            >
-                                                {enrolling ? (
-                                                    <>
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                                        Enrolling...
-                                                    </>
-                                                ) : (
-                                                    'Enroll Now'
+                                        
+                                        <div className="p-6">
+                                            <div className="text-center mb-6">
+                                                <span className="text-4xl font-bold text-red-600">
+                                                    {course.price || 'Free'}
+                                                </span>
+                                                {course.original_price && (
+                                                    <span className="text-gray-500 line-through ml-2 text-lg">
+                                                        ${course.original_price}
+                                                    </span>
                                                 )}
-                                            </button>
-                                        )}
+                                            </div>
 
-                                        <div className="mt-4 text-sm text-gray-600 space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <span>✅ Lifetime access</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span>📱 Mobile friendly</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span>🏆 Certificate included</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span>💬 Community support</span>
+                                            {isCompleted ? (
+                                                <button
+                                                    onClick={() => navigate(`/course-history`)}
+                                                    className="w-full bg-gray-400 text-green-800 py-4 rounded-xl font-semibold hover:bg-red-300 transition-colors duration-200 flex items-center justify-center mb-4"
+                                                >
+                                                    <span className="mr-2"></span>
+                                                    Course Completed & Review
+                                                </button>
+                                            ) : isEnrolled ? (
+                                                <button
+                                                    onClick={() => navigate(`/learning/${course_id}`)}
+                                                    className="w-full py-4 rounded-xl font-semibold transition-all duration-200 bg-green-600 text-white hover:bg-green-700 hover:shadow-lg mb-4"
+                                                >
+                                                    Continue Learning →
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleEnroll(course_id, course_version)}
+                                                    disabled={enrolling}
+                                                    className="w-full bg-red-600 text-white py-4 rounded-xl font-semibold hover:bg-red-700 disabled:bg-red-400 transition-all duration-200 flex items-center justify-center hover:shadow-lg mb-4"
+                                                >
+                                                    {enrolling ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                                            Enrolling...
+                                                        </>
+                                                    ) : (
+                                                        'Enroll Now'
+                                                    )}
+                                                </button>
+                                            )}
+
+                                            <div className="space-y-3 text-sm text-gray-600">
+                                                <div className="flex items-center">
+                                                    <span className="mr-3 text-green-500">✅</span>
+                                                    <span>Lifetime access</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <span className="mr-3 text-blue-500">📱</span>
+                                                    <span>Mobile friendly</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <span className="mr-3 text-yellow-500">🏆</span>
+                                                    <span>Certificate included</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <span className="mr-3 text-purple-500">💬</span>
+                                                    <span>Community support</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

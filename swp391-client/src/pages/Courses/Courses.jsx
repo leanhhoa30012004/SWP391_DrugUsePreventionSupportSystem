@@ -125,16 +125,15 @@ function Courses() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const handleViewCourse = (course_id, course_version) => {
-        console.log(course_id, course_version)
+    const handleViewCourse = (course_id, course_version, course_name) => {
+        console.log(course_id, course_version, course_name);
         if (!course_id || !course_version) return;
-        navigate(`/courses/${course_id}`,
-            {
-                state: {
-                    course_version: course_version
-                }
+        navigate(`/courses/${course_id}`, {
+            state: {
+                course_version: course_version,
+                course_name: course_name
             }
-        );
+        });
     };
 
     useEffect(() => {
@@ -314,7 +313,7 @@ function Courses() {
                                                             {course.price || 'Free'}
                                                         </span>
                                                         <button
-                                                            onClick={() => handleViewCourse(course.course_id, course.version)}
+                                                            onClick={() => handleViewCourse(course.course_id, course.version, course.course_name)}
                                                             className="text-sm text-white bg-red-600 hover:bg-red-700 px-4 py-2     rounded-lg transition-colors duration-200 font-medium"
                                                         >
                                                             View Details
