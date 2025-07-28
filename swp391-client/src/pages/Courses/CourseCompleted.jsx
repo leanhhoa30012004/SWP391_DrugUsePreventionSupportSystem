@@ -103,12 +103,15 @@ const CourseCompleted = () => {
             <Award className="w-12 h-12 text-yellow-400 mb-2" />
             <p className="text-gray-600 mb-6">Keep learning and growing. Your achievement has been recorded.</p>
           </div>
-          <button
-            onClick={() => navigate('/courses')}
-            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300"
-          >
-            Back to Course List
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate('/courses')}
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300"
+            >
+              Back to Course List
+            </button>
+            
+          </div>
         </div>
       </div>
     </>

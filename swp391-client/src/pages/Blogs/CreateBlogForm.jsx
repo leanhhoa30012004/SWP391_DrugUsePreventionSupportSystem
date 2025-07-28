@@ -1,18 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaImage } from 'react-icons/fa';
 
 const CreateBlogForm = ({ onPostSuccess }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState('');
+    const [selectedTag, setSelectedTag] = useState(''); // Chỉ 1 tag
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [coverImg, setCoverImg] = useState(null);
     const [previewImg, setPreviewImg] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
+    const dropdownRef = useRef(null);
+
+    // Predefined tags based on WeHope categories
+    const predefinedTags = [
+        'Addiction',
+        'Prevention', 
+        'Recovery',
+        'Family Support',
+        'Community',
+        'Mental Health',
+        'Drug Education',
+        'Rehabilitation',
+        'Support Groups',
+        'Health Awareness',
+        'Social Issues',
+        'Youth Protection'
+    ];
+
     // TODO: Lấy author từ localStorage hoặc context (giả sử user_id = 1)
     const author = localStorage.getItem('user_id') || 1;
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -24,6 +58,23 @@ const CreateBlogForm = ({ onPostSuccess }) => {
         } else {
             setPreviewImg(null);
         }
+    };
+
+    const handleTagSelect = (tag) => {
+        setSelectedTag(tag);
+        setTags(tag);
+        setIsDropdownOpen(false); // Đóng dropdown sau khi chọn
+    };
+
+    const handleTagRemove = () => {
+        setSelectedTag('');
+        setTags('');
+    };
+
+    const handleCustomTagInput = (e) => {
+        const value = e.target.value;
+        setTags(value);
+        setSelectedTag(value.trim());
     };
 
     const handleSubmit = async (e) => {
@@ -48,6 +99,7 @@ const CreateBlogForm = ({ onPostSuccess }) => {
             setTitle('');
             setContent('');
             setTags('');
+            setSelectedTag('');
             setCoverImg(null);
             setPreviewImg(null);
             if (onPostSuccess) onPostSuccess();
@@ -81,13 +133,69 @@ const CreateBlogForm = ({ onPostSuccess }) => {
                             onChange={e => setContent(e.target.value)}
                             required
                         />
-                        <input
-                            type="text"
-                            className="w-full border border-gray-200 focus:border-red-400 outline-none text-base px-4 py-2 rounded-lg shadow-sm"
-                            placeholder="Tags (comma separated)"
-                            value={tags}
-                            onChange={e => setTags(e.target.value)}
-                        />
+                        
+                        {/* Tags Section with Dropdown */}
+                        <div className="relative" ref={dropdownRef}>
+                            <div className="flex items-center gap-2 mb-2">
+                                <input
+                                    type="text"
+                                    className="flex-1 border border-gray-200 focus:border-red-400 outline-none text-base px-4 py-2 rounded-lg shadow-sm"
+                                    placeholder="Enter tag or select from dropdown"
+                                    value={tags}
+                                    onChange={handleCustomTagInput}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium whitespace-nowrap"
+                                >
+                                    {isDropdownOpen ? 'Close' : 'Select Tag'}
+                                </button>
+                            </div>
+
+                            {/* Selected Tag Display */}
+                            {selectedTag && (
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-flex items-center gap-2">
+                                        #{selectedTag}
+                                        <button
+                                            type="button"
+                                            onClick={handleTagRemove}
+                                            className="text-red-500 hover:text-red-700 font-bold text-lg leading-none"
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Dropdown Menu */}
+                            {isDropdownOpen && (
+                                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                                    <div className="p-2">
+                                        <div className="text-xs text-gray-500 font-semibold mb-2 px-2 flex justify-between items-center">
+                                            <span>SUGGESTED TAGS</span>
+                                            <span className="text-blue-600">Select one tag</span>
+                                        </div>
+                                        {predefinedTags.map((tag, index) => (
+                                            <button
+                                                key={index}
+                                                type="button"
+                                                onClick={() => handleTagSelect(tag)}
+                                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                                                    selectedTag === tag
+                                                        ? 'bg-red-100 text-red-700 font-medium'
+                                                        : 'hover:bg-red-50 hover:text-red-600'
+                                                }`}
+                                            >
+                                                {selectedTag === tag ? '● ' : ''}#{tag}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="flex items-center gap-4 mt-1">
                             <label className="cursor-pointer flex items-center gap-2 text-red-500 font-medium hover:underline">
                                 <FaImage className="text-xl" />

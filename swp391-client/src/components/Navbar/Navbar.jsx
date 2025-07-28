@@ -11,7 +11,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  
+
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const notificationRef = useRef(null);
@@ -66,13 +66,13 @@ const Navbar = () => {
         setIsNotificationOpen(false);
       }
     };
-    
+
     if (isUserMenuOpen || isMobileMenuOpen || isNotificationOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
     }
-    
+
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isUserMenuOpen, isMobileMenuOpen, isNotificationOpen]);
 
@@ -90,8 +90,8 @@ const Navbar = () => {
         Profile
       </Link>
       <hr className="my-1" />
-      <button 
-        onClick={handleLogout} 
+      <button
+        onClick={handleLogout}
         className="w-full text-left px-4 py-2 text-[#E53935] hover:bg-red-50 transition-colors"
       >
         Log out
@@ -108,25 +108,24 @@ const Navbar = () => {
         title="Notifications"
       >
         <Bell className="w-6 h-6" />
-        
+
         {/* Unread count badge */}
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-[#E53935] text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 animate-pulse">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
-        
+
         {/* Connection status indicator */}
-        <div 
-          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-            isConnected ? 'bg-green-500' : 'bg-gray-400'
-          }`}
+        <div
+          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isConnected ? 'bg-green-500' : 'bg-gray-400'
+            }`}
           title={isConnected ? 'Connected' : 'Disconnected'}
         />
       </button>
 
-{/* Notification Dropdown */}
-{isNotificationOpen && (
+      {/* Notification Dropdown */}
+      {isNotificationOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-96 overflow-hidden">
           {/* Header */}
           <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
@@ -170,7 +169,7 @@ const Navbar = () => {
                   <X className="w-6 h-6 text-red-500" />
                 </div>
                 <p className="font-medium mb-3">Error loading notifications</p>
-                <button 
+                <button
                   onClick={fetchNotifications}
                   className="px-4 py-2 bg-[#E53935] text-white rounded-lg text-sm hover:bg-[#E53935]/90 transition-all duration-200 hover:scale-105 font-medium shadow-md"
                 >
@@ -189,54 +188,51 @@ const Navbar = () => {
               notifications.map((n, index) => (
                 <div
                   key={n.id}
-                  className={`px-4 py-3 cursor-pointer transition-all duration-200 hover:transform hover:scale-[1.02] ${
-                    n.is_read
+                  className={`px-4 py-3 cursor-pointer transition-all duration-200 hover:transform hover:scale-[1.02] ${n.is_read
                       ? "bg-white hover:bg-gray-50"
                       : "bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-red-100 hover:to-indigo-100 border-l-4 border-red-500"
-                  } ${index !== notifications.length - 1 ? 'border-b border-gray-50' : ''}`}
+                    } ${index !== notifications.length - 1 ? 'border-b border-gray-50' : ''}`}
                   onClick={() => {
                     markAsRead(n.id);
                     if (n.redirect_url) window.location.href = n.redirect_url;
                   }}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className={`font-medium leading-tight ${
-                      n.is_read ? 'text-gray-900' : 'text-red-900 font-semibold'
-                    }`}>
+                    <h4 className={`font-medium leading-tight ${n.is_read ? 'text-gray-900' : 'text-red-900 font-semibold'
+                      }`}>
                       {n.title}
                     </h4>
                     {!n.is_read && (
                       <span className="ml-2 mt-1 inline-block w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0 animate-pulse" />
                     )}
                   </div>
-                  
-                  <div className={`text-sm leading-relaxed mb-2 ${
-                    n.is_read ? 'text-gray-600' : 'text-blue-800'
-                  }`}>
+
+                  <div className={`text-sm leading-relaxed mb-2 ${n.is_read ? 'text-gray-600' : 'text-blue-800'
+                    }`}>
                     {n.message}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="text-xs text-gray-400 font-medium">
                       {n.date
                         ? new Date(n.date).toLocaleString('vi-VN', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
                         : n.created_at
-                        ? new Date(n.created_at).toLocaleString('vi-VN', {
+                          ? new Date(n.created_at).toLocaleString('vi-VN', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
                           })
-                        : ""}
+                          : ""}
                     </div>
-                    
+
                     {n.redirect_url && (
                       <div className="text-xs text-[#E53935] font-medium">
                         Click to view →
@@ -267,17 +263,17 @@ const Navbar = () => {
 
   // Log notifications mỗi lần render Navbar
   console.log("[Navbar] notifications:", notifications);
-  
+
   return (
     <>
       {/* Spacer for fixed navbar */}
       <div className="h-[50px] sm:h-[60px] lg:h-[90px] w-full">
         <nav className={`fixed top-0 left-0 right-0 h-[50px] sm:h-[60px] lg:h-[90px] w-full bg-white z-[1000] transition-all duration-300
           ${isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md' : 'bg-white shadow-md'}`}>
-          
+
           {/* Container with justify-between layout */}
           <div className="h-full w-full max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-10 lg:px-4 relative">
-            
+
             {/* Logo container */}
             <div className="w-[120px] h-[50px] sm:w-[140px] sm:h-[60px] lg:w-[200px] lg:h-[90px] flex items-center">
               <Link to="/" className="block w-full h-full relative">
@@ -297,10 +293,9 @@ const Navbar = () => {
                     key={item.id}
                     to={item.link}
                     className={({ isActive }) =>
-                      `px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg whitespace-nowrap ${
-                        isActive
-                          ? 'bg-red-50 text-red-600 font-bold shadow'
-                          : 'text-gray-700 hover:text-red-600'
+                      `px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg whitespace-nowrap ${isActive
+                        ? 'bg-red-50 text-red-600 font-bold shadow'
+                        : 'text-gray-700 hover:text-red-600'
                       }`
                     }
                     end
@@ -313,7 +308,7 @@ const Navbar = () => {
 
             {/* Right side: Search, Notification, User/Auth, Hamburger */}
             <div className="flex items-center gap-4 flex-shrink-0">
-              
+
               {/* Notification Bell - Only show when user is logged in */}
               {user && <NotificationBell />}
 
@@ -337,7 +332,7 @@ const Navbar = () => {
 
                   <div className="hidden xl:block">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm text-gray-600">Xin chào,</span>
+                      <span className="text-sm text-gray-600">Welcome,</span>
                       <span className="text-sm font-semibold text-[#E53935] max-w-[100px] truncate">
                         {user.fullname || user.username || 'User'}
                       </span>
@@ -385,7 +380,7 @@ const Navbar = () => {
               `}
             >
               <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-4 py-2">
-               
+
                 {/* Mobile Menu Items */}
                 <div className="py-2 space-y-1">
                   {NavbarMenu.map((item) => (
@@ -402,7 +397,7 @@ const Navbar = () => {
                       <span className="font-medium">{item.title}</span>
                     </Link>
                   ))}
-                  
+
                   {/* Mobile Notifications Link */}
                   {user && (
                     <Link

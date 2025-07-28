@@ -82,7 +82,8 @@ const BlogsManagement = () => {
     const matchesSearch = search === '' || 
       blog.title?.toLowerCase().includes(search.toLowerCase()) ||
       blog.content?.toLowerCase().includes(search.toLowerCase()) ||
-      blog.fullname?.toLowerCase().includes(search.toLowerCase());
+      blog.fullname?.toLowerCase().includes(search.toLowerCase()) ||
+      blog.tags?.toLowerCase().includes(search.toLowerCase()); // Thêm search theo tags
     
     const matchesStatus = statusFilter === 'All' || blog.status === statusFilter;
     
@@ -112,7 +113,7 @@ const BlogsManagement = () => {
           <FaSearch className="text-[#e11d48]" />
           <input
             type="text"
-            placeholder="Search blogs..."
+            placeholder="Search blogs, authors, content, or tags..."
             className="outline-none border-none flex-1 bg-transparent text-black"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -139,52 +140,82 @@ const BlogsManagement = () => {
           <div>Loading...</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border rounded-xl overflow-hidden">
-              <thead>
-                <tr className="bg-[#e11d48]/10">
-                  <th className="p-3">Blog Info</th>
-                  <th className="p-3">Image</th>
-                  <th className="p-3">Content</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Approved By</th>
-                  <th className="p-3">Approved At</th>
-                  <th className="p-3">Active</th>
-                  <th className="p-3">Action</th>
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
+                <tr>
+                  <th className="px-4 py-3 font-bold">Blog Info</th>
+                  <th className="px-4 py-3 font-bold">Image</th>
+                  <th className="px-4 py-3 font-bold">Tags</th>
+                  <th className="px-4 py-3 font-bold">Content</th>
+                  <th className="px-4 py-3 font-bold">Status</th>
+                  <th className="px-4 py-3 font-bold">Approved By</th>
+                  <th className="px-4 py-3 font-bold">Approved At</th>
+                  <th className="px-4 py-3 font-bold">Active</th>
+                  <th className="px-4 py-3 font-bold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredBlogs.map(blog => (
-                  <tr key={blog.blog_id} className="border-b hover:bg-[#e11d48]/5 transition">
-                    <td className="p-3 max-w-xs whitespace-normal break-words">
-                      <div className="font-bold text-[#e11d48] whitespace-normal break-words" title={blog.title}>{blog.title}</div>
+                  <tr key={blog.blog_id} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
+                    <td className="px-4 py-3 max-w-xs whitespace-normal break-words">
+                      <div className="font-bold text-[#e11d48] whitespace-normal break-words text-sm" title={blog.title}>{blog.title}</div>
                       <div className="text-xs text-gray-500 mt-1 whitespace-normal break-words">by {blog.fullname}</div>
                     </td>
-                    <td className="p-3">
+                    <td className="px-4 py-3">
                       {blog.cover_img ? (
                         <button onClick={() => setModalImage(blog.cover_img)} className="focus:outline-none">
                           <img src={blog.cover_img} alt="blog" className="w-16 h-16 object-cover rounded shadow hover:scale-110 transition-transform duration-200" />
                         </button>
                       ) : (
-                        <span className="text-gray-400 italic">No image</span>
+                        <span className="text-gray-400 italic text-sm">No image</span>
                       )}
                     </td>
-                    <td className="p-3 text-gray-700 max-w-md whitespace-normal break-words" title={blog.content}>{blog.content}</td>
-                    <td className="p-3">
+                    <td className="px-4 py-3 max-w-sm">
+                      {blog.tags ? (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">
+                              {blog.tags.split(',').length} tag{blog.tags.split(',').length > 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {blog.tags.split(',').map((tag, index) => (
+                              <span 
+                                key={index}
+                                className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium"
+                                title={tag.trim()}
+                              >
+                                #{tag.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-bold">
+                            0 tags
+                          </span>
+                          <span className="text-xs text-gray-400 italic">No tags</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700 max-w-md whitespace-normal break-words text-sm" title={blog.content}>{blog.content}</td>
+                    <td className="px-4 py-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor[blog.status] || 'bg-gray-100 text-gray-500'}`}>{blog.status}</span>
                     </td>
-                    <td className="p-3 text-gray-700">{blog.manager_id || '-'}</td>
-                    <td className="p-3 text-gray-700">{blog.approval_date ? blog.approval_date.slice(0, 19).replace('T', ' ') : '-'}</td>
-                    <td className="p-3 text-gray-700">{blog.is_active ? 'Active' : 'Inactive'}</td>
-                    <td className="p-3 text-center align-middle">
+                    <td className="px-4 py-3 text-gray-700 text-sm">{blog.manager_id || '-'}</td>
+                    <td className="px-4 py-3 text-gray-700 text-sm">{blog.approval_date ? blog.approval_date.slice(0, 19).replace('T', ' ') : '-'}</td>
+                    <td className="px-4 py-3 text-gray-700 text-sm">{blog.is_active ? 'Active' : 'Inactive'}</td>
+                    <td className="px-4 py-3 text-center align-middle">
                       {blog.status === 'Pending' && (
                         <div className="flex flex-col items-center gap-2">
-                          <button onClick={() => handleApprove(blog.blog_id)} className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-1 rounded-lg shadow w-24">Approve</button>
+                          <button onClick={() => handleApprove(blog.blog_id)} className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold p-2 rounded-lg shadow w-24">Approve</button>
                           <button
                             onClick={() => {
                               setRejectingBlogId(blog.blog_id);
                               setRejectReason('');
                             }}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-1 rounded-lg shadow w-24"
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold p-2 rounded-lg shadow w-24"
                           >
                             Reject
                           </button>
@@ -197,19 +228,19 @@ const BlogsManagement = () => {
                             value={rejectReason}
                             onChange={e => setRejectReason(e.target.value)}
                             placeholder="Enter reject reason..."
-                            className="border px-2 py-1 rounded w-full"
+                            className="border px-2 py-1 rounded w-full text-sm"
                           />
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleReject(blog.blog_id, rejectReason)}
-                              className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-1 rounded-lg shadow"
+                              className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold p-2 rounded-lg shadow"
                               disabled={!rejectReason.trim()}
                             >
                               Confirm Reject
                             </button>
                             <button
                               onClick={() => setRejectingBlogId(null)}
-                              className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold px-4 py-1 rounded-lg shadow"
+                              className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-semibold p-2 rounded-lg shadow"
                             >
                               Cancel
                             </button>
@@ -229,7 +260,7 @@ const BlogsManagement = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" onClick={() => setModalImage(null)}>
           <div className="relative" onClick={e => e.stopPropagation()}>
             <button
-              className="absolute top-0 right-0 m-2 text-white text-3xl font-bold bg-black bg-opacity-40 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition"
+              className="absolute top-0 right-0 m-2 text-white text-2xl font-bold bg-black bg-opacity-40 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition"
               onClick={() => setModalImage(null)}
               title="Close"
             >
