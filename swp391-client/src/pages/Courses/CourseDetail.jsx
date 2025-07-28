@@ -139,7 +139,7 @@ function CourseDetail() {
                 {/* Hero Section with Image Background */}
                 <div className="relative min-h-[80vh] flex items-center">
                     {/* Background Image */}
-                    <div 
+                    <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat backdrop-blur-md"
                         style={{
                             backgroundImage: `url(${'https://i.pinimg.com/736x/df/e8/26/dfe8263d1adbf192a3f9d6572a875020.jpg'})`,
@@ -164,7 +164,7 @@ function CourseDetail() {
                                             <span className="ml-2 text-white opacity-80 text-sm">({course.reviews || '1,234'} reviews)</span>
                                         </div>
                                     </div>
-                                    
+
                                     <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                                         {course_name}
                                     </h1>
@@ -196,16 +196,16 @@ function CourseDetail() {
                                 <div className="lg:col-span-1">
                                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm bg-opacity-95">
                                         <div className="aspect-video relative overflow-hidden">
-                                            
+
                                             <div className="absolute inset-0 bg-gradient-to-t from-gray-400 via-transparent to-transparent flex items-center justify-center">
-                                                <img 
-                                                    src="https://i.pinimg.com/1200x/33/fe/4f/33fe4feb099764b201a6128d465a8c56.jpg" 
-                                                    alt="Play Button" 
-                                                    className="w-16 h-16 bg-white bg-opacity-90 rounded-full p-4 transition-all duration-200 cursor-pointer" 
+                                                <img
+                                                    src="https://i.pinimg.com/1200x/33/fe/4f/33fe4feb099764b201a6128d465a8c56.jpg"
+                                                    alt="Play Button"
+                                                    className="w-16 h-16 bg-white bg-opacity-90 rounded-full p-4 transition-all duration-200 cursor-pointer"
                                                 />
                                             </div>
                                         </div>
-                                        
+
                                         <div className="p-6">
                                             <div className="text-center mb-6">
                                                 <span className="text-4xl font-bold text-red-600">
@@ -220,7 +220,7 @@ function CourseDetail() {
 
                                             {isCompleted ? (
                                                 <button
-                                                    onClick={() => navigate(`/course-history`)}
+                                                    onClick={() => navigate(`/course-history/${course_id}`)}
                                                     className="w-full bg-gray-400 text-green-800 py-4 rounded-xl font-semibold hover:bg-red-300 transition-colors duration-200 flex items-center justify-center mb-4"
                                                 >
                                                     <span className="mr-2"></span>
