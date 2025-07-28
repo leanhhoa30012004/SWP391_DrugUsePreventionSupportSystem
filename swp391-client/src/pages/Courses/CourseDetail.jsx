@@ -214,11 +214,10 @@ function CourseDetail() {
                                         ) : isEnrolled ? (
                                             <button
                                                 onClick={() => navigate(`/learning/${course_id}`)}
-                                                className={`w-full py-3 rounded-lg font-semibold transition-colors duration-200 ${
-                                                  (course?.status === 'completed' || isCompleted)
-                                                    ? 'bg-green-500 text-white cursor-default' 
-                                                    : 'bg-green-600 text-white hover:bg-green-700'
-                                                }`}
+                                                className={`w-full py-3 rounded-lg font-semibold transition-colors duration-200 ${(course?.status === 'completed' || isCompleted)
+                                                        ? 'bg-green-500 text-white cursor-default'
+                                                        : 'bg-green-600 text-white hover:bg-green-700'
+                                                    }`}
                                                 disabled={course?.status === 'completed' || isCompleted}
                                             >
                                                 {(course?.status === 'completed' || isCompleted) ? 'Completed' : 'Continue Learning'}

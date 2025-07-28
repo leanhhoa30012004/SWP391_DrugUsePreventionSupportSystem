@@ -19,7 +19,14 @@ WHERE is_active = 1`)
         status: item.status
     }));
 }
-
+const updateStatusProgramParticipants = async () => {
+    const [isUpdate] = await db.execute(`UPDATE Community_program_participant cpp
+JOIN Community_programs cp ON cpp.program_id = cp.program_id
+SET cpp.status = 'absent'
+WHERE cpp.status = 'registered' AND cp.status = 'closed'`)
+    // console.log(isUpdate)
+    return isUpdate.affectedRows > 0
+}
 const numberParticipantProgram = async () => {
     const [number] = await db.execute(`SELECT program_id, COUNT(member_id) AS participant_count
 FROM Community_program_participant
@@ -129,5 +136,6 @@ module.exports = {
     updateResponseProgram,
     updateProgram,
     deleteProgram,
-    getAllMemberByProgramId
+    getAllMemberByProgramId,
+    updateStatusProgramParticipants
 }
