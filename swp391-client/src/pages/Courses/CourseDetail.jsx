@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
+import { set } from 'mongoose';
 
 function CourseDetail() {
     const location = useLocation();
@@ -33,13 +34,6 @@ function CourseDetail() {
 
                 // Check if user is already enrolled
                 await checkEnrollmentStatus(course_id, course_version);
-
-                // Kiểm tra trạng thái hoàn thành từ API (giả sử response.data.message)
-                if (response.data && response.data.message && response.data.message.includes('completed all the content')) {
-                    setIsCompleted(true);
-                } else {
-                    setIsCompleted(false);
-                }
             } catch (err) {
                 console.error("Course detail API error:", err);
                 Swal.fire({
@@ -65,6 +59,7 @@ function CourseDetail() {
             );
             console.log('du lieu response:', response)
             setIsEnrolled(response.data.isEnrolled || false);
+            setIsCompleted(response.data.status || false);
 
         } catch (err) {
             console.error("Enrollment check error:", err);
@@ -183,6 +178,7 @@ function CourseDetail() {
                                 </div>
 
                                 {/* Course Card */}
+                                {console.log("isCompleted>>>>>>>>>>>>>", isCompleted)}
                                 <div className="w-full lg:w-80 bg-white rounded-xl shadow-2xl overflow-hidden">
                                     <img
                                         src={course.image}
@@ -205,6 +201,7 @@ function CourseDetail() {
                                         </div>
 
                                         {isCompleted ? (
+
                                             <button
                                                 className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
                                                 disabled
@@ -215,8 +212,8 @@ function CourseDetail() {
                                             <button
                                                 onClick={() => navigate(`/learning/${course_id}`)}
                                                 className={`w-full py-3 rounded-lg font-semibold transition-colors duration-200 ${(course?.status === 'completed' || isCompleted)
-                                                        ? 'bg-green-500 text-white cursor-default'
-                                                        : 'bg-green-600 text-white hover:bg-green-700'
+                                                    ? 'bg-green-500 text-white cursor-default'
+                                                    : 'bg-green-600 text-white hover:bg-green-700'
                                                     }`}
                                                 disabled={course?.status === 'completed' || isCompleted}
                                             >
