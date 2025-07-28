@@ -16,8 +16,9 @@ exports.checkAppointment = async (req, res) => {
             booked = true;
         }
         else {
-            const freetime = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time);
-            if (freetime.countByTime === 0)
+            const ListConsultant = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time);
+            const ListConsultantFree = ListConsultant.filter(freetime => freetime.countByTime === 0);
+            if (ListConsultantFree != null && ListConsultantFree.length > 0)
                 status = true;
         }
         return res.json({ "status": status, "booked": booked })
@@ -32,13 +33,15 @@ exports.addAppointment = async (req, res) => {
     try {
         // const checkMemberRequestAppointment = await consultationModel.getRequestAppointmentByMemberIdAndDate(member_id, request_date, request_time);
         // if (checkMemberRequestAppointment === 1) return res.json('You cannot book multiple appointments at the same time!')
-        const getConsultantFree = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time)
-        const appointment_id = await consultationModel.addAppointment(member_id, appointment_date, appointment_time, getConsultantFree.user_id);
+        const ListConsultant = await consultationModel.getConsultantFreeTime(appointment_date, appointment_time)
+        const ListConsultantFree = ListConsultant.filter(freetime => freetime.countByTime === 0);
+        const freeConsultant = ListConsultantFree[Math.floor(Math.random() * ListConsultantFree.length)];
+        const appointment_id = await consultationModel.addAppointment(member_id, appointment_date, appointment_time, freeConsultant.user_id);
         const memberInfo = await memberModel.findById(member_id);
         // create meet link
-        const meetLink = await createMeetConfig.createMeetEvent(getConsultantFree.user_id, appointment_date, appointment_time, member_id);
+        const meetLink = await createMeetConfig.createMeetEvent(freeConsultant.user_id, appointment_date, appointment_time, member_id);
 
-        const isSuccess = await consultationModel.createMeetLink(getConsultantFree.user_id, appointment_id, meetLink);
+        const isSuccess = await consultationModel.createMeetLink(freeConsultant.user_id, appointment_id, meetLink);
         if (!isSuccess) return res.json('Fail to create meet link!');
         // if success, system will send email to member and consultant
         //send mail with meet link
@@ -46,20 +49,20 @@ exports.addAppointment = async (req, res) => {
             member_name: memberInfo.fullname,
             appointment_date: appointment_date,
             appointment_time: appointment_time,
-            consultant_name: getConsultantFree.fullname,
+            consultant_name: freeConsultant.fullname,
             meeting_link: meetLink
         });
         //send notice to member
         await pushNotice({
             userID: member_id,
             title: 'Appointment Booking Confirmation',
-            message: `Your appointment with ${getConsultantFree.fullname} on ${appointment_date} at ${appointment_time} has been successfully created. Check your email for the meeting link.`,
+            message: `Your appointment with ${freeConsultant.fullname} on ${appointment_date} at ${appointment_time} has been successfully created. Check your email for the meeting link.`,
             type: 'success',
             redirect_url: `/appointments/${appointment_id}`
         });
         //send notice to consultant
         await pushNotice({
-            userID: getConsultantFree.user_id,
+            userID: freeConsultant.user_id,
             title: 'New Appointment with Member' + memberInfo.fullname,
             message: `You have a new appointment request from ${memberInfo.fullname} on ${appointment_date} at ${appointment_time}.`,
             type: 'info',
