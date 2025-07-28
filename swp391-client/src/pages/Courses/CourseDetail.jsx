@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
-import { set } from 'mongoose';
+
 
 function CourseDetail() {
     const location = useLocation();
@@ -201,23 +201,18 @@ function CourseDetail() {
                                         </div>
 
                                         {isCompleted ? (
-
                                             <button
-                                                className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed"
-                                                disabled
+                                                onClick={() => navigate(`/learning/${course_id}`)}
+                                                className="w-full bg-gray-400 text-white py-3 rounded-lg font-semibold hover:bg-gray-500 transition-colors duration-200"
                                             >
-                                                Course Completed
+                                                Review Course
                                             </button>
                                         ) : isEnrolled ? (
                                             <button
                                                 onClick={() => navigate(`/learning/${course_id}`)}
-                                                className={`w-full py-3 rounded-lg font-semibold transition-colors duration-200 ${(course?.status === 'completed' || isCompleted)
-                                                    ? 'bg-green-500 text-white cursor-default'
-                                                    : 'bg-green-600 text-white hover:bg-green-700'
-                                                    }`}
-                                                disabled={course?.status === 'completed' || isCompleted}
+                                                className="w-full py-3 rounded-lg font-semibold transition-colors duration-200 bg-green-600 text-white hover:bg-green-700"
                                             >
-                                                {(course?.status === 'completed' || isCompleted) ? 'Completed' : 'Continue Learning'}
+                                                Continue Learning
                                             </button>
                                         ) : (
                                             <button
