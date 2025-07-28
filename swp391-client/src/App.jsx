@@ -73,6 +73,7 @@ import { NotificationProvider } from "./context/NotificationContext";
 import AppointmentPage from './components/Navbar/Appointment.jsx'
 import ResultSurvey from './pages/Survey/ResultSurvey.jsx'
 import CourseHistory from './pages/Courses/CourseHistory.jsx'
+import Navbar from './components/Navbar/Navbar.jsx'
 
 function App() {
   const location = useLocation();
@@ -86,6 +87,7 @@ function App() {
 
   return (
     <NotificationProvider userID={userID}>
+      <Navbar />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Homepage />} />
