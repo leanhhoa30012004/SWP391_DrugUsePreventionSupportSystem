@@ -80,10 +80,10 @@ function App() {
   const hideChatbot = location.pathname.startsWith('/manager') || location.pathname.startsWith('/admin');
 
   // Lấy userID từ localStorage, redux, context... (tùy app bạn)
-  const user = JSON.parse(localStorage.getItem("user")); 
-  const userID = user?.user_id; 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userID = user?.user_id;
   console.log("userID dùng cho NotificationProvider:", userID);
-  
+
   return (
     <NotificationProvider userID={userID}>
       <Routes>
@@ -99,10 +99,10 @@ function App() {
         <Route path="/courses/:course_id" element={<CourseDetail />} />
         <Route path="/learning/:course_id" element={<CourseLearning />} />
         <Route path="/course-completed" element={<CourseCompleted />} />
-        <Route path="/course-history" element={<CourseHistory/>} />
+        <Route path="/course-history/:course_id" element={<CourseHistory />} />
 
         {/* Notice Route*/}
-        <Route path="/appointments/:appointment_id" element={<AppointmentPage/>}/>
+        <Route path="/appointments/:appointment_id" element={<AppointmentPage />} />
         {/* Auth Routes */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -127,17 +127,17 @@ function App() {
         <Route path="/survey" element={<SurveySelectionPage />} />
         <Route path="/survey/:sid" element={<Survey />} />
         <Route path="/survey/history/:memberId/:id" element={<SurveyHistoryPage />} />
-        <Route path="/resultsurvey/:userId/:sid" element={<ResultSurvey/>} />
+        <Route path="/resultsurvey/:userId/:sid" element={<ResultSurvey />} />
         <Route path="/about" element={<AboutUsPage />} />
 
         {/* Consultant Routes */}
-        <Route path="/consultant" element={<ConsultantBooking/>} />
-        <Route path="/onlyconsultant" element={<OnlyConsultant/>}/>
+        <Route path="/consultant" element={<ConsultantBooking />} />
+        <Route path="/onlyconsultant" element={<OnlyConsultant />} />
 
 
-        <Route path="/programs" element={<Programs/>} />
-        <Route path="/programs/:program_id" element={<ProgramDetail/>} />
-        <Route path="/surveyprogram/:program_id" element={<ProgramSurveyPage/>} />
+        <Route path="/programs" element={<Programs />} />
+        <Route path="/programs/:program_id" element={<ProgramDetail />} />
+        <Route path="/surveyprogram/:program_id" element={<ProgramSurveyPage />} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
@@ -160,8 +160,8 @@ function App() {
           <Route path="blogs" element={<BlogsManagement />} />
         </Route>
       </Routes>
-        {/* Global Chatbot - appears on all pages except manager/admin */}
-        {!hideChatbot && <Chatbot />}
+      {/* Global Chatbot - appears on all pages except manager/admin */}
+      {!hideChatbot && <Chatbot />}
     </NotificationProvider>
   )
 }

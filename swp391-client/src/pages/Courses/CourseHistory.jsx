@@ -1,26 +1,28 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, Clock, CheckCircle, Award, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 
 const CourseHistory = () => {
     const [learningHistory, setLearningHistory] = useState(null);
     const [expandedMoocs, setExpandedMoocs] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+    const course_id = useParams().course_id;
+
     // Keep your original API fetch logic
     useEffect(() => {
         async function fetchLearningHistory() {
             try {
                 setLoading(true);
                 const uid = JSON.parse(localStorage.getItem('user')).user_id;
-                const course_id = localStorage.getItem('course_id');                
+                console.log(`Fetching learning history for user ${uid} and course ${course_id}`);
                 const response = await fetch(`http://localhost:3000/api/course/get-learning-process-by-course-id-and-member-id/${uid}/${course_id}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                
+
                 if (!response.ok) throw new Error('Network error');
                 const data = await response.json();
                 console.log("Learning History Data: ", data);
@@ -62,7 +64,7 @@ const CourseHistory = () => {
         const dd = String(date.getDate()).padStart(2, '0');
         const MM = String(date.getMonth() + 1).padStart(2, '0');
         const yyyy = date.getFullYear();
-        
+
         return `${dd}/${MM}/${yyyy}`;
     };
 
@@ -134,11 +136,10 @@ const CourseHistory = () => {
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className={`inline-flex items-center px-6 py-3 rounded-xl text-sm font-semibold backdrop-blur-sm border shadow-lg transition-all duration-300 hover:scale-105 ${
-                                learningHistory.status === 'completed' 
-                                    ? 'text-green-700 bg-green-100/90 border-green-200/50' 
-                                    : 'text-white bg-white/20 border-white/30'
-                            }`}>
+                            <div className={`inline-flex items-center px-6 py-3 rounded-xl text-sm font-semibold backdrop-blur-sm border shadow-lg transition-all duration-300 hover:scale-105 ${learningHistory.status === 'completed'
+                                ? 'text-green-700 bg-green-100/90 border-green-200/50'
+                                : 'text-white bg-white/20 border-white/30'
+                                }`}>
                                 <CheckCircle className="h-5 w-5 mr-2" />
                                 {learningHistory.status === 'completed' ? 'Completed' : 'In Progress'}
                             </div>
@@ -148,7 +149,7 @@ const CourseHistory = () => {
                 {/* Decorative wave bottom */}
                 <div className="relative">
                     <svg className="w-full h-6 text-red-600" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                        <path d="M0,60 C400,0 800,120 1200,60 L1200,120 L0,120 Z" fill="currentColor"/>
+                        <path d="M0,60 C400,0 800,120 1200,60 L1200,120 L0,120 Z" fill="currentColor" />
                     </svg>
                 </div>
             </div>
@@ -234,11 +235,10 @@ const CourseHistory = () => {
                                     {Array.isArray(mooc.details)
                                         ? mooc.details.map((question, qIdx) => (
                                             <div key={qIdx} className="text-center">
-                                                <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center text-sm font-bold shadow-sm transition-all duration-200 hover:scale-105 ${
-                                                    question.isCorrect 
-                                                        ? 'bg-green-100 text-green-700 border-2 border-green-200' 
-                                                        : 'bg-red-100 text-red-700 border-2 border-red-200'
-                                                }`}>
+                                                <div className={`w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center text-sm font-bold shadow-sm transition-all duration-200 hover:scale-105 ${question.isCorrect
+                                                    ? 'bg-green-100 text-green-700 border-2 border-green-200'
+                                                    : 'bg-red-100 text-red-700 border-2 border-red-200'
+                                                    }`}>
                                                     {qIdx + 1}
                                                 </div>
                                                 <p className="text-xs text-gray-600 font-medium">{question.score} pts</p>
@@ -256,20 +256,20 @@ const CourseHistory = () => {
                                             {mooc.details.map((question, qIdx) => (
                                                 <div key={qIdx} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                                                     <div className="flex items-start space-x-4">
-                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                                                            question.isCorrect 
-                                                                ? 'bg-green-100 text-green-700 border-2 border-green-300' 
-                                                                : 'bg-red-100 text-red-700 border-2 border-red-300'
-                                                        }`}>
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${question.isCorrect
+                                                            ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                                                            : 'bg-red-100 text-red-700 border-2 border-red-300'
+                                                            }`}>
                                                             {qIdx + 1}
                                                         </div>
                                                         <div className="flex-1">
                                                             <h5 className="text-lg font-semibold text-gray-900 mb-4">
                                                                 {question.question}
                                                             </h5>
-                                                            
+
                                                             <div className="space-y-3">
                                                                 {question.options.map((option, optIdx) => {
+
                                                                     const isUserSelected = option.text === question.answer;
                                                                     const isCorrectOption = option.score === 2;
                                                                     let optionClass = '';
@@ -319,6 +319,7 @@ const CourseHistory = () => {
                                                                         >
                                                                             <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${dotClass}`}>
                                                                                 {(question.isCorrect && isUserSelected) || (!question.isCorrect && isCorrectOption) ? (
+
                                                                                     <div className="w-2 h-2 rounded-full bg-white"></div>
                                                                                 ) : null}
                                                                             </div>
@@ -330,13 +331,12 @@ const CourseHistory = () => {
                                                                     );
                                                                 })}
                                                             </div>
-                                                            
+
                                                             <div className="mt-4 text-right">
-                                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${
-                                                                    question.isCorrect 
-                                                                        ? 'text-green-700 bg-green-100' 
-                                                                        : 'text-red-700 bg-red-100'
-                                                                }`}>
+                                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${question.isCorrect
+                                                                    ? 'text-green-700 bg-green-100'
+                                                                    : 'text-red-700 bg-red-100'
+                                                                    }`}>
                                                                     Score: {question.score}/{question.options.find(opt => opt.score > 0)?.score || 2} points
                                                                 </span>
                                                             </div>

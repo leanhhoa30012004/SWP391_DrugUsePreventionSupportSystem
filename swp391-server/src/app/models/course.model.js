@@ -406,6 +406,7 @@ WHERE ce.member_id = ? AND ce.enroll_version = cv.version;`, [member_id])
 }
 
 const getLearningProcessByCourseIdAndMemberId = async (member_id, course_id) => {
+    console.log(member_id + "sdads" + course_id)
     const [rows] = await db.execute(`SELECT course_id, member_id, date, learning_process, enroll_version, status
 FROM Course_enrollment
 WHERE course_id = ? AND member_id = ? AND is_active = 1`, [course_id, member_id]);
