@@ -35,7 +35,7 @@ WHERE a.member_id = ? AND a.is_active = 1`, [member_id])
 }
 
 const getAllAppointmentByConsultantId = async (consultant_id) => {
-    const [rows] = await db.execute(`SELECT u.fullname, a.date_sent_request, a.appointment_date, a.appointment_time, a.status, a.meeting_link
+    const [rows] = await db.execute(`SELECT a.member_id, u.fullname, a.date_sent_request, a.appointment_date, a.appointment_time, a.status, a.meeting_link
 FROM Appointment a JOIN Users u ON a.member_id = u.user_id
 WHERE a.consultant_id = ? AND a.is_active = 1`, [consultant_id])
     return rows;
@@ -145,7 +145,7 @@ WHERE u.role = 'consultant'
 GROUP BY u.user_id
 ORDER BY countByTime, countByDate;`, [appointment_date, appointment_time, appointment_date])
 
-    return rows[0];
+    return rows;
 }
 
 const getAppointmentById = async (appointment_id) => {
