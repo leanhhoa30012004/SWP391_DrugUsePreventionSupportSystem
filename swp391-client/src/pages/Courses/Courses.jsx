@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Navbar from '../../components/Navbar/Navbar';
@@ -8,6 +8,7 @@ import Footer from '../../components/Footer/footer';
 function Courses() {
     const userId = JSON.parse(localStorage.getItem('user'))?.user_id;
     const navigate = useNavigate();
+    const location = useLocation();
     const [filters, setFilters] = useState({
         ageGroup: '',
         searchQuery: ''
@@ -135,6 +136,31 @@ function Courses() {
             }
         );
     };
+
+    useEffect(() => {
+        // Kiểm tra nếu có redirect từ chatbot
+        if (location.state?.redirectToCourse) {
+            const courseId = location.state.redirectToCourse;
+            // Delay một chút để trang courses load xong
+            setTimeout(() => {
+                navigate(`/courses/${courseId}`);
+            }, 500);
+        }
+
+        // Hoặc highlight course cụ thể
+        const urlParams = new URLSearchParams(location.search);
+        const highlightId = urlParams.get('highlight');
+        if (highlightId) {
+            // Scroll đến course cụ thể và highlight
+            setTimeout(() => {
+                const courseElement = document.getElementById(`course-${highlightId}`);
+                if (courseElement) {
+                    courseElement.scrollIntoView({ behavior: 'smooth' });
+                    courseElement.classList.add('highlighted-course');
+                }
+            }, 500);
+        }
+    }, [location, navigate]);
 
     if (loading) {
         return (

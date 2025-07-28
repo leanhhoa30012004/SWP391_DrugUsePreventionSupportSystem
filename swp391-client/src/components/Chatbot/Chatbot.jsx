@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaUser, FaGlobe } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom'; // Thêm import
 import './Chatbot.css';
 
 const Chatbot = () => {
+  const navigate = useNavigate(); // Thêm hook
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -86,110 +88,188 @@ const Chatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Hàm gọi AI thực thụ từ Hugging Face
+  // Thay thế hàm getAIResponse trong component Chatbot của bạn
   const getAIResponse = async (userMessage) => {
-    // 1. Custom answer cho các từ khóa quan trọng
     const lowerMsg = userMessage.toLowerCase();
+
+    // 1. Course-related queries
+    if (lowerMsg.includes('course') || lowerMsg.includes('khóa học') || lowerMsg.includes('courses')) {
+      try {
+        const courses = await fetchCourses();
+        if (courses.length > 0) {
+          const courseList = courses.slice(0, 3).map(course => {
+            const courseId = course.course_id || course.id;
+            const courseName = course.course_name || course.title;
+            const ageGroup = course.age_group || 'All ages';
+            const version = course.version || course.course_version || '1.0';
+            const encodedName = encodeURIComponent(courseName);
+
+            // URL với đầy đủ params để đảm bảo hoạt động
+            const courseUrl = `${window.location.origin}/courses/${courseId}?version=${version}&name=${encodedName}`;
+
+            return `• ${courseName} (${ageGroup})\n  🔗 ${courseUrl}`;
+          }).join('\n\n');
+
+          return language === 'en'
+            ? `Here are some available courses:\n\n${courseList}\n\nClick on the links above to view course details directly.`
+            : `Đây là một số khóa học có sẵn:\n\n${courseList}\n\nBấm vào các liên kết trên để xem chi tiết khóa học.`;
+        }
+      } catch (error) {
+        return language === 'en'
+          ? "I can help you find courses about drug prevention. Please visit our Courses page to see all available options."
+          : "Tôi có thể giúp bạn tìm khóa học về phòng chống ma túy. Vui lòng truy cập trang Khóa học để xem tất cả lựa chọn.";
+      }
+    }
+
+    // 2. Appointment booking
+    if (lowerMsg.includes('appointment') || lowerMsg.includes('book') || lowerMsg.includes('đặt lịch') || lowerMsg.includes('tư vấn')) {
+      if (lowerMsg.includes('today') || lowerMsg.includes('hôm nay')) {
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const timeSlots = await fetchAvailableTimeSlots(today);
+
+          if (timeSlots.length > 0) {
+            const slots = timeSlots.slice(0, 3).join(', ');
+            return language === 'en'
+              ? `Available time slots for today: ${slots}. To book an appointment, please visit our Consultation page or tell me your preferred time.`
+              : `Các khung giờ có sẵn hôm nay: ${slots}. Để đặt lịch hẹn, vui lòng truy cập trang Tư vấn hoặc cho tôi biết thời gian bạn muốn.`;
+          } else {
+            return language === 'en'
+              ? "No available slots for today. Would you like to check tomorrow or another date?"
+              : "Không có khung giờ nào trống hôm nay. Bạn có muốn kiểm tra ngày mai hoặc ngày khác không?";
+          }
+        } catch (error) {
+          return language === 'en'
+            ? "I can help you book a consultation appointment. Please visit our Consultation page for real-time availability."
+            : "Tôi có thể giúp bạn đặt lịch tư vấn. Vui lòng truy cập trang Tư vấn để xem lịch trống theo thời gian thực.";
+        }
+      }
+
+      return language === 'en'
+        ? "I can help you schedule a consultation appointment. What date would you prefer? You can also visit our Consultation page to see all available time slots."
+        : "Tôi có thể giúp bạn đặt lịch tư vấn. Bạn muốn đặt vào ngày nào? Bạn cũng có thể truy cập trang Tư vấn để xem tất cả khung giờ trống.";
+    }
+
+    // 3. Specific course info
+    if (lowerMsg.includes('teenager') || lowerMsg.includes('young adult') || lowerMsg.includes('adult') ||
+      lowerMsg.includes('thanh thiếu niên') || lowerMsg.includes('người trẻ') || lowerMsg.includes('người lớn')) {
+      try {
+        const courses = await fetchCourses();
+        const ageGroup = lowerMsg.includes('teenager') || lowerMsg.includes('thanh thiếu niên') ? 'Teenagers' :
+          lowerMsg.includes('young') || lowerMsg.includes('người trẻ') ? 'Young Adult' : 'Adult';
+
+        const filteredCourses = courses.filter(course => course.age_group === ageGroup);
+
+        if (filteredCourses.length > 0) {
+          const courseList = filteredCourses.slice(0, 2).map(course => {
+            const courseId = course.course_id || course.id;
+            const courseName = course.course_name || course.title;
+            const courseUrl = `${window.location.origin}/courses/${courseId}`;
+
+            return `• ${courseName}\n  🔗 ${courseUrl}`;
+          }).join('\n\n');
+
+          return language === 'en'
+            ? `Courses for ${ageGroup}:\n\n${courseList}\n\nThese courses are specifically designed for your age group with relevant content and examples.`
+            : `Khóa học cho ${ageGroup === 'Teenagers' ? 'thanh thiếu niên' : ageGroup === 'Young Adult' ? 'người trẻ' : 'người lớn'}:\n\n${courseList}\n\nCác khóa học này được thiết kế đặc biệt cho độ tuổi của bạn với nội dung và ví dụ phù hợp.`;
+        }
+      } catch (error) {
+        // Fallback to default response
+      }
+    }
+
+    // 4. Help with navigation
+    if (lowerMsg.includes('how to') || lowerMsg.includes('navigate') || lowerMsg.includes('làm thế nào')) {
+      return language === 'en'
+        ? "I can help you navigate our system:\n• Take surveys to assess your knowledge\n• Browse educational courses\n• Book consultation appointments\n• Read latest news and blogs\n\nWhat would you like to do first?"
+        : "Tôi có thể giúp bạn sử dụng hệ thống:\n• Làm khảo sát để đánh giá kiến thức\n• Xem các khóa học giáo dục\n• Đặt lịch tư vấn\n• Đọc tin tức và blog mới nhất\n\nBạn muốn làm gì trước?";
+    }
+
+    // 5. Continue with existing project features...
     if (lowerMsg.includes('survey') || lowerMsg.includes('khảo sát')) {
       return language === 'en'
-        ? "The survey feature helps you assess your risk and knowledge about drug use. After completing the survey, you receive instant feedback and recommendations. All results are confidential."
-        : "Chức năng khảo sát giúp bạn tự đánh giá nguy cơ và hiểu biết về ma túy. Sau khi hoàn thành, bạn sẽ nhận được kết quả và khuyến nghị phù hợp. Mọi thông tin đều được bảo mật.";
-    }
-    if (lowerMsg.includes('project') || lowerMsg.includes('dự án')) {
-      return language === 'en'
-        ? "This project is a drug use prevention support system. It provides online surveys, consultation, courses, and news to help users stay informed and healthy."
-        : "Đây là dự án hệ thống hỗ trợ phòng chống ma túy. Hệ thống cung cấp khảo sát, tư vấn trực tuyến, khóa học và tin tức giúp người dùng nâng cao hiểu biết và bảo vệ sức khỏe.";
-    }
-    if (lowerMsg.includes('course') || lowerMsg.includes('khóa học')) {
-      return language === 'en'
-        ? "The course feature offers educational content about drug prevention, health, and wellness. You can enroll, learn, and track your progress."
-        : "Chức năng khóa học cung cấp nội dung giáo dục về phòng chống ma túy, sức khỏe và lối sống lành mạnh. Bạn có thể đăng ký, học và theo dõi tiến trình của mình.";
-    }
-    if (lowerMsg.includes('consultation') || lowerMsg.includes('tư vấn')) {
-      return language === 'en'
-        ? "The online consultation feature allows you to connect with experts for advice and support regarding drug prevention and health."
-        : "Chức năng tư vấn trực tuyến giúp bạn kết nối với chuyên gia để nhận lời khuyên và hỗ trợ về phòng chống ma túy và sức khỏe.";
+        ? "Our survey feature helps you assess your knowledge and risk factors related to drug use. It's completely anonymous and provides personalized recommendations. Would you like me to guide you to the survey page?"
+        : "Chức năng khảo sát giúp bạn đánh giá kiến thức và yếu tố nguy cơ liên quan đến ma túy. Hoàn toàn ẩn danh và cung cấp khuyến nghị cá nhân hóa. Bạn có muốn tôi hướng dẫn đến trang khảo sát không?";
     }
 
+    // 6. Continue with Gemini AI for general drug prevention questions...
     try {
-      // 2. Tối ưu system prompt với mô tả dự án
       const systemPrompt = language === 'en'
-        ? `You are WeHope AI Assistant, an expert in drug prevention and a support bot for the WeHope Drug Use Prevention Support System project.\n\nProject details:\n- The system provides online surveys to help users assess their risk and knowledge about drug use.\n- Users can take surveys, view results, and receive recommendations.\n- The project also includes online consultation, course management, and news about drug prevention.\nIf the user asks about the project, survey, or any feature, answer in detail based on the above information.\nAnswer in English.`
-        : `Bạn là WeHope AI Assistant, một trợ lý AI chuyên về phòng chống ma túy và hỗ trợ cho dự án Hệ thống Hỗ trợ Phòng chống Ma túy WeHope.\n\nChi tiết dự án:\n- Hệ thống cung cấp khảo sát trực tuyến giúp người dùng tự đánh giá nguy cơ và hiểu biết về ma túy.\n- Người dùng có thể làm khảo sát, xem kết quả và nhận khuyến nghị.\n- Dự án còn có tư vấn trực tuyến, quản lý khóa học và tin tức về phòng chống ma túy.\nNếu người dùng hỏi về dự án, khảo sát hoặc chức năng nào, hãy trả lời chi tiết dựa trên thông tin trên.\nTrả lời bằng tiếng Việt.`;
+        ? `You are WeHope AI Assistant with access to real-time system data. You can help users with:
 
-      // 3. Few-shot examples
-      const fewShot = language === 'en'
-        ? `User: What is the survey feature?\nAssistant: The survey feature helps users assess their risk and knowledge about drug use. After completing the survey, users receive instant feedback and recommendations.\nUser: What is this project about?\nAssistant: This project is a drug use prevention support system. It provides surveys, online consultation, courses, and news to help users stay informed and healthy.\nUser: How can I get advice?\nAssistant: You can use the online consultation feature to connect with experts for advice and support regarding drug prevention and health.`
-        : `User: Khảo sát là gì?\nAssistant: Chức năng khảo sát giúp bạn tự đánh giá nguy cơ và hiểu biết về ma túy. Sau khi hoàn thành, bạn sẽ nhận được kết quả và khuyến nghị phù hợp.\nUser: Dự án này là gì?\nAssistant: Đây là dự án hệ thống hỗ trợ phòng chống ma túy. Hệ thống cung cấp khảo sát, tư vấn trực tuyến, khóa học và tin tức giúp người dùng nâng cao hiểu biết và bảo vệ sức khỏe.\nUser: Làm sao để nhận tư vấn?\nAssistant: Bạn có thể sử dụng chức năng tư vấn trực tuyến để kết nối với chuyên gia và nhận hỗ trợ về phòng chống ma túy và sức khỏe.`;
+SYSTEM CAPABILITIES:
+- Course information: We have courses for different age groups (Teenagers, Young Adults, Adults)
+- Appointment booking: Users can schedule consultations with experts
+- Survey system: Anonymous assessments with personalized feedback
+- Educational resources: Latest news, blogs, and prevention materials
 
-      // 4. Context conversation
-      const conversationHistory = messages
-        .filter(msg => msg.sender === 'user')
-        .slice(-3)
-        .map(msg => `User: ${msg.text}`)
-        .join('\n');
+REAL-TIME FEATURES:
+- Check available consultation time slots
+- Browse course catalog by age group
+- Access survey results and recommendations
+- Get latest updates on drug prevention
 
-      const fullPrompt = conversationHistory
-        ? `${systemPrompt}\n\n${fewShot}\n${conversationHistory}\nUser: ${userMessage}\nAssistant:`
-        : `${systemPrompt}\n\n${fewShot}\nUser: ${userMessage}\nAssistant:`;
+Answer questions about drug prevention, our system features, and guide users to relevant pages. Keep responses helpful and under 150 words.
 
-      // Gọi Hugging Face Inference API - Sử dụng model tốt cho conversation
-      const response = await fetch('https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill', {
+USER QUESTION: `
+        : `Bạn là WeHope AI Assistant có quyền truy cập dữ liệu hệ thống thời gian thực. Bạn có thể giúp người dùng:
+
+KHẢ NĂNG HỆ THỐNG:
+- Thông tin khóa học: Chúng tôi có khóa học cho các nhóm tuổi khác nhau (Thanh thiếu niên, Người trẻ, Người lớn)
+- Đặt lịch hẹn: Người dùng có thể đặt lịch tư vấn với chuyên gia
+- Hệ thống khảo sát: Đánh giá ẩn danh với phản hồi cá nhân hóa
+- Tài nguyên giáo dục: Tin tức, blog và tài liệu phòng ngừa mới nhất
+
+TÍNH NĂNG THỜI GIAN THỰC:
+- Kiểm tra khung giờ tư vấn có sẵn
+- Xem danh mục khóa học theo nhóm tuổi
+- Truy cập kết quả khảo sát và khuyến nghị
+- Nhận cập nhật mới nhất về phòng chống ma túy
+
+Trả lời câu hỏi về phòng chống ma túy, tính năng hệ thống và hướng dẫn người dùng đến trang phù hợp. Giữ câu trả lời hữu ích và dưới 150 từ.
+
+CÂU HỎI NGƯỜI DÙNG: `;
+
+      // Continue with Gemini API call...
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          inputs: fullPrompt,
-          parameters: {
-            max_length: 100,
-            temperature: 0.8,
-            do_sample: true,
-            top_p: 0.9,
-            repetition_penalty: 1.1
-          }
+          contents: [{ parts: [{ text: systemPrompt + userMessage }] }],
+          generationConfig: {
+            maxOutputTokens: 150,
+            temperature: 0.7,
+            topP: 0.8,
+            topK: 40
+          },
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+          ]
         })
       });
 
-      if (!response.ok) {
-        throw new Error('AI service not available');
-      }
-
-      const data = await response.json();
-      
-      if (data && data[0] && data[0].generated_text) {
-        let assistantResponse = data[0].generated_text.split('Assistant:').pop()?.trim();
-        if (!assistantResponse || assistantResponse.length < 5) {
-          assistantResponse = data[0].generated_text.trim();
-        }
-        assistantResponse = assistantResponse
-          .replace(/^[^a-zA-ZÀ-ỹ]*/, '')
-          .replace(/[^a-zA-ZÀ-ỹ0-9\s.,!?-]*$/, '')
-          .trim();
-        if (assistantResponse && assistantResponse.length > 5) {
-          return assistantResponse;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          return data.candidates[0].content.parts[0].text.trim();
         }
       }
-      throw new Error('Invalid AI response');
     } catch (error) {
-      console.log('AI Error:', error.message);
-      // Fallback responses như cũ
-      const responses = fallbackResponses[language];
-      const lowerMessage = userMessage.toLowerCase();
-      if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('xin chào') || lowerMessage.includes('chào')) {
-        return responses.greetings[Math.floor(Math.random() * responses.greetings.length)];
-      }
-      if (lowerMessage.includes('drug') || lowerMessage.includes('ma túy') || lowerMessage.includes('substance')) {
-        return responses.drug_info[Math.floor(Math.random() * responses.drug_info.length)];
-      }
-      if (lowerMessage.includes('help') || lowerMessage.includes('support') || lowerMessage.includes('giúp') || lowerMessage.includes('hỗ trợ')) {
-        return responses.support[Math.floor(Math.random() * responses.support.length)];
-      }
-      if (lowerMessage.includes('prevent') || lowerMessage.includes('avoid') || lowerMessage.includes('phòng') || lowerMessage.includes('tránh')) {
-        return responses.prevention[Math.floor(Math.random() * responses.prevention.length)];
-      }
-      return responses.default[Math.floor(Math.random() * responses.default.length)];
+      console.log('Gemini AI Error:', error.message);
     }
+
+    // Fallback responses...
+    const responses = fallbackResponses[language];
+    const lowerMessage = userMessage.toLowerCase();
+
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('xin chào')) {
+      return responses.greetings[Math.floor(Math.random() * responses.greetings.length)];
+    }
+
+    return responses.default[Math.floor(Math.random() * responses.default.length)];
   };
 
   const handleSendMessage = async () => {
@@ -209,30 +289,30 @@ const Chatbot = () => {
     try {
       // Gọi AI thực thụ
       const aiResponseText = await getAIResponse(inputMessage);
-      
+
       const aiResponse = {
         id: messages.length + 2,
         text: aiResponseText,
         sender: 'bot',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
       console.error('Error getting AI response:', error);
-      
+
       // Fallback response nếu có lỗi
-      const fallbackText = language === 'en' 
+      const fallbackText = language === 'en'
         ? "I'm having trouble connecting to my AI service right now. Please try again in a moment, or feel free to ask me about drug prevention topics."
         : "Tôi đang gặp khó khăn kết nối với dịch vụ AI ngay bây giờ. Vui lòng thử lại sau, hoặc hỏi tôi về các chủ đề phòng chống ma túy.";
-      
+
       const fallbackResponse = {
         id: messages.length + 2,
         text: fallbackText,
         sender: 'bot',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, fallbackResponse]);
     } finally {
       setIsTyping(false);
@@ -249,6 +329,128 @@ const Chatbot = () => {
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'vi' : 'en');
     setMessages([]); // Clear messages when changing language
+  };
+
+  const handleQuickAction = (action) => {
+    const actionMessages = {
+      courses: language === 'en' ? 'Show me available courses' : 'Hiển thị các khóa học có sẵn',
+      appointment: language === 'en' ? 'I want to book a consultation' : 'Tôi muốn đặt lịch tư vấn',
+      survey: language === 'en' ? 'Tell me about the survey' : 'Cho tôi biết về khảo sát'
+    };
+
+    setInputMessage(actionMessages[action]);
+    handleSendMessage();
+  };
+
+  // API functions
+  const fetchCourses = async () => {
+    try {
+      console.log('Fetching courses from:', `${import.meta.env.VITE_API_URL}/course/get-all-course`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/course/get-all-course`);
+      console.log('Response status:', response.status);
+
+      const data = await response.json();
+      console.log('Courses data:', data); // Debug log
+
+      // Kiểm tra cấu trúc data
+      if (data && data.courses) {
+        console.log('Found courses:', data.courses.length);
+        return data.courses;
+      } else if (data && Array.isArray(data)) {
+        console.log('Data is array:', data.length);
+        return data;
+      } else {
+        console.log('Unexpected data structure:', data);
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      return [];
+    }
+  };
+
+  const fetchAvailableTimeSlots = async (date) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/consultation/checkAppointment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointment_date: date })
+      });
+      const data = await response.json();
+      return data.available_times || [];
+    } catch (error) {
+      console.error('Error fetching time slots:', error);
+      return [];
+    }
+  };
+
+  const bookAppointment = async (appointmentData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/consultation/addAppointment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(appointmentData)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      return { success: false, message: 'Booking failed' };
+    }
+  };
+
+  // Component để render message với clickable links
+  const MessageText = ({ text }) => {
+    const renderTextWithLinks = (text) => {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const parts = text.split(urlRegex);
+
+      return parts.map((part, index) => {
+        if (urlRegex.test(part)) {
+          return (
+            <a
+              key={index}
+              href={part}
+              className="course-link"
+              onClick={(e) => {
+                e.preventDefault();
+
+                // Kiểm tra nếu là internal link
+                if (part.includes(window.location.origin)) {
+                  const url = new URL(part);
+                  const path = url.pathname;
+                  const search = url.search; // Lấy query params
+
+                  // Điều hướng với cả path và search params
+                  if (path.startsWith('/courses/') && path.split('/').length > 2) {
+                    // Điều hướng trực tiếp với query params
+                    navigate(path + search);
+                  } else {
+                    // Điều hướng bình thường
+                    navigate(path + search);
+                  }
+                } else {
+                  // External link - mở tab mới
+                  window.open(part, '_blank');
+                }
+              }}
+            >
+              {part}
+            </a>
+          );
+        }
+        return part;
+      });
+    };
+
+    return (
+      <div className="message-text">
+        {renderTextWithLinks(text)}
+      </div>
+    );
   };
 
   return (
@@ -273,16 +475,16 @@ const Chatbot = () => {
               </div>
             </div>
             <div className="chatbot-header-right">
-              <button 
-                className="language-toggle" 
+              <button
+                className="language-toggle"
                 onClick={toggleLanguage}
                 title={language === 'en' ? 'Switch to Vietnamese' : 'Chuyển sang tiếng Anh'}
               >
                 <FaGlobe />
                 <span>{language === 'en' ? 'VI' : 'EN'}</span>
               </button>
-              <button 
-                className="close-button" 
+              <button
+                className="close-button"
                 onClick={() => setIsOpen(false)}
                 title="Close"
               >
@@ -294,22 +496,22 @@ const Chatbot = () => {
           {/* Messages Area */}
           <div className="chatbot-messages">
             {messages.map((message) => (
-              <div 
-                key={message.id} 
+              <div
+                key={message.id}
                 className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
               >
                 <div className="message-avatar">
                   {message.sender === 'user' ? <FaUser /> : <FaRobot />}
                 </div>
                 <div className="message-content">
-                  <div className="message-text">{message.text}</div>
+                  <MessageText text={message.text} />
                   <div className="message-time">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               </div>
             ))}
-            
+
             {isTyping && (
               <div className="message bot-message">
                 <div className="message-avatar">
@@ -324,9 +526,27 @@ const Chatbot = () => {
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Quick Actions - Thêm vào phần messages area, trước input */}
+          {messages.length <= 1 && (
+            <div className="quick-actions">
+              <h4>{language === 'en' ? 'Quick Actions:' : 'Hành động nhanh:'}</h4>
+              <div className="action-buttons">
+                <button onClick={() => handleQuickAction('courses')}>
+                  {language === 'en' ? '📚 View Courses' : '📚 Xem Khóa học'}
+                </button>
+                <button onClick={() => handleQuickAction('appointment')}>
+                  {language === 'en' ? '📅 Book Consultation' : '📅 Đặt lịch tư vấn'}
+                </button>
+                <button onClick={() => handleQuickAction('survey')}>
+                  {language === 'en' ? '📋 Take Survey' : '📋 Làm khảo sát'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Input Area */}
           <div className="chatbot-input">
@@ -338,7 +558,7 @@ const Chatbot = () => {
               placeholder={language === 'en' ? "Type your message..." : "Nhập tin nhắn..."}
               disabled={isTyping}
             />
-            <button 
+            <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isTyping}
               className="send-button"
@@ -352,4 +572,4 @@ const Chatbot = () => {
   );
 };
 
-export default Chatbot; 
+export default Chatbot;
