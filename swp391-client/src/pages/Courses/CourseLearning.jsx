@@ -170,9 +170,7 @@ const CourseLearning = () => {
     const videoRef = useRef(null);
     const navigate = useNavigate();
     const [num_moocs, setNumMoocs] = useState(0)
-    // ================================
-    // 1. LOGIC XỬ LÝ TIẾN TRÌNH MOOC
-    // ================================
+
     const [currentMoocData, setCurrentMoocData] = useState(null);
     const [completedMoocs, setCompletedMoocs] = useState([]);
     const [isTransitioning, setIsTransitioning] = useState(false);

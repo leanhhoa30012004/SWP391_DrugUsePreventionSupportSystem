@@ -110,7 +110,12 @@ const CourseCompleted = () => {
             >
               Back to Course List
             </button>
-            
+            <button
+              onClick={() => navigate('/course-history')}
+              className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold py-3 px-8 rounded-lg transition-all duration-300 border border-yellow-300"
+            >
+              View Course History
+            </button>
           </div>
         </div>
       </div>

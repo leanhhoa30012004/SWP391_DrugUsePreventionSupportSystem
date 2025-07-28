@@ -270,35 +270,62 @@ const CourseHistory = () => {
                                                             
                                                             <div className="space-y-3">
                                                                 {question.options.map((option, optIdx) => {
-                                                                    const isCorrect = option.text === question.answer;
-                                                                    const isUserAnswer = option.text === question.answer; // Assuming user's answer is stored in question.answer
-                                                                    
+                                                                    const isUserSelected = option.text === question.answer;
+                                                                    const isCorrectOption = option.score === 2;
+                                                                    let optionClass = '';
+                                                                    let dotClass = '';
+                                                                    let textClass = '';
+                                                                    let label = null;
+                                                                    if (question.isCorrect) {
+                                                                        // User answered correctly, highlight their answer in green
+                                                                        if (isUserSelected) {
+                                                                            optionClass = 'bg-green-50 border-green-300 shadow-sm';
+                                                                            dotClass = 'border-green-500 bg-green-500';
+                                                                            textClass = 'text-green-900 font-medium';
+                                                                            label = (
+                                                                                <span className="ml-auto text-green-600 text-sm font-bold bg-green-100 px-3 py-1 rounded-full">Correct Answer</span>
+                                                                            );
+                                                                        } else {
+                                                                            optionClass = 'bg-white border-gray-200';
+                                                                            dotClass = 'border-gray-300';
+                                                                            textClass = 'text-gray-700';
+                                                                        }
+                                                                    } else {
+                                                                        // User answered incorrectly
+                                                                        if (isUserSelected) {
+                                                                            optionClass = 'bg-red-50 border-red-300 shadow-sm';
+                                                                            dotClass = 'border-red-500 bg-red-500';
+                                                                            textClass = 'text-red-900 font-medium';
+                                                                            label = (
+                                                                                <span className="ml-auto text-red-600 text-sm font-bold bg-red-100 px-3 py-1 rounded-full">Your Answer</span>
+                                                                            );
+                                                                        } else if (isCorrectOption) {
+                                                                            optionClass = 'bg-blue-50 border-blue-300 shadow-sm';
+                                                                            dotClass = 'border-blue-500 bg-blue-500';
+                                                                            textClass = 'text-blue-900 font-medium';
+                                                                            label = (
+                                                                                <span className="ml-auto text-blue-600 text-sm font-bold bg-blue-100 px-3 py-1 rounded-full">Correct Option</span>
+                                                                            );
+                                                                        } else {
+                                                                            optionClass = 'bg-white border-gray-200';
+                                                                            dotClass = 'border-gray-300';
+                                                                            textClass = 'text-gray-700';
+                                                                        }
+                                                                    }
                                                                     return (
                                                                         <div
                                                                             key={optIdx}
-                                                                            className={`flex items-center p-4 rounded-xl border-2 transition-all duration-200 ${
-                                                                                isCorrect
-                                                                                    ? 'bg-green-50 border-green-300 shadow-sm'
-                                                                                    : 'bg-white border-gray-200'
-                                                                            }`}
+                                                                            className={`flex items-center p-4 rounded-xl border-2 transition-all duration-200 ${optionClass}`}
                                                                         >
-                                                                            <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
-                                                                                isCorrect
-                                                                                    ? 'border-green-500 bg-green-500'
-                                                                                    : 'border-gray-300'
-                                                                            }`}>
-                                                                                {isCorrect && (
+                                                                            <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${dotClass}`}>
+                                                                                {(question.isCorrect && isUserSelected) || (!question.isCorrect && isCorrectOption) ? (
                                                                                     <div className="w-2 h-2 rounded-full bg-white"></div>
-                                                                                )}
+                                                                                ) : null}
                                                                             </div>
-                                                                            <span className={`flex-1 ${isCorrect ? 'text-green-900 font-medium' : 'text-gray-700'}`}>
+                                                                            <span className={`flex-1 ${textClass}`}>
                                                                                 {option.text}
                                                                             </span>
-                                                                            {isCorrect && (
-                                                                                <span className="ml-auto text-green-600 text-sm font-bold bg-green-100 px-3 py-1 rounded-full">
-                                                                                    Correct Answer
-                                                                                </span>
-                                                                            )}
+                                                                            {label}
                                                                         </div>
                                                                     );
                                                                 })}
