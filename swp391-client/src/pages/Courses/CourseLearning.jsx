@@ -153,10 +153,10 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
 const CourseLearning = () => {
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
     const { course_id } = useParams();
-        useEffect(() => {
-    if (course_id) {
-        localStorage.setItem('course_id', course_id);
-    }
+    useEffect(() => {
+        if (course_id) {
+            localStorage.setItem('course_id', course_id);
+        }
     }, [course_id]);
     const [courseData, setCourseData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -195,15 +195,15 @@ const CourseLearning = () => {
                 if (parseData.message === 'You have completed all the content of this course') {
                     navigate('/course-completed');
                     return;
-                  }
+                }
                 const data = parseData.data;
 
                 setCourseVersion(
                     parseData.version ? parseFloat(parseData.version).toFixed(1) : '1.0'
-                  );
-                  console.log("📦 parseData.version = ", parseData.version);
+                );
+                console.log("📦 parseData.version = ", parseData.version);
 
-                                  setNumMoocs(parseData.quantity)
+                setNumMoocs(parseData.quantity)
                 //console.log('📋 Course Data from API:', data);
 
                 // Cập nhật courseData
@@ -524,7 +524,6 @@ const CourseLearning = () => {
 
     return (
         <>
-            <Navbar />
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
                 {/* Course Header với MOOC ID */}
                 <div className="relative overflow-hidden shadow-lg">

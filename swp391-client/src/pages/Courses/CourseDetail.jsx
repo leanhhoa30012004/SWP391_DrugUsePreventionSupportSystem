@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import Navbar from '../../components/Navbar/Navbar';
 
 
 function CourseDetail() {
     const location = useLocation();
     const course_name = location.state?.course_name;
+    console.log("location:", location);
     console.log("course_name:", course_name);
     const course_version = parseFloat(location?.state?.enroll_version || "1.0");
     const { course_id } = useParams()
@@ -19,7 +19,7 @@ function CourseDetail() {
     const [activeTab, setActiveTab] = useState('overview');
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
     const [isCompleted, setIsCompleted] = useState(false);
-
+    console.log(`http://localhost:3000/api/course/get-course-by-name/${course_name}`)
     // Fetch course details
     useEffect(() => {
         const fetchCourseDetail = async () => {
@@ -31,7 +31,8 @@ function CourseDetail() {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                setCourse(response.data);
+                console.log('Course detail response:', response.data);
+                setCourse(response.data[0]);
 
                 // Check if user is already enrolled
                 await checkEnrollmentStatus(course_id, course_version);
@@ -100,7 +101,6 @@ function CourseDetail() {
     if (loading) {
         return (
             <>
-                <Navbar />
                 <div className="bg-white min-h-screen py-12">
                     <div className="container mx-auto px-4">
                         <div className="flex justify-center items-center h-64">
@@ -116,7 +116,6 @@ function CourseDetail() {
     if (!course) {
         return (
             <>
-                <Navbar />
                 <div className="bg-white min-h-screen py-12">
                     <div className="container mx-auto px-4 text-center">
                         <h2 className="text-2xl font-bold text-gray-600 mb-4">Course Not Found</h2>
@@ -134,7 +133,7 @@ function CourseDetail() {
 
     return (
         <>
-            <Navbar />
+
             <div className="bg-white min-h-screen">
                 {/* Hero Section with Image Background */}
                 <div className="relative min-h-[80vh] flex items-center">
@@ -199,9 +198,9 @@ function CourseDetail() {
 
                                             <div className="absolute inset-0 bg-gradient-to-t from-gray-400 via-transparent to-transparent flex items-center justify-center">
                                                 <img
-                                                    src="https://i.pinimg.com/1200x/33/fe/4f/33fe4feb099764b201a6128d465a8c56.jpg"
+                                                    src={course.course_img || "https://i.pinimg.com/1200x/33/fe/4f/33fe4feb099764b201a6128d465a8c56.jpg"}
                                                     alt="Play Button"
-                                                    className="w-16 h-16 bg-white bg-opacity-90 rounded-full p-4 transition-all duration-200 cursor-pointer"
+                                                    className="full w-full object-cover transition-transform duration-300 hover:scale-105"
                                                 />
                                             </div>
                                         </div>
