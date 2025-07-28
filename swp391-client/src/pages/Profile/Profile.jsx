@@ -734,7 +734,7 @@ const Profile = () => {
                                 <span className="font-medium">Age Group:</span> {course.age_group || 'Not specified'}
                               </p>
                               <p className="text-sm text-gray-600">
-                                <span className="font-medium">Version:</span> {course.version || course.enroll_version}
+                                <span className="font-medium">Version:</span> {course.course_version || course.enroll_version}
                               </p>
                               <p className="text-sm text-gray-600">
                                 <span className="font-medium">Enrolled:</span> {course.created_at ? new Date(course.created_at).toLocaleDateString('vi-VN') : 'N/A'}
@@ -749,7 +749,7 @@ const Profile = () => {
                                 {course.status === 'completed' ? 'Completed' : 'Enrolled'}
                               </span>
                               <button
-                                onClick={() => navigate(`/learning/${course.course_id}`)}
+                                onClick={() => navigate(`/courses/${course.course_id}`)}
 
                                 className={`text-sm font-medium ${
                                   course.status === 'completed'

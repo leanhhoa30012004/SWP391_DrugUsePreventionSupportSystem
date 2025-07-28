@@ -154,10 +154,10 @@ const CourseLearning = () => {
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
     const { course_id } = useParams();
         useEffect(() => {
-        if (course_id) {
-            localStorage.setItem('course_id', course_id);
-        }
-        }, [course_id]);
+    if (course_id) {
+        localStorage.setItem('course_id', course_id);
+    }
+    }, [course_id]);
     const [courseData, setCourseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [videoCompleted, setVideoCompleted] = useState(false);
@@ -170,35 +170,12 @@ const CourseLearning = () => {
     const videoRef = useRef(null);
     const navigate = useNavigate();
     const [num_moocs, setNumMoocs] = useState(0)
+    // ================================
+    // 1. LOGIC XỬ LÝ TIẾN TRÌNH MOOC
+    // ================================
     const [currentMoocData, setCurrentMoocData] = useState(null);
     const [completedMoocs, setCompletedMoocs] = useState([]);
     const [isTransitioning, setIsTransitioning] = useState(false);
-    const [learningHistory, setLearningHistory] = useState(null);
-
-    // Fetch lịch sử học
-    useEffect(() => {
-    async function fetchLearningHistory() {
-        try {
-        const response = await fetch(`http://localhost:3000/api/course/get-learning-process-by-course-id-and-member-id/${uid}/${course_id}`, {
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}` // nếu cần
-            }
-        });
-        if (!response.ok) throw new Error('Network error');
-        const data = await response.json();
-        console.log("Learning History Data: ", data)
-        setLearningHistory(data);
-        } catch (err) {
-        setLearningHistory(null);
-        console.error('Fetch history error:', err);
-        }
-    }
-
-    if (uid && course_id) {
-        fetchLearningHistory();
-    }
-    }, [uid, course_id]);
 
     // Fetch course data và current MOOC
     useEffect(() => {
@@ -358,7 +335,36 @@ const CourseLearning = () => {
             const result = await response.json();
             console.log('🔄 SERVER RESPONSE:', JSON.stringify(result, null, 2));
 
-           
+            // // Tính tổng điểm
+            // const calculateTotalScore = (moocResults) => {
+            //     let total = 0;
+            //     console.log("📊 CALCULATING SCORE FROM RESPONSE:", response.score);
+
+            //     if (Array.isArray(moocResults)) {
+            //         moocResults.forEach((mooc, moocIndex) => {
+            //             console.log(`MOOC ${moocIndex + 1} (ID: ${mooc.mooc_id}):`);
+            //             console.log(`- Total Score: ${mooc.totalScore}`);
+
+            //             Object.entries(mooc.details).forEach(([questionNum, questionData]) => {
+            //                 console.log(`  Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
+            //                 total += questionData.score || 0;
+            //             });
+            //         });
+            //     } else if (moocResults && typeof moocResults === 'object') {
+            //         console.log("Single MOOC result:", moocResults);
+            //         if (moocResults.details) {
+            //             Object.entries(moocResults.details).forEach(([questionNum, questionData]) => {
+            //                 console.log(`Question ${questionNum}: ${questionData.answer} (Score: ${questionData.score})`);
+            //                 total += questionData.score || 0;
+            //             });
+            //         }
+            //     }
+
+            //     console.log(`🎯 TOTAL CALCULATED SCORE: ${total}`);
+            //     return total;
+            // };
+
+            // const totalScore = calculateTotalScore(result);
             const totalScore = result.score;
             console.log("Result", result)
             setQuizScore(totalScore);
@@ -522,37 +528,7 @@ const CourseLearning = () => {
         <>
             <Navbar />
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-                {/* Hiển thị lịch sử học nếu đã hoàn thành */}
-                {learningHistory.learning_process && (
-                  <div className="bg-yellow-50 rounded-lg p-4 mt-4 text-left max-w-4xl mx-auto">
-                    <h3 className="font-bold text-yellow-700 mb-2">Learning History Details</h3>
-                    {learningHistory.learning_process.map((mooc, idx) => (
-                      <div key={idx} className="mb-6">
-                        <div className="font-semibold text-blue-700 mb-2">MOOC ID: {mooc.mooc_id} | Total Score: {mooc.totalScore}</div>
-                        <table className="w-full text-sm border mb-2">
-                          <thead>
-                            <tr className="bg-yellow-100">
-                              <th className="border px-2 py-1">Question</th>
-                              <th className="border px-2 py-1">Selected Answer</th>
-                              <th className="border px-2 py-1">Correct/Incorrect</th>
-                              <th className="border px-2 py-1">Score</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {mooc.details && Array.isArray(mooc.details) && mooc.details.map((q, qIdx) => (
-                              <tr key={qIdx} className="border-b">
-                                <td className="border px-2 py-1">{q.question}</td>
-                                <td className="border px-2 py-1">{q.answer}</td>
-                                <td className="border px-2 py-1">{q.isCorrect ? 'Correct' : 'Incorrect'}</td>
-                                <td className="border px-2 py-1">{q.score}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Course Header với MOOC ID */}
                 <div className="relative overflow-hidden shadow-lg">
                     <img
                         src="https://i.pinimg.com/736x/e9/14/89/e91489c136aabd067406f1c55bce389b.jpg"

@@ -110,19 +110,7 @@ const CourseCompleted = () => {
             >
               Back to Course List
             </button>
-            <button
-              onClick={() => {
-                const course_id = localStorage.getItem('course_id');
-                if (!course_id || course_id === 'null' || course_id === '') {
-                  alert('Course ID not found. Please try again or contact the administrator.');
-                  return;
-                }
-                navigate(`/learning/${course_id}`, { state: { showHistory: true } });
-              }}
-              className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold py-3 px-8 rounded-lg transition-all duration-300 border border-yellow-300"
-            >
-              Detail History
-            </button>
+            
           </div>
         </div>
       </div>
