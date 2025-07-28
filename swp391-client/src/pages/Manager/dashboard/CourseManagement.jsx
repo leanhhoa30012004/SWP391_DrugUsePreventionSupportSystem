@@ -500,7 +500,7 @@ const CourseManagement = () => {
                   </td>
                   <td className="px-4 py-3 flex gap-2">
                     <button
-                      className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
+                      className="p-2 rounded-xl bg-red-600 hover:bg-red-700 text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="Edit"
                       onClick={() => {
                         setShowEdit(c);
@@ -530,7 +530,7 @@ const CourseManagement = () => {
                         });
                       }}
                     >
-                      <FaEdit />
+                      <FaEdit className="text-white" />
                     </button>
                     <button
                       className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"

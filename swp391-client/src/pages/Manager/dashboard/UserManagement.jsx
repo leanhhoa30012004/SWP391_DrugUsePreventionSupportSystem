@@ -209,7 +209,7 @@ const UserManagement = () => {
             onClick={() => setShowCreateModal(true)}
             className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
-            <span className="text-white">➕</span>
+            <span className="text-white text-lg font-bold">+</span>
             <span className="text-white font-bold">Create User</span>
           </button>
         </div>
@@ -218,32 +218,22 @@ const UserManagement = () => {
       {/* Users Table */}
       <div className="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-red-50">
+          <table className="min-w-full text-sm text-left">
+            <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase uppercase tracking-wider">
-                  Birthday
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#000000] uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-4 py-3 font-bold">User Details</th>
+                <th className="px-4 py-3 font-bold">Contact</th>
+                <th className="px-4 py-3 font-bold">Role</th>
+                <th className="px-4 py-3 font-bold">Status</th>
+                <th className="px-4 py-3 font-bold">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-red-200">
+            <tbody>
               {filteredUsers.map((user) => {
                 const uid = user.user_id || user.id || user.username;
                 return (
-                  <tr key={uid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={uid} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
+                    <td className="px-4 py-3">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
@@ -258,11 +248,11 @@ const UserManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">
                       <div className="text-sm text-[#000000]">{user.email}</div>
                       <div className="text-sm text-[#000000]">{user.phone}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3">
                       <select
                         value={user.role}
                         onChange={(e) => handleUpdateRole(uid, e.target.value)}
@@ -274,10 +264,16 @@ const UserManagement = () => {
                         <option value="member">Member</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#000000]">
-                      {user.birthday ? new Date(user.birthday).toLocaleDateString() : 'N/A'}
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
+                        user.is_active 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 py-3 text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleToggleActive(uid, user.is_active)}
@@ -292,9 +288,9 @@ const UserManagement = () => {
                             style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.10)', zIndex: 3 }}
                           >
                             {user.is_active ? (
-                              <svg className="w-4 h-4 text-red-500 mx-auto mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                              <svg className="w-4 h-4 text-white mx-auto mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                             ) : (
-                              <svg className="w-4 h-4 text-gray-500 mx-auto mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                              <svg className="w-4 h-4 text-white mx-auto mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                             )}
                           </span>
                         </button>
@@ -302,7 +298,7 @@ const UserManagement = () => {
                           {user.is_active ? 'Active' : 'Inactive'}
                         </span>
                         <button
-                          className="ml-2 p-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white"
+                          className="ml-2 p-2 rounded-lg bg-red-600 hover:bg-red-700 text-white"
                           title="Edit Profile"
                           onClick={() => {
                             setEditUserData({
@@ -318,7 +314,7 @@ const UserManagement = () => {
                             setShowEditModal(true);
                           }}
                         >
-                          <FaEdit />
+                          <FaEdit className="text-white" />
                         </button>
                       </div>
                     </td>
@@ -347,7 +343,7 @@ const UserManagement = () => {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="relative w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-fadeInUp">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-white tracking-tight">Create New User</h3>
+              <h3 className="text-2xl font-bold text-[#000000] tracking-tight">Create New User</h3>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"

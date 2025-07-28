@@ -391,10 +391,11 @@ const CommunityProgramManagement = () => {
           </div>
         </div>
         <button 
-          className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
+          className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
           onClick={handleAdd}
         >
-          <FaUsers className="text-white" /> <span className="text-white">Create New Program</span>
+          <span className="text-white text-lg font-bold">+</span>
+          <span className="text-white font-bold">Create Program</span>
         </button>
       </div>
 
@@ -495,23 +496,23 @@ const CommunityProgramManagement = () => {
                   </td>
                   {/* Participant */}
                   <td className="px-4 py-3">
-                    <span className="bg-[#fce7ef] text-[#e11d48] px-3 py-1 rounded-full text-xs font-semibold">
+                    <span className="text-gray-700 text-sm font-medium">
                       {participantCounts[p.program_id] || 0} participants
                     </span>
                   </td>
                   {/* Target */}
                   <td className="px-4 py-3">
-                    <span className="inline-block bg-[#e11d48]/10 text-[#e11d48] px-3 py-1 rounded-full text-xs font-semibold">{p.age_group}</span>
+                    <span className="text-gray-700 text-sm font-medium">{p.age_group}</span>
                   </td>
                   {/* Status */}
                   <td className="px-4 py-3">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${p.status === 'Not started' ? 'bg-gray-200 text-gray-700' : p.status === 'On going' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{p.status}</span>
+                    <span className="text-gray-700 text-sm font-medium">{p.status}</span>
                   </td>
                   {/* Actions */}
                   <td className="px-4 py-3 flex gap-2">
-                    <button title="View" onClick={() => handleView(p)} className="bg-[#fce7ef] hover:bg-[#fbcfe8] text-[#e11d48] rounded-xl p-2 shadow flex items-center justify-center transition"><FiEye size={20} /></button>
-                    <button onClick={() => handleEdit(p)} title="Edit" className="bg-[#e11d48] hover:bg-[#be123c] text-white rounded-xl p-2 shadow flex items-center justify-center transition"><MdEditSquare size={20} /></button>
-                    <button onClick={() => handleDelete(p.program_id)} title="Delete" className="bg-[#fce7ef] hover:bg-[#fbcfe8] text-black rounded-xl p-2 shadow flex items-center justify-center transition"><FiTrash2 size={20} /></button>
+                    <button title="View" onClick={() => handleView(p)} className="bg-[#fce7ef] hover:bg-[#fbcfe8] text-[#e11d48] rounded-lg p-2 shadow flex items-center justify-center transition"><FiEye /></button>
+                    <button onClick={() => handleEdit(p)} title="Edit" className="bg-red-600 hover:bg-red-700 text-white rounded-lg p-2 shadow flex items-center justify-center transition"><MdEditSquare className="text-white" /></button>
+                    <button onClick={() => handleDelete(p.program_id)} title="Delete" className="bg-[#fce7ef] hover:bg-[#fbcfe8] text-black rounded-lg p-2 shadow flex items-center justify-center transition"><FiTrash2 /></button>
                   </td>
                 </tr>
               ))}
@@ -527,7 +528,7 @@ const CommunityProgramManagement = () => {
             {/* Header */}
             <div className="flex items-center justify-between bg-[#e11d48] rounded-t-2xl p-5">
               <div className="flex items-center gap-2 text-white text-2xl font-bold">
-                <MdEditSquare />
+                <MdEditSquare className="text-white" />
                 {editData ? 'Edit Program' : 'Add Program'}
               </div>
               <button onClick={() => setShowForm(false)} className="text-white text-2xl hover:text-gray-200"><MdClose /></button>
@@ -563,8 +564,8 @@ const CommunityProgramManagement = () => {
                   </div>
                 ))}
                 <div className="flex gap-2 mt-2">
-                  <button type="button" onClick={() => handleAddDetail('text')} className="bg-[#e11d48] text-white px-3 py-1 rounded font-semibold">+ Text</button>
-                  <button type="button" onClick={() => handleAddDetail('img')} className="bg-[#e11d48] text-white px-3 py-1 rounded font-semibold">+ Image</button>
+                  <button type="button" onClick={() => handleAddDetail('text')} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-semibold">+ Text</button>
+                  <button type="button" onClick={() => handleAddDetail('img')} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded font-semibold">+ Image</button>
                 </div>
               </div>
               <div className="mb-4 flex gap-4">
@@ -638,9 +639,13 @@ const CommunityProgramManagement = () => {
                   ))}
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-6">
-                <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2 bg-gray-200 rounded font-semibold hover:bg-gray-300">Cancel</button>
-                <button type="submit" className="px-5 py-2 bg-[#e11d48] text-white rounded font-semibold hover:bg-[#be123c]">Save</button>
+              <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-3 sm:space-y-0 pt-4 justify-center items-center">
+                <button type="submit" className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]">
+                  {editData ? 'Save Changes' : 'Create Program'}
+                </button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 bg-red-200 hover:bg-red-300 text-red-700 py-2 px-4 rounded-xl font-semibold shadow-md transition-all duration-200 text-base min-w-[140px]">
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
