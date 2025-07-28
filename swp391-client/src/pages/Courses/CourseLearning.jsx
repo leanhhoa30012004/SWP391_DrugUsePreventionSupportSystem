@@ -23,9 +23,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Swal from 'sweetalert2';
 
-// ================================
-// 2. UI COMPONENT - MOOC PROGRESS BAR
-// ================================
 
 const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransitioning }) => {
     // Lấy mooc_id hiện tại từ API
@@ -156,6 +153,11 @@ const MoocProgressBar = ({ currentMoocData, completedMoocs, totalMoocs, isTransi
 const CourseLearning = () => {
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
     const { course_id } = useParams();
+        useEffect(() => {
+    if (course_id) {
+        localStorage.setItem('course_id', course_id);
+    }
+    }, [course_id]);
     const [courseData, setCourseData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [videoCompleted, setVideoCompleted] = useState(false);
