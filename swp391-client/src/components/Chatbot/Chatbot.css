@@ -517,3 +517,18 @@
 .message-text .course-link:visited {
   color: #6f42c1;
 }
+
+.message-text {
+  white-space: pre-line;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.5;
+  max-width: 100%;
+}
+
+/* Highlight available time slots */
+.message-text:has-text("Available time slots") {
+  background: rgba(40, 167, 69, 0.1);
+  border-left: 3px solid #28a745;
+  padding-left: 10px;
+}

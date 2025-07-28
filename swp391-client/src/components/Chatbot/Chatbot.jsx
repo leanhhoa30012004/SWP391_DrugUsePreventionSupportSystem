@@ -1,16 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaUser, FaGlobe } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom'; // Thêm import
+import { useNavigate } from 'react-router-dom';
 import './Chatbot.css';
 
 const Chatbot = () => {
-  const navigate = useNavigate(); // Thêm hook
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [language, setLanguage] = useState('en');
   const messagesEndRef = useRef(null);
+
+  // Thêm state trong component Chatbot
+  const [conversationContext, setConversationContext] = useState({
+    waitingForDate: false,
+    waitingForTime: false,
+    selectedDate: null,
+    availableSlots: [],
+    action: null // 'booking_date', 'booking_time', etc.
+  });
 
   // Fallback responses khi AI không hoạt động
   const fallbackResponses = {
@@ -98,56 +107,259 @@ const Chatbot = () => {
         const courses = await fetchCourses();
         if (courses.length > 0) {
           const courseList = courses.slice(0, 3).map(course => {
-            const courseId = course.course_id || course.id;
             const courseName = course.course_name || course.title;
             const ageGroup = course.age_group || 'All ages';
-            const version = course.version || course.course_version || '1.0';
-            const encodedName = encodeURIComponent(courseName);
+            return `• ${courseName} (${ageGroup})`;
+          }).join('\n');
 
-            // URL với đầy đủ params để đảm bảo hoạt động
-            const courseUrl = `${window.location.origin}/courses/${courseId}?version=${version}&name=${encodedName}`;
-
-            return `• ${courseName} (${ageGroup})\n  🔗 ${courseUrl}`;
-          }).join('\n\n');
+          const coursesUrl = `${window.location.origin}/courses`;
 
           return language === 'en'
-            ? `Here are some available courses:\n\n${courseList}\n\nClick on the links above to view course details directly.`
-            : `Đây là một số khóa học có sẵn:\n\n${courseList}\n\nBấm vào các liên kết trên để xem chi tiết khóa học.`;
+            ? `Here are some available courses:\n\n${courseList}\n\n🔗 View all courses: ${coursesUrl}\n\nVisit our Courses page to explore details and enroll.`
+            : `Đây là một số khóa học có sẵn:\n\n${courseList}\n\n🔗 Xem tất cả khóa học: ${coursesUrl}\n\nTruy cập trang Khóa học để khám phá chi tiết và đăng ký.`;
         }
       } catch (error) {
+        const coursesUrl = `${window.location.origin}/courses`;
         return language === 'en'
-          ? "I can help you find courses about drug prevention. Please visit our Courses page to see all available options."
-          : "Tôi có thể giúp bạn tìm khóa học về phòng chống ma túy. Vui lòng truy cập trang Khóa học để xem tất cả lựa chọn.";
+          ? `I can help you find courses about drug prevention.\n\n🔗 Visit our Courses page: ${coursesUrl}`
+          : `Tôi có thể giúp bạn tìm khóa học về phòng chống ma túy.\n\n🔗 Truy cập trang Khóa học: ${coursesUrl}`;
       }
     }
 
     // 2. Appointment booking
-    if (lowerMsg.includes('appointment') || lowerMsg.includes('book') || lowerMsg.includes('đặt lịch') || lowerMsg.includes('tư vấn')) {
-      if (lowerMsg.includes('today') || lowerMsg.includes('hôm nay')) {
-        try {
-          const today = new Date().toISOString().split('T')[0];
-          const timeSlots = await fetchAvailableTimeSlots(today);
+    if (lowerMsg.includes('appointment') || lowerMsg.includes('book') || lowerMsg.includes('đặt lịch') || lowerMsg.includes('tư vấn') || lowerMsg.includes('consultation')) {
+      console.log('User wants to book an appointment'); // Debug log
+      // Nếu đang đợi user nhập ngày
+      console.log('Already waiting for date input:', conversationContext.waitingForDate); // Debug log
+      if (conversationContext.waitingForDate) {
+        console.log('Processing date input:', userMessage); // Debug log
 
-          if (timeSlots.length > 0) {
-            const slots = timeSlots.slice(0, 3).join(', ');
+        const dateMatch = userMessage.match(
+          /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})|(\d{2,4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/
+        );
+        const todayMatch = lowerMsg.includes('today') || lowerMsg.includes('hôm nay');
+        const tomorrowMatch = lowerMsg.includes('tomorrow') || lowerMsg.includes('ngày mai');
+
+        let selectedDate = null;
+
+        if (todayMatch) {
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          selectedDate = `${year}-${month}-${day}`;
+          console.log('✅ Today formatted:', selectedDate);
+        } else if (tomorrowMatch) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const year = tomorrow.getFullYear();
+          const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+          const day = String(tomorrow.getDate()).padStart(2, '0');
+          selectedDate = `${year}-${month}-${day}`;
+          console.log('✅ Tomorrow formatted:', selectedDate);
+        } else if (dateMatch) {
+          // Parse date từ input với validation tốt hơn
+          const [full, d1, m1, y1, y2, m2, d2] = dateMatch;
+          const day = String(d1 || d2).padStart(2, '0');
+          const month = String(m1 || m2).padStart(2, '0');
+          const year = y1 || y2;
+
+          // Validate năm
+          if (year < 2024 || year > 2030) {
             return language === 'en'
-              ? `Available time slots for today: ${slots}. To book an appointment, please visit our Consultation page or tell me your preferred time.`
-              : `Các khung giờ có sẵn hôm nay: ${slots}. Để đặt lịch hẹn, vui lòng truy cập trang Tư vấn hoặc cho tôi biết thời gian bạn muốn.`;
-          } else {
-            return language === 'en'
-              ? "No available slots for today. Would you like to check tomorrow or another date?"
-              : "Không có khung giờ nào trống hôm nay. Bạn có muốn kiểm tra ngày mai hoặc ngày khác không?";
+              ? "❌ Please provide a valid year (2024-2030)."
+              : "❌ Vui lòng cung cấp năm hợp lệ (2024-2030).";
           }
-        } catch (error) {
+
+          selectedDate = `${year}-${month}-${day}`;
+          console.log('✅ Custom date formatted:', selectedDate);
+        }
+
+        // SỬA: Kiểm tra selectedDate có hợp lệ không
+        if (!selectedDate || selectedDate.includes('undefined') || selectedDate.includes('NaN')) {
+          console.log('❌ Invalid date format:', selectedDate);
           return language === 'en'
-            ? "I can help you book a consultation appointment. Please visit our Consultation page for real-time availability."
-            : "Tôi có thể giúp bạn đặt lịch tư vấn. Vui lòng truy cập trang Tư vấn để xem lịch trống theo thời gian thực.";
+            ? "❌ Invalid date format. Please try again with format DD/MM/YYYY or say 'today'/'tomorrow'."
+            : "❌ Định dạng ngày không hợp lệ. Vui lòng thử lại với định dạng DD/MM/YYYY hoặc nói 'hôm nay'/'ngày mai'.";
+        }
+
+        if (selectedDate) {
+          try {
+            const userData = localStorage.getItem('user');
+            console.log('Raw user data from localStorage:', userData);
+
+            if (!userData) {
+              console.log('❌ No user data in localStorage');
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: false,
+                selectedDate: null,
+                availableSlots: [],
+                action: null
+              });
+
+              return language === 'en'
+                ? "❌ Please log in first to check appointment availability."
+                : "❌ Vui lòng đăng nhập trước để kiểm tra lịch hẹn.";
+            }
+
+            const user = JSON.parse(userData);
+            console.log('Parsed user object:', user);
+
+            // SỬA: Kiểm tra nhiều trường có thể
+            const memberId = user.user_id || user.id || user.userId || user.member_id;
+            console.log('Found member ID:', memberId);
+
+            if (!memberId) {
+              console.log('❌ No member ID found in user object');
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: false,
+                selectedDate: null,
+                availableSlots: [],
+                action: null
+              });
+
+              return language === 'en'
+                ? "❌ User ID not found. Please log in again."
+                : "❌ Không tìm thấy ID người dùng. Vui lòng đăng nhập lại.";
+            }
+
+            console.log('✅ Using member ID:', memberId, 'for date:', selectedDate);
+
+            // Tiếp tục check slots với memberId và selectedDate hợp lệ
+            const availableSlots = await checkAvailableSlots(memberId, selectedDate);
+
+            console.log('Available slots found:', availableSlots);
+
+            if (availableSlots.length > 0) {
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: true,
+                selectedDate: selectedDate,
+                availableSlots: availableSlots,
+                action: 'booking_time'
+              });
+
+              const slotsList = availableSlots.map(slot => `• ${slot}`).join('\n');
+
+              return language === 'en'
+                ? `Available time slots for ${selectedDate}:\n\n${slotsList}\n\nPlease choose your preferred time slot.`
+                : `Các khung giờ trống cho ngày ${selectedDate}:\n\n${slotsList}\n\nVui lòng chọn khung giờ bạn muốn.`;
+            } else {
+              setConversationContext({
+                waitingForDate: false,
+                waitingForTime: false,
+                selectedDate: null,
+                availableSlots: [],
+                action: null
+              });
+
+              return language === 'en'
+                ? `No available slots for ${selectedDate}. Please try another date or visit our Consultation page.`
+                : `Không có khung giờ trống cho ngày ${selectedDate}. Vui lòng thử ngày khác hoặc truy cập trang Tư vấn.`;
+            }
+          } catch (error) {
+            console.error('Error checking availability:', error);
+            setConversationContext({
+              waitingForDate: false,
+              waitingForTime: false,
+              selectedDate: null,
+              availableSlots: [],
+              action: null
+            });
+
+            return language === 'en'
+              ? "Sorry, I couldn't check availability right now. Please visit our Consultation page."
+              : "Xin lỗi, tôi không thể kiểm tra lịch trống ngay bây giờ. Vui lòng truy cập trang Tư vấn.";
+          }
+        } else {
+          return language === 'en'
+            ? "Please provide a valid date (e.g., 25/12/2024, today, tomorrow)."
+            : "Vui lòng cung cấp ngày hợp lệ (ví dụ: 25/12/2024, hôm nay, ngày mai).";
         }
       }
 
+      // Nếu đang đợi user chọn giờ
+      if (conversationContext.waitingForTime) {
+        const timeInput = userMessage.trim();
+        console.log('Processing time input:', timeInput);
+        console.log('Available slots:', conversationContext.availableSlots);
+
+        // Kiểm tra xem input có match với available slots không
+        const matchedSlot = conversationContext.availableSlots.find(slot =>
+          timeInput.includes(slot) || slot.includes(timeInput)
+        );
+
+        if (matchedSlot) {
+          // Tiến hành booking
+          try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const memberId = user.user_id || user.id;
+
+            console.log('Booking appointment:', {
+              memberId,
+              date: conversationContext.selectedDate,
+              time: matchedSlot
+            });
+
+            const bookingResult = await bookSpecificAppointment(
+              memberId,
+              conversationContext.selectedDate,
+              matchedSlot
+            );
+
+            setConversationContext({
+              waitingForDate: false,
+              waitingForTime: false,
+              selectedDate: null,
+              availableSlots: [],
+              action: null
+            });
+
+            if (bookingResult.success) {
+              return language === 'en'
+                ? `✅ Appointment booked successfully!\n\nDate: ${conversationContext.selectedDate}\nTime: ${matchedSlot}\n\nYou'll receive a confirmation email shortly.`
+                : `✅ Đặt lịch hẹn thành công!\n\nNgày: ${conversationContext.selectedDate}\nGiờ: ${matchedSlot}\n\nBạn sẽ nhận được email xác nhận sớm.`;
+            } else {
+              return language === 'en'
+                ? `❌ Booking failed. The time slot might be taken. Please try again.`
+                : `❌ Đặt lịch thất bại. Khung giờ có thể đã được đặt. Vui lòng thử lại.`;
+            }
+          } catch (error) {
+            console.error('Booking error:', error);
+            setConversationContext({
+              waitingForDate: false,
+              waitingForTime: false,
+              selectedDate: null,
+              availableSlots: [],
+              action: null
+            });
+
+            return language === 'en'
+              ? "Booking failed. Please visit our Consultation page to book directly."
+              : "Đặt lịch thất bại. Vui lòng truy cập trang Tư vấn để đặt trực tiếp.";
+          }
+        } else {
+          const slotsList = conversationContext.availableSlots.map(slot => `• ${slot}`).join('\n');
+          return language === 'en'
+            ? `Please choose from these available time slots:\n\n${slotsList}`
+            : `Vui lòng chọn từ các khung giờ trống sau:\n\n${slotsList}`;
+        }
+      }
+
+      // Bắt đầu flow booking mới
+      setConversationContext({
+        waitingForDate: true,
+        action: 'booking_date',
+        waitingForTime: false,
+        selectedDate: null,
+        availableSlots: []
+      });
+
       return language === 'en'
-        ? "I can help you schedule a consultation appointment. What date would you prefer? You can also visit our Consultation page to see all available time slots."
-        : "Tôi có thể giúp bạn đặt lịch tư vấn. Bạn muốn đặt vào ngày nào? Bạn cũng có thể truy cập trang Tư vấn để xem tất cả khung giờ trống.";
+        ? "I can help you book a consultation appointment.\n\nPlease tell me your preferred date (e.g., 25/12/2024, today, tomorrow)."
+        : "Tôi có thể giúp bạn đặt lịch tư vấn.\n\nVui lòng cho tôi biết ngày bạn muốn (ví dụ: 25/12/2024, hôm nay, ngày mai).";
     }
 
     // 3. Specific course info
@@ -402,6 +614,115 @@ CÂU HỎI NGƯỜI DÙNG: `;
     }
   };
 
+  // Thêm vào phần API functions
+  const checkAvailableSlots = async (memberId, date) => {
+    try {
+      console.log('=== CHECKING AVAILABLE SLOTS ===');
+      console.log('Member ID:', memberId, '(type:', typeof memberId, ')');
+      console.log('Date:', date, '(type:', typeof date, ')');
+      console.log('Base API URL:', import.meta.env.VITE_API_URL);
+
+      // SỬA: Kiểm tra input parameters
+      if (!memberId || memberId === 'undefined' || memberId === undefined) {
+        console.error('❌ Invalid member ID:', memberId);
+        return [];
+      }
+
+      if (!date || date === 'undefined' || date === undefined || date.includes('undefined')) {
+        console.error('❌ Invalid date:', date);
+        return [];
+      }
+
+      const timeSlots = [
+        '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+        '11:00', '11:30', '13:00', '13:30', '14:00', '14:30',
+        '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+      ];
+
+      const availableSlots = [];
+
+      // Check từng time slot
+      for (const time of timeSlots) {
+        try {
+          console.log(`\n--- Checking slot: ${time} ---`);
+          const url = `${import.meta.env.VITE_API_URL}/consultation/check-appointment/${memberId}/${date}/${time}`;
+          console.log('Full URL:', url);
+
+          // SỬA: Kiểm tra URL có hợp lệ không
+          if (url.includes('undefined')) {
+            console.error('❌ URL contains undefined:', url);
+            continue;
+          }
+
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          console.log(`Response status for ${time}:`, response.status);
+          console.log(`Response ok for ${time}:`, response.ok);
+
+          if (!response.ok) {
+            console.log(`❌ HTTP error for ${time}:`, response.status, response.statusText);
+            continue;
+          }
+
+          const data = await response.json();
+          console.log(`✅ Response data for ${time}:`, data);
+
+          // Kiểm tra theo format: {status: 'success', booked: false}
+          if (data.status === 'success' && data.booked === false) {
+            availableSlots.push(time);
+            console.log(`🟢 Slot ${time} is AVAILABLE`);
+          } else {
+            console.log(`🔴 Slot ${time} is NOT AVAILABLE - Status: ${data.status}, Booked: ${data.booked}`);
+          }
+
+        } catch (error) {
+          console.error(`💥 Error checking slot ${time}:`, error);
+        }
+      }
+
+      console.log('\n=== FINAL RESULT ===');
+      console.log('Available slots found:', availableSlots);
+      console.log('Total available slots:', availableSlots.length);
+      console.log('====================\n');
+
+      return availableSlots;
+
+    } catch (error) {
+      console.error('💥 Error in checkAvailableSlots:', error);
+      return [];
+    }
+  };
+
+  const bookSpecificAppointment = async (memberId, date, time) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/consultation/addAppointment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          member_id: memberId,
+          appointment_date: date,
+          appointment_time: time
+        })
+      });
+
+      const data = await response.json();
+      return { success: response.ok, data };
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      return { success: false, message: 'Booking failed' };
+    }
+  };
+
   // Component để render message với clickable links
   const MessageText = ({ text }) => {
     const renderTextWithLinks = (text) => {
@@ -418,24 +739,11 @@ CÂU HỎI NGƯỜI DÙNG: `;
               onClick={(e) => {
                 e.preventDefault();
 
-                // Kiểm tra nếu là internal link
                 if (part.includes(window.location.origin)) {
                   const url = new URL(part);
                   const path = url.pathname;
-                  const search = url.search; // Lấy query params
-
-                  // Điều hướng với cả path và search params
-                  if (path.startsWith('/courses/') && path.split('/').length > 2) {
-                    // Điều hướng trực tiếp với query params
-                    navigate(path + search);
-                  } else {
-                    // Điều hướng bình thường
-                    navigate();
-
-
-                  }
+                  navigate(path); // Điều hướng đơn giản
                 } else {
-                  // External link - mở tab mới
                   window.open(part, '_blank');
                 }
               }}
