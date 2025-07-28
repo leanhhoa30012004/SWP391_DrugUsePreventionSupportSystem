@@ -430,7 +430,9 @@ CÂU HỎI NGƯỜI DÙNG: `;
                     navigate(path + search);
                   } else {
                     // Điều hướng bình thường
-                    navigate(path + search);
+                    navigate();
+
+
                   }
                 } else {
                   // External link - mở tab mới
