@@ -547,15 +547,14 @@ const SurveyManagement = () => {
 
       {/* Survey Table */}
       <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
-        <table className="min-w-full text-sm text-left">
+        <table className="min-w-full text-sm text-left table-fixed">
           <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
-              <th className="px-4 py-3 font-bold">Survey Details</th>
-              <th className="px-4 py-3 font-bold">Progress</th>
-              <th className="px-4 py-3 font-bold">Statistics</th>
-              <th className="px-4 py-3 font-bold">Status</th>
-              <th className="px-4 py-3 font-bold">Version</th>
-              <th className="px-4 py-3 font-bold">Actions</th>
+              <th className="px-4 py-3 font-bold" style={{width: '35%'}}>Survey Details</th>
+              <th className="px-4 py-3 font-bold" style={{width: '20%'}}>Progress</th>
+              <th className="px-4 py-3 font-bold" style={{width: '20%'}}>Statistics</th>
+              <th className="px-4 py-3 font-bold" style={{width: '12%'}}>Status</th>
+              <th className="px-4 py-3 font-bold" style={{width: '13%'}}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -583,92 +582,78 @@ const SurveyManagement = () => {
             ) : (
               filteredSurveys.map(survey => (
                 <tr key={survey.survey_id} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" style={{width: '35%'}}>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#be123c] flex items-center justify-center text-white font-bold">
                         <FaClipboardList />
                       </div>
-                      <div>
-                        <div className="font-semibold text-black flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-black truncate">
                           {survey.name || survey.survey_type}
-                          {survey.lastResponse && survey.lastResponse !== 'N/A' && (
-                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Recent activity"></span>
-                          )}
                         </div>
                         <div className="text-xs text-gray-500 flex items-center gap-2">
                           <span className="inline-block px-2 py-1 rounded-full bg-[#e11d48]/20 text-[#e11d48] font-bold text-xs border border-[#e11d48]/30">
                             {survey.type || survey.survey_type}
                           </span>
-                          {survey.lastResponse && survey.lastResponse !== 'N/A' && (
-                            <span className="text-green-600">● Recent</span>
-                          )}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" style={{width: '20%'}}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs text-black">
-                        <span>Completion</span>
-                        <span className="font-bold">{survey.completionRate || survey.completion_rate || 0}%</span>
+                        <span>Enrolled</span>
+                        <span className="font-bold">{survey.responses || 0}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className={`h-2 rounded-full ${getCompletionColor(survey.completionRate || survey.completion_rate || 0)}`}
-                          style={{ width: `${survey.completionRate || survey.completion_rate || 0}%` }}
+                          className="h-2 rounded-full bg-[#e11d48]"
+                          style={{ width: `${Math.min((survey.responses || 0) * 10, 100)}%` }}
                         ></div>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {survey.responses || 0}/{survey.participants || survey.total_participants || 0} responses
+                        {survey.responses || 0} completed
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" style={{width: '20%'}}>
                     <div className="space-y-1 text-black">
                       <div className="flex items-center gap-1 text-xs">
-                        <FaQuestionCircle className="text-[#e11d48]" /> 
-                        {survey.totalQuestions || survey.total_questions || 0} questions
+                        <FaClipboardList className="text-[#e11d48]" /> 
+                        {survey.totalQuestions || survey.total_questions || 0} lessons
                       </div>
                       <div className="flex items-center gap-1 text-xs">
-                        <FaClock className="text-[#e11d48]" /> 
-                        {survey.avgTime || survey.avg_time || 'N/A'} avg
+                        <FaCheckCircle className="text-[#e11d48]" /> 
+                        {survey.responses || 0} completed
                       </div>
                       <div className="flex items-center gap-1 text-xs">
-                        <FaUsers className="text-[#e11d48]" /> 
-                        {survey.targetAudience || survey.target_audience || 'General'}
+                        <span className="text-[#e11d48]">●</span> 
+                        {survey.type || survey.survey_type}
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+                  <td className="px-4 py-3" style={{width: '12%'}}>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold whitespace-nowrap">
                       <FaCheckCircle className="text-green-500" /> Active
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs font-bold text-[#e11d48]">
-                    {survey.version ? Number(survey.version).toFixed(1) : ''}
-                  </td>
-                  <td className="px-4 py-3 flex gap-2">
-                    <button
-                      className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
-                      title="View Details"
-                      onClick={() => setViewSurvey(survey)}
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
-                      title="Edit Survey Content"
-                      onClick={() => openContentEditor(survey)}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
-                      title="Delete Survey"
-                      onClick={() => setDeleteSurvey(survey)}
-                    >
-                      <FaTrash />
-                    </button>
+                  <td className="px-4 py-3" style={{width: '13%'}}>
+                    <div className="flex gap-1 justify-start">
+                      <button
+                        className="p-2 rounded-xl bg-red-600 hover:bg-red-700 text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
+                        title="Edit"
+                        onClick={() => openContentEditor(survey)}
+                      >
+                        <FaEdit className="text-white" />
+                      </button>
+                      <button
+                        className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
+                        title="Delete"
+                        onClick={() => setDeleteSurvey(survey)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -888,7 +873,7 @@ const SurveyManagement = () => {
                     }));
                   }}
                 >
-                  ➕ Add Question
+                  <span className="text-white text-lg font-bold">+</span> Add Question
                 </button>
               </div>
               {/* Action Buttons */}
@@ -1161,10 +1146,10 @@ const SurveyManagement = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => openEditItem(item, index)}
-                            className="text-blue-500 hover:text-blue-700"
+                            className="p-2 rounded-lg bg-red-600 hover:bg-red-700 text-white"
                             title="Edit"
                           >
-                            <FaEdit />
+                            <FaEdit className="text-white" />
                           </button>
                           <button
                             onClick={() => deleteContentItem(index)}

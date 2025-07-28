@@ -155,9 +155,10 @@ const calculateScore = (questions, answers) => {
 
 const getSurveyHistoryByMember = async (member_id) => {
   const [rows] = await db.execute(
-    `SELECT se.survey_id, u.fullname, se.response, se.date, se.enroll_version
-FROM Survey_enrollment se JOIN Users u ON se.member_id = u.user_id AND se.is_active = 1
-WHERE se.member_id = ?`,
+    `SELECT s.survey_type, se.survey_enrollment_id, se.survey_id, u.fullname, se.response, se.date, se.enroll_version
+FROM Survey_enrollment se JOIN Users u ON se.member_id = u.user_id
+JOIN Survey s ON se.survey_id = s.survey_id
+WHERE se.member_id = ? AND se.is_active = 1`,
     [member_id]
   );
   return rows;

@@ -525,6 +525,34 @@ function ConsultantManagement() {
     return appointment.appointment_date?.includes(dateFilter);
   });
 
+  const handleDeleteConsultant = async (consultantId) => {
+    if (!window.confirm('Are you sure you want to delete this consultant? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      let response;
+      try {
+        // Try with axiosInstance first
+        response = await axiosInstance.delete(`/manager/users/${consultantId}`);
+      } catch (axiosError) {
+        // Fallback to regular axios with manual headers
+        const token = localStorage.getItem('token');
+        const headers = {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        };
+        response = await axios.delete(`http://localhost:3000/api/manager/users/${consultantId}`, { headers });
+      }
+
+      showNotification('Consultant deleted successfully!', 'success');
+      fetchConsultants(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting consultant:', error);
+      showNotification('Error deleting consultant: ' + (error.response?.data?.message || error.message), 'error');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -603,13 +631,13 @@ function ConsultantManagement() {
         <table className="min-w-full text-sm text-left">
           <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
-              <th className="px-4 py-3 font-bold font-sans">Consultant</th>
-              <th className="px-4 py-3 font-bold font-sans">Contact</th>
-              <th className="px-4 py-3 font-bold font-sans">Role</th>
-              <th className="px-4 py-3 font-bold font-sans">Birthday</th>
-              <th className="px-4 py-3 font-bold font-sans">Created</th>
-              <th className="px-4 py-3 font-bold font-sans">Status</th>
-              <th className="px-4 py-3 font-bold font-sans">Actions</th>
+              <th className="px-4 py-3 font-bold">Consultant</th>
+              <th className="px-4 py-3 font-bold">Contact</th>
+              <th className="px-4 py-3 font-bold">Role</th>
+              <th className="px-4 py-3 font-bold">Birthday</th>
+              <th className="px-4 py-3 font-bold">Created</th>
+              <th className="px-4 py-3 font-bold">Status</th>
+              <th className="px-4 py-3 font-bold">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -637,7 +665,7 @@ function ConsultantManagement() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="text-black">
-                      <div className="flex items-center gap-1 text-xs">
+                      <div className="flex items-center gap-1 text-sm">
                         <FaEnvelope className="text-[#e11d48]" /> {consultant.email}
                       </div>
                     </div>
@@ -675,7 +703,7 @@ function ConsultantManagement() {
                       title="View Appointments"
                       onClick={() => fetchAppointmentsByConsultant(consultant.user_id)}
                     >
-                      <FaCalendarAlt />
+                      <FaCalendarAlt className="text-white" />
                     </button>
                     <button
                       className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
@@ -691,7 +719,7 @@ function ConsultantManagement() {
                         });
                       }}
                     >
-                      <FaEdit />
+                      <FaEdit className="text-white" />
                     </button>
                     <button
                       className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
@@ -768,7 +796,7 @@ function ConsultantManagement() {
                     </div>
                     <div>
                       <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Email</p>
-                      <p className="text-sm text-black font-medium">{viewConsultant.email}</p>
+                      <p className="text-base text-black font-medium">{viewConsultant.email}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
@@ -820,8 +848,8 @@ function ConsultantManagement() {
                     </div>
                   </div>
                   <div className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg">
-                    <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
-                      <FaEdit className="text-[#e11d48] text-xs" />
+                    <div className="w-8 h-8 bg-red-600 border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                      <FaEdit className="text-white text-xs" />
                     </div>
                     <div>
                       <p className="font-semibold text-xs text-[#e11d48] uppercase tracking-wide mb-1">Last Updated</p>
@@ -884,7 +912,7 @@ function ConsultantManagement() {
                 }}
                 className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3"
               >
-                <FaEdit className="text-lg" />
+                <FaEdit className="text-white text-lg" />
                 Edit Consultant
               </button>
               <button
@@ -993,7 +1021,7 @@ function ConsultantManagement() {
                           <td className="px-4 py-3">
                             {appointment.meeting_link ? (
                               <button
-                                className="bg-blue-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
                                 onClick={() => {
                                   window.open(appointment.meeting_link, "_blank", "noopener,noreferrer");
                                 }}
@@ -1055,12 +1083,12 @@ function ConsultantManagement() {
 
                           </td>
                           <td className="px-4 py-3">
-                            <button
-                              className={`${appointment.is_active ? "bg-green-500" : "bg-red-500 "
+                            <span
+                              className={`${appointment.is_active ? "bg-green-500" : "bg-red-500"
                                 } text-white px-3 py-1 rounded text-xs`}
                             >
                               {appointment.is_active ? "Accepted" : "Rejected"}
-                            </button>
+                            </span>
                           </td>
                         </tr>
                       );
