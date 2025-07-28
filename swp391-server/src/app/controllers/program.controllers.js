@@ -32,8 +32,6 @@ exports.registeredProgram = async (req, res) => {
         if (!check) return res.json("This program doesn't exist!")
         if (check.status === 'closed')
             return res.json('The program has ended!!!')
-        if (check.status === 'not started')
-            return res.json('The program not started!!');
         if (await programModel.checkMemberRegistered(program_id, member_id))
             return res.json('You are already registered');
         const isRegistered = await programModel.registeredProgram(program_id, member_id);

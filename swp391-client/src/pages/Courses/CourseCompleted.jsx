@@ -103,12 +103,27 @@ const CourseCompleted = () => {
             <Award className="w-12 h-12 text-yellow-400 mb-2" />
             <p className="text-gray-600 mb-6">Keep learning and growing. Your achievement has been recorded.</p>
           </div>
-          <button
-            onClick={() => navigate('/courses')}
-            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300"
-          >
-            Back to Course List
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate('/courses')}
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300"
+            >
+              Back to Course List
+            </button>
+            <button
+              onClick={() => {
+                const course_id = localStorage.getItem('course_id');
+                if (!course_id || course_id === 'null' || course_id === '') {
+                  alert('Course ID not found. Please try again or contact the administrator.');
+                  return;
+                }
+                navigate(`/learning/${course_id}`, { state: { showHistory: true } });
+              }}
+              className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold py-3 px-8 rounded-lg transition-all duration-300 border border-yellow-300"
+            >
+              Detail History
+            </button>
+          </div>
         </div>
       </div>
     </>
