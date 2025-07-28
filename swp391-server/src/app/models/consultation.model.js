@@ -35,7 +35,7 @@ WHERE a.member_id = ? AND a.is_active = 1`, [member_id])
 }
 
 const getAllAppointmentByConsultantId = async (consultant_id) => {
-    const [rows] = await db.execute(`SELECT u.fullname, a.date_sent_request, a.appointment_date, a.appointment_time, a.status, a.meeting_link
+    const [rows] = await db.execute(`SELECT a.member_id, u.fullname, a.date_sent_request, a.appointment_date, a.appointment_time, a.status, a.meeting_link
 FROM Appointment a JOIN Users u ON a.member_id = u.user_id
 WHERE a.consultant_id = ? AND a.is_active = 1`, [consultant_id])
     return rows;
@@ -164,10 +164,10 @@ ORDER BY appointment_date, appointment_time, consultant_id, status
     return row;
 }
 
-const completeAppointment = async (appointment_id) => {
+const changeAppointmentStatus = async (appointment_id, appointment_status) => {
     const [row] = await db.execute(`UPDATE Appointment
-SET status = 'completed'
-WHERE appointment_id = ?`, [appointment_id])
+SET status = ?
+WHERE appointment_id = ?`, [appointment_status, appointment_id])
     return row.affectedRows > 0
 }
 
@@ -204,6 +204,20 @@ SET status = 'rejeceted', reject_reason = ?
 WHERE certificate_id = ?`, [reject_reason, certificate_id])
     return isReject.affectedRows > 0
 }
+
+const addConsultantRefused = async (appointment_id, consultant_refused) => {
+    const [isAdd] = await db.execute(`UPDATE Appointment
+SET consultant_refused = ?
+WHERE appointment_id = ? AND is_active = 1`, [consultant_refused, appointment_id])
+    return isAdd.affectedRows > 0;
+}
+
+const changeConsultantInAppointment = async (appointment_id, consultant_id, meeting_link) => {
+    const [isChage] = await db.execute(`UPDATE Appointment
+SET consultant_id = ?, meeting_link = ?
+WHERE appointment_id = ? AND is_active = 1`, [consultant_id, meeting_link, appointment_id]);
+    return isChage.affectedRows > 0;
+}
 module.exports = {
     addAppointment,
     numberOfConsultant,
@@ -218,10 +232,12 @@ module.exports = {
     getConsultantFreeTime,
     getAppointmentById,
     getAllAppointment,
-    completeAppointment,
+    changeAppointmentStatus,
     updateConsultantProfile,
     addConsultantProfile,
     getConsultantProfileByConsultantId,
     approveCertificateRequest,
-    rejectCertificateRequest
+    rejectCertificateRequest,
+    addConsultantRefused,
+    changeConsultantInAppointment
 }

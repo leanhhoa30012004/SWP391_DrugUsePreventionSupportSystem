@@ -158,25 +158,25 @@ exports.getAllAppointment = async (req, res) => {
     }
 }
 
-exports.completeAppointment = async (req, res) => {
-    const appointment_id = req.params.appointment_id;
+exports.changeAppointmentStatus = async (req, res) => {
+    const { appointment_id, appointment_status } = req.params;
     try {
-        const isComplete = await consultationModel.completeAppointment(appointment_id);
+        const isComplete = await consultationModel.changeAppointmentStatus(appointment_id, appointment_status);
         if (isComplete) {
             //send notice to member
             const appointment = await consultationModel.getAppointmentById(appointment_id)
             await pushNotice({
                 userID: appointment.member_id,
                 title: 'Appointment Completed',
-                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been completed.`,
+                message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been ${appointment_status}`,
                 type: 'success',
                 redirect_url: `/appointments/${appointment_id}`
             });
-            return res.json('Appointment completed!')
+            return res.json('Appointment status changed!')
         }
-        else return res.json('Appointment not yet completed!')
+        else return res.json('Appointment not yet changed!')
     } catch (error) {
-        console.error('completeAppointment:', error)
+        console.error('changeAppointmentStatus:', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
     }
 }
@@ -269,5 +269,49 @@ exports.rejectCertificateRequest = async (req, res) => {
     } catch (error) {
         console.error('rejectCertificateRequest:', error)
         res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
+
+exports.changeConsultant = async (req, res) => {
+    const { appointment_id, consultant_id } = req.body;
+    try {
+        const appointment = await consultationModel.getAppointmentById(appointment_id);
+        const ListConsultantRefused = appointment.consultant_refused ? JSON.parse(appointment.consultant_refused) : [];
+        ListConsultantRefused.push(appointment.consultant_id);
+        if (!await consultationModel.addConsultantRefused(appointment_id, JSON.stringify(ListConsultantRefused))) {
+            return res.json('Failed to change consultant!');
+        }
+        const ListConsultant = await consultationModel.getConsultantFreeTime(appointment.appointment_date, appointment.appointment_time)
+        const ListConsultantFree = ListConsultant.filter(freetime => freetime.countByTime === 0 && !ListConsultantRefused.includes(freetime.user_id));
+        const freeConsultant = ListConsultantFree[Math.floor(Math.random() * ListConsultantFree.length)];
+        if (!freeConsultant) {
+            consultationModel.changeAppointmentStatus(appointment_id, 'rejected');
+            return res.json('No available consultant at this time!');
+        }
+        const meetLink = await createMeetConfig.createMeetEvent(freeConsultant.user_id, appointment.appointment_date, appointment.appointment_time, appointment.member_id);
+        const isChange = await consultationModel.changeConsultantInAppointment(appointment_id, freeConsultant.user_id, meetLink);
+        if (!isChange) {
+            return res.json('Failed to change consultant!');
+        }
+        //send notice to member
+        await pushNotice({
+            userID: appointment.member_id,
+            title: 'Consultant Changed',
+            message: `Your appointment on ${appointment.appointment_date} at ${appointment.appointment_time} has been changed to consultant ${freeConsultant.fullname}. Check your email for the new meeting link.`,
+            type: 'info',
+            redirect_url: `/appointments/${appointment_id}`
+        });
+        //send notice to consultant
+        await pushNotice({
+            userID: freeConsultant.user_id,
+            title: 'New Appointment with Member',
+            message: `You have a new appointment request from ${appointment.member_name} on ${appointment.appointment_date} at ${appointment.appointment_time}.`,
+            type: 'info',
+            redirect_url: `/appointments/${appointment_id}`
+        });
+        return res.json({ message: 'Consultant changed successfully!' });
+    } catch (error) {
+        console.error('changeConsultant:', error);
+        res.status(500).json({ error: error.message || "Internal Server Error" });
     }
 }
