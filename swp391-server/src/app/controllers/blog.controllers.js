@@ -3,7 +3,7 @@ const blogModel = require('../models/blog.model');
 const managerModel = require('../models/manager.model');
 const cloudinary = require('../../service/cloudinary.service')
 const fs = require('fs')
-
+const { pushNotice } = require('../models/notice.helper.model');
 exports.blogPost = async (req, res) => {
     const { author, title, tags, content } = req.body;
     let cover_img = null
@@ -60,7 +60,16 @@ exports.approvalBlog = async (req, res) => {
         if (blog.status === 'Approved')
             return res.json('This blog already approved!')
         const isApproved = await blogModel.approvalBlog(manager_id, blog_id);
-        if (isApproved) return res.json('Approved suceessfully')
+        if (isApproved) {
+            pushNotice({
+                userID: blog.author,
+                title: 'Blog Approved',
+                message: `Your blog titled "${blog.title}" has been approved.`,
+                type: 'success',
+                redirect_url: `/my-blogs`
+            })
+            return res.json('Approved successfully')
+        }
         res.json('Approval failed!')
     } catch (error) {
         console.error("approvalBlog: ", error);
@@ -76,7 +85,16 @@ exports.rejectblog = async (req, res) => {
         if (blog.status === 'Rejected')
             return res.json('This blog has been rejected.')
         const isRejected = await blogModel.rejectBlog(manager_id, blog_id, reject_reason)
-        if (isRejected) return res.json('Rejected successfully')
+        if (isRejected) {
+            pushNotice({
+                userID: blog.author,
+                title: 'Blog Rejected',
+                message: `Your blog titled "${blog.title}" has been rejected because: ${reject_reason}`,
+                type: 'error',
+                redirect_url: `/my-blogs`
+            })
+            return res.json('Rejected successfully')
+        }
         res.json('Refused to fail')
     } catch (error) {
         console.error('rejectBlog: ', error)

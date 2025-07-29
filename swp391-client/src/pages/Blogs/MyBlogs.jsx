@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/footer';
-import { FaHeart, FaEye, FaShareAlt } from 'react-icons/fa';
+import { FaSearch, FaCalendarAlt, FaUser, FaEye, FaHeart, FaShareAlt, FaBookmark, FaTags, FaClock, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import ImageModal from '../../components/ImageModal/ImageModal';
+import { useNavigate } from 'react-router-dom';
 
 const MyBlogs = () => {
     const [blogs, setBlogs] = useState([]);
@@ -14,14 +15,15 @@ const MyBlogs = () => {
     const [commentLoading, setCommentLoading] = useState({});
     const [selectedBlog, setSelectedBlog] = useState(null);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const navigate = useNavigate();
 
-    const user_id = localStorage.getItem('user_id');
+    const user_id = JSON.parse(localStorage.getItem('user'))?.user_id;
 
     useEffect(() => {
         if (!user_id) return;
         setLoading(true);
         setError(null);
-        fetch(`/api/blog/getAllBlogByMemberId/${user_id}`)
+        fetch(import.meta.env.VITE_API_URL + `/blog/getAllBlogByMemberId/${user_id}`)
             .then(res => {
                 if (!res.ok) throw new Error('Failed to load your blogs!');
                 return res.json();
@@ -147,11 +149,29 @@ const MyBlogs = () => {
 
     return (
         <>
-            <Navbar />
             <div className="min-h-screen bg-gray-50">
+
+
                 <div className="mx-auto px-2 py-10 max-w-[700px]">
-                    <h2 className="text-3xl font-bold mb-8 text-center text-[#e11d48]">My Blogs</h2>
-                    {sortedBlogs.length === 0 ? (
+                    {/* Tab Navigation */}
+                    <div className="flex bg-white rounded-xl shadow-lg p-2 mb-6">
+                        <button
+                            onClick={() => navigate('/blogs')}
+
+                            className="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:text-red-500 py-3 px-6 rounded-lg font-medium transition-all hover:bg-gray-50"
+
+                        >
+                            <FaUser className="text-sm" />
+                            <span>All Blogs</span>
+                        </button>
+                        <button
+                            className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-3 px-6 rounded-lg font-medium transition-all"
+
+                        >
+                            <FaBookmark className="text-sm" />
+                            <span>My Blogs</span>
+                        </button>
+                    </div>                    {sortedBlogs.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-lg p-12 text-center mt-8">
                             <p className="text-gray-600 text-lg">You haven't posted any blogs yet.</p>
                         </div>
@@ -177,12 +197,12 @@ const MyBlogs = () => {
                                     <div className="text-2xl font-semibold text-gray-900 mb-2">{blog.title}</div>
                                     <div className="text-gray-700 text-base mb-4 whitespace-pre-line">{blog.content}</div>
                                     {blog.image && (
-                                        <img 
-                                            src={blog.image} 
-                                            alt="cover" 
-                                            className="w-full rounded-xl mb-4 object-cover max-h-96 border cursor-pointer hover:opacity-90 transition-opacity" 
+                                        <img
+                                            src={blog.image}
+                                            alt="cover"
+                                            className="w-full rounded-xl mb-4 object-cover max-h-96 border cursor-pointer hover:opacity-90 transition-opacity"
                                             onClick={(e) => handleImageClick(blog, e)}
-                                            onError={e => {e.target.src='https://via.placeholder.com/600x400?text=Blog+Image'}} 
+                                            onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }}
                                         />
                                     )}
                                     {blog.tags && blog.tags.length > 0 && (
@@ -195,7 +215,7 @@ const MyBlogs = () => {
                                     <div className="flex items-center gap-10 mt-6 text-gray-500 text-xl">
                                         <button
                                             className={`flex items-center gap-2 transition font-semibold group ${likedBlogs[blog.id] ? 'text-red-500' : 'hover:text-red-500'}`}
-                                            onClick={() => {}}
+                                            onClick={() => { }}
                                             disabled
                                         >
                                             <FaHeart className={`text-2xl group-hover:scale-110 transition-transform ${likedBlogs[blog.id] ? 'fill-red-500' : ''}`} />
@@ -256,20 +276,20 @@ const MyBlogs = () => {
                     )}
                 </div>
             </div>
-            
+
             {/* Image Modal */}
             <ImageModal
                 isOpen={isImageModalOpen}
                 onClose={closeImageModal}
                 blog={selectedBlog}
-                onLike={() => {}} // Disabled for MyBlogs
+                onLike={() => { }} // Disabled for MyBlogs
                 likedBlogs={likedBlogs}
                 comments={selectedBlog ? comments[selectedBlog.id] : []}
                 commentInputs={commentInputs}
                 setCommentInputs={setCommentInputs}
                 handleCommentSubmit={handleCommentSubmit}
             />
-            
+
             <Footer />
         </>
     );

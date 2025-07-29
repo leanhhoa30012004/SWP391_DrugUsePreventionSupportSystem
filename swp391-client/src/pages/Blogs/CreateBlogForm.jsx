@@ -17,18 +17,7 @@ const CreateBlogForm = ({ onPostSuccess }) => {
 
     // Predefined tags based on WeHope categories
     const predefinedTags = [
-        'Addiction',
-        'Prevention', 
-        'Recovery',
-        'Family Support',
-        'Community',
-        'Mental Health',
-        'Drug Education',
-        'Rehabilitation',
-        'Support Groups',
-        'Health Awareness',
-        'Social Issues',
-        'Youth Protection'
+        'Addiction', 'Prevention', 'Recovery', 'Family Support', 'Community', 'Mental health'
     ];
 
     // TODO: Lấy author từ localStorage hoặc context (giả sử user_id = 1)
@@ -133,12 +122,13 @@ const CreateBlogForm = ({ onPostSuccess }) => {
                             onChange={e => setContent(e.target.value)}
                             required
                         />
-                        
+
                         {/* Tags Section with Dropdown */}
                         <div className="relative" ref={dropdownRef}>
                             <div className="flex items-center gap-2 mb-2">
                                 <input
                                     type="text"
+                                    readOnly={!isDropdownOpen}
                                     className="flex-1 border border-gray-200 focus:border-red-400 outline-none text-base px-4 py-2 rounded-lg shadow-sm"
                                     placeholder="Enter tag or select from dropdown"
                                     value={tags}
@@ -182,11 +172,10 @@ const CreateBlogForm = ({ onPostSuccess }) => {
                                                 key={index}
                                                 type="button"
                                                 onClick={() => handleTagSelect(tag)}
-                                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                                    selectedTag === tag
-                                                        ? 'bg-red-100 text-red-700 font-medium'
-                                                        : 'hover:bg-red-50 hover:text-red-600'
-                                                }`}
+                                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedTag === tag
+                                                    ? 'bg-red-100 text-red-700 font-medium'
+                                                    : 'hover:bg-red-50 hover:text-red-600'
+                                                    }`}
                                             >
                                                 {selectedTag === tag ? '● ' : ''}#{tag}
                                             </button>
