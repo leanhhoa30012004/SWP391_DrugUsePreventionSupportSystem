@@ -49,10 +49,13 @@ function Courses() {
         fetchAllCourses();
     }, []);
 
+    
     // Filter courses when filters change
     useEffect(() => {
         filterCourses();
     }, [coursesData, filters]);
+
+
 
     const searchCoursesByName = async (courseName) => {
         if (!courseName.trim()) {
