@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from 'axios'
+import Logo from '../../assets/logo-WeHope.png'
+import RegisterBg from '../../assets/Register1.jpg'
 
 const Register = () => {
   const navigate = useNavigate();
@@ -99,15 +101,28 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Register your account
-        </h2>
+    <div className="min-h-screen flex bg-gray-100">
+      {/* Left: Background image */}
+      <div className="w-1/2 hidden md:block relative">
+        <img 
+          src={RegisterBg} 
+          alt="Register Background" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/30 to-transparent opacity-80"></div>
       </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      {/* Right: Register form */}
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white">
+        <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-white">
+          <Link to="/" className="flex flex-col items-center mb-6 group">
+            <img src={Logo} alt="Logo" className="w-40 drop-shadow-lg hover:scale-105 transition-transform duration-200" />
+            <p className="text-xs text-gray-500 mt-2 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
+              ↑ Click to return to homepage
+            </p>
+          </Link>
+          <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-4">
+            Register your account
+          </h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
@@ -186,6 +201,7 @@ const Register = () => {
                   type="date"
                   required
                   value={formData.birthday}
+                  max={new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"})).toISOString().split('T')[0]}
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter your Birthday"
@@ -295,30 +311,30 @@ const Register = () => {
                 )}
               </button>
             </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or</span>
-              </div>
-            </div>
 
             <div className="mt-6">
-              <p className="text-center text-sm text-gray-600">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-red-600 hover:text-red-500"
-                >
-                  Log in
-                </Link>
-              </p>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or</span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <p className="text-center text-sm text-gray-600">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="font-medium text-red-600 hover:text-red-500"
+                  >
+                    Log in
+                  </Link>
+                </p>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

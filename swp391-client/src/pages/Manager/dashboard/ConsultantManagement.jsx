@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaUserMd, FaPhone, FaEnvelope, FaUserTie, FaStar, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaGraduationCap, FaAward, FaComments, FaTimes, FaInfo, FaSave, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
+import { FaSearch, FaPlus, FaEye, FaEyeSlash, FaEdit, FaCheckCircle, FaTimesCircle, FaUserMd, FaPhone, FaEnvelope, FaUserTie, FaStar, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaGraduationCap, FaAward, FaComments, FaTimes, FaInfo, FaSave, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
 import axiosInstance from '../../../config/axios/axiosInstance';
 import axios from 'axios';
 
 function ConsultantManagement() {
   const [consultants, setConsultants] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Changed from true to false
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [viewConsultant, setViewConsultant] = useState(null);
@@ -18,6 +18,11 @@ function ConsultantManagement() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [notification, setNotification] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Certificate related states
+  const [consultantCertificates, setConsultantCertificates] = useState([]);
+  const [certificateLoading, setCertificateLoading] = useState(false);
+  const [modalImage, setModalImage] = useState(null);
 
   // Form state for editing consultant
   const [editForm, setEditForm] = useState({
@@ -51,7 +56,10 @@ function ConsultantManagement() {
 
   const fetchConsultants = async () => {
     try {
-      setLoading(true);
+      // Only show loading if data is not available or after a delay
+      if (consultants.length === 0) {
+        setLoading(true);
+      }
 
       let response;
       try {
@@ -89,6 +97,34 @@ function ConsultantManagement() {
     } finally {
       setLoading(false);
 
+    }
+  };
+
+  // Fetch certificates for a specific consultant
+  const fetchConsultantCertificates = async (consultantId) => {
+    setCertificateLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/consultation/get-certificate-by-consultant-id/${consultantId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Certificate data received:', data);
+        setConsultantCertificates(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Certificate API error:', response.status, response.statusText);
+        setConsultantCertificates([]);
+      }
+    } catch (error) {
+      console.error('Error fetching certificates:', error);
+      setConsultantCertificates([]);
+    } finally {
+      setCertificateLoading(false);
     }
   };
 
@@ -525,34 +561,6 @@ function ConsultantManagement() {
     return appointment.appointment_date?.includes(dateFilter);
   });
 
-  const handleDeleteConsultant = async (consultantId) => {
-    if (!window.confirm('Are you sure you want to delete this consultant? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      let response;
-      try {
-        // Try with axiosInstance first
-        response = await axiosInstance.delete(`/manager/users/${consultantId}`);
-      } catch (axiosError) {
-        // Fallback to regular axios with manual headers
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        };
-        response = await axios.delete(`http://localhost:3000/api/manager/users/${consultantId}`, { headers });
-      }
-
-      showNotification('Consultant deleted successfully!', 'success');
-      fetchConsultants(); // Refresh the list
-    } catch (error) {
-      console.error('Error deleting consultant:', error);
-      showNotification('Error deleting consultant: ' + (error.response?.data?.message || error.message), 'error');
-    }
-  };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -577,13 +585,13 @@ function ConsultantManagement() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+          <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-[#e11d48]/30">
             <FaUserMd className="text-4xl text-[#e11d48]" />
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Consultant Management</h1>
             <p className="text-black text-sm md:text-base max-w-xl font-medium">
-              Support and empower your consultant team. Manage, add, and analyze consultants for the best prevention support.
+              Support and empower your consultant team.
             </p>
           </div>
         </div>
@@ -694,7 +702,10 @@ function ConsultantManagement() {
                     <button
                       className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
                       title="View Details"
-                      onClick={() => setViewConsultant(consultant)}
+                      onClick={() => {
+                        setViewConsultant(consultant);
+                        fetchConsultantCertificates(consultant.user_id);
+                      }}
                     >
                       <FaEye />
                     </button>
@@ -720,20 +731,6 @@ function ConsultantManagement() {
                       }}
                     >
                       <FaEdit className="text-white" />
-                    </button>
-                    <button
-                      className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
-                      title={Boolean(consultant.is_active) ? "Deactivate" : "Activate"}
-                      onClick={() => toggleConsultantStatus(consultant.user_id, consultant.is_active)}
-                    >
-                      {Boolean(consultant.is_active) ? <FaTimesCircle /> : <FaCheckCircle />}
-                    </button>
-                    <button
-                      className="p-2 rounded-xl bg-white hover:bg-[#fff1f2] text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
-                      title="Delete"
-                      onClick={() => handleDeleteConsultant(consultant.user_id)}
-                    >
-                      <FaTrash />
                     </button>
                   </td>
                 </tr>
@@ -892,6 +889,58 @@ function ConsultantManagement() {
                       <p className="text-sm text-black font-mono bg-gray-100 px-2 py-1 rounded font-medium border">{viewConsultant.user_id}</p>
                     </div>
                   </div>
+                </div>
+              </div>
+              
+              {/* Certificate Information */}
+              <div className="bg-white rounded-2xl p-6 shadow-none border border-[#e11d48]/20 group">
+                <h3 className="text-lg font-bold text-[#e11d48] mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white border-2 border-[#e11d48]/30 rounded-xl flex items-center justify-center shadow-none">
+                    <FaGraduationCap className="text-[#e11d48] text-sm" />
+                  </div>
+                  Certificates
+                </h3>
+                <div className="space-y-3">
+                  {certificateLoading ? (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#e11d48]"></div>
+                      <p className="text-sm text-gray-500 mt-2">Loading certificates...</p>
+                    </div>
+                  ) : consultantCertificates.filter(cert => cert.status === 'approved').length === 0 ? (
+                    <div className="text-center py-4">
+                      <FaGraduationCap className="text-gray-400 text-2xl mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No approved certificates found</p>
+                    </div>
+                  ) : (
+                    consultantCertificates
+                      .filter(cert => cert.status === 'approved')
+                      .map((cert, index) => (
+                        <div 
+                          key={cert.certificate_id || index} 
+                          className="flex items-start gap-4 p-3 bg-[#fde4ea] border border-[#e11d48] rounded-lg cursor-pointer hover:bg-[#fce7f3] transition-colors duration-200"
+                          onClick={() => setModalImage(cert.url)}
+                        >
+                          <div className="w-8 h-8 bg-white border-2 border-[#e11d48] rounded-lg flex items-center justify-center mt-0.5">
+                            <FaAward className="text-[#e11d48] text-xs" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-[#e11d48] mb-1">{cert.certificate_name}</p>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <p><strong>Expiry:</strong> {cert.expired ? new Date(cert.expired).toLocaleDateString() : 'N/A'}</p>
+                              <p><strong>Status:</strong> 
+                                <span className="ml-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                                  Approved
+                                </span>
+                              </p>
+                              {cert.date_submit && (
+                                <p><strong>Submitted:</strong> {new Date(cert.date_submit).toLocaleDateString()}</p>
+                              )}
+                              <p className="text-blue-600 text-xs mt-1 font-medium">Click to view certificate image</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1493,6 +1542,32 @@ function ConsultantManagement() {
             >
               ×
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Certificate Image Modal */}
+      {modalImage && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" 
+          onClick={() => setModalImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] m-4" onClick={e => e.stopPropagation()}>
+            <button
+              className="absolute top-0 right-0 m-4 text-black text-2xl font-bold bg-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-all duration-200 z-10 shadow-lg border border-gray-200"
+              onClick={() => setModalImage(null)}
+              title="Close"
+            >
+              ×
+            </button>
+            <img
+              src={modalImage}
+              alt="Certificate"
+              className="rounded-lg shadow-2xl max-w-full max-h-[90vh] object-contain bg-white"
+              onError={(e) => {
+                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY2NzM4ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg==';
+              }}
+            />
           </div>
         </div>
       )}
