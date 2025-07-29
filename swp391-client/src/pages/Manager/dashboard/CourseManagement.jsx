@@ -393,7 +393,7 @@ const CourseManagement = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+          <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-[#e11d48]/30">
             <FaBookOpen className="text-4xl text-[#e11d48]" />
           </div>
           <div>
@@ -1206,7 +1206,7 @@ const CourseManagement = () => {
       )}
       {/* Delete Modal */}
       {showDelete && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl min-w-[340px] animate-fade-in">
             <h2 className="text-lg font-bold mb-4">Delete Course</h2>
             <p className="mb-4">Are you sure you want to delete <b>{showDelete.name}</b>?</p>

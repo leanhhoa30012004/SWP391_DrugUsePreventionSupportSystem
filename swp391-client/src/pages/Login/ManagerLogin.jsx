@@ -141,8 +141,11 @@ const ManagerLogin = () => {
       {/* Left: Login form */}
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white order-1 md:order-none animate-fadeInLeft">
         <div className="w-full max-w-md p-10 rounded-3xl shadow-2xl bg-white transition-transform duration-300 hover:scale-[1.02]">
-          <Link to="/" className="flex justify-center mb-8">
+          <Link to="/" className="flex flex-col items-center mb-8 group">
             <img src={Logo} alt="Logo" className="w-40 drop-shadow-lg hover:scale-105 transition-transform duration-200" />
+            <p className="text-xs text-gray-500 mt-2 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
+              ↑ Click to return to homepage
+            </p>
           </Link>
           
           {/* Login Type Toggle */}

@@ -473,7 +473,7 @@ const SurveyManagement = () => {
       {/* Header with purple gradient and large clipboard icon */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+          <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-[#e11d48]/30">
             <FaClipboardList className="text-4xl text-[#e11d48]" />
           </div>
           <div>

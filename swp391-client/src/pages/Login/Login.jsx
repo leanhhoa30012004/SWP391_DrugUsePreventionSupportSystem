@@ -127,8 +127,11 @@ const Login = () => {
       {/* Right: Login form */}
       <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white">
         <div className={`w-full max-w-md p-8 rounded-2xl shadow-2xl bg-white animate-fadeInRight transition-transform duration-700 hover:scale-105 focus-within:shadow-2xl ${shake ? 'animate-shake' : ''}`}>
-          <Link to="/" className="flex justify-center mb-6">
+          <Link to="/" className="flex flex-col items-center mb-6 group">
             <img src={Logo} alt="Logo" className="w-40 drop-shadow-lg hover:scale-105 transition-transform duration-200" />
+            <p className="text-xs text-gray-500 mt-2 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
+              ↑ Click to return to homepage
+            </p>
           </Link>
           <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-4">
             Sign in to your account

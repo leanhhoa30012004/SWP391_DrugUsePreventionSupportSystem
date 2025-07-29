@@ -81,7 +81,13 @@ import Navbar from './components/Navbar/Navbar.jsx'
 
 function App() {
   const location = useLocation();
-  const hide = location.pathname.startsWith('/manager') || location.pathname.startsWith('/onlyconsultant');
+  const hide = location.pathname.startsWith('/manager') || 
+               location.pathname.startsWith('/onlyconsultant') ||
+               location.pathname === '/login' ||
+               location.pathname === '/register' ||
+               location.pathname === '/manager-login' ||
+               location.pathname === '/forgot-password' ||
+               location.pathname.startsWith('/reset-password');
 
   // Lấy userID từ localStorage, redux, context... (tùy app bạn)
   const user = JSON.parse(localStorage.getItem("user"));

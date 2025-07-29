@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaUsers, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaSearch } from 'react-icons/fa';
+import { FaUsers, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 import { FiEye, FiTrash2 } from 'react-icons/fi';
 import { MdEditSquare, MdClose } from 'react-icons/md';
 // Xóa import uuid
@@ -380,22 +380,21 @@ const CommunityProgramManagement = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+          <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-[#e11d48]/30">
             <FaUsers className="text-4xl text-[#e11d48]" />
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-[#e11d48] mb-1 drop-shadow">Community Program Management</h1>
             <p className="text-black text-sm md:text-base max-w-xl font-medium">
-              View, create, edit and analyze community programs for your organization. All in one place.
+              View, create, edit and analyze community programs for your organization.
             </p>
           </div>
         </div>
         <button 
-          className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
+          className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
           onClick={handleAdd}
         >
-          <span className="text-white text-lg font-bold">+</span>
-          <span className="text-white font-bold">Create Program</span>
+          <FaPlus className="text-white" /> <span className="text-white">Create Program</span>
         </button>
       </div>
 
@@ -510,9 +509,27 @@ const CommunityProgramManagement = () => {
                   </td>
                   {/* Actions */}
                   <td className="px-4 py-3 flex gap-2">
-                    <button title="View" onClick={() => handleView(p)} className="bg-[#fce7ef] hover:bg-[#fbcfe8] text-[#e11d48] rounded-lg p-2 shadow flex items-center justify-center transition"><FiEye /></button>
-                    <button onClick={() => handleEdit(p)} title="Edit" className="bg-red-600 hover:bg-red-700 text-white rounded-lg p-2 shadow flex items-center justify-center transition"><MdEditSquare className="text-white" /></button>
-                    <button onClick={() => handleDelete(p.program_id)} title="Delete" className="bg-[#fce7ef] hover:bg-[#fbcfe8] text-black rounded-lg p-2 shadow flex items-center justify-center transition"><FiTrash2 /></button>
+                    <button 
+                      title="View" 
+                      onClick={() => handleView(p)} 
+                      className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
+                    >
+                      <FaEye />
+                    </button>
+                    <button 
+                      onClick={() => handleEdit(p)} 
+                      title="Edit" 
+                      className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
+                    >
+                      <FaEdit className="text-white" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(p.program_id)} 
+                      title="Delete" 
+                      className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
+                    >
+                      <FaTrash className="text-white" />
+                    </button>
                   </td>
                 </tr>
               ))}

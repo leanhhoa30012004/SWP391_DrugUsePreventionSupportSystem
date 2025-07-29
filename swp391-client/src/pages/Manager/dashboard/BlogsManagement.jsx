@@ -97,7 +97,7 @@ const BlogsManagement = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-8 py-8 bg-white rounded-t-3xl shadow border-b border-[#e11d48]/20">
         <div className="flex items-center gap-4">
-          <div className="bg-white rounded-full p-4 shadow border-2 border-[#e11d48]/30">
+          <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-[#e11d48]/30">
             <FaBlog className="text-4xl text-[#e11d48]" />
           </div>
           <div>
@@ -174,11 +174,17 @@ const BlogsManagement = () => {
                     </td>
                     <td className="px-4 py-3 max-w-sm">
                       {blog.tags ? (
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">
-                              {blog.tags.split(',').length} tag{blog.tags.split(',').length > 1 ? 's' : ''}
+                        <div className="flex flex-wrap gap-1">
+                          {blog.tags.split(',').map((tag, index) => (
+                            <span 
+                              key={index}
+                              className="text-gray-700 text-xs font-bold"
+                              title={tag.trim()}
+                            >
+                              #{tag.trim()}
                             </span>
+                          ))}
+
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {blog.tags.split(',').map((tag, index) => (
@@ -191,14 +197,10 @@ const BlogsManagement = () => {
                               </span>
                             ))}
                           </div>
+
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-bold">
-                            0 tags
-                          </span>
-                          <span className="text-xs text-gray-400 italic">No tags</span>
-                        </div>
+                        <span className="text-xs text-gray-400 italic">No tags</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-700 max-w-md whitespace-normal break-words text-sm" title={blog.content}>{blog.content}</td>
@@ -259,10 +261,10 @@ const BlogsManagement = () => {
       </div>
       {/* Modal xem ảnh lớn */}
       {modalImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" onClick={() => setModalImage(null)}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setModalImage(null)}>
           <div className="relative" onClick={e => e.stopPropagation()}>
             <button
-              className="absolute top-0 right-0 m-2 text-white text-2xl font-bold bg-black bg-opacity-40 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition"
+              className="absolute top-0 right-0 m-4 text-black text-2xl font-bold bg-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-all duration-200 z-10 shadow-lg border border-gray-200"
               onClick={() => setModalImage(null)}
               title="Close"
             >

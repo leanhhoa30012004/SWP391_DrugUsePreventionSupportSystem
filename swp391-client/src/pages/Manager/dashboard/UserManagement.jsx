@@ -403,6 +403,7 @@ const UserManagement = () => {
                   type="date"
                   required
                   value={formData.birthday}
+                  max={new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"})).toISOString().split('T')[0]}
                   onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
                   className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                 />
@@ -483,6 +484,7 @@ const UserManagement = () => {
                   type="date"
                   required
                   value={editUserData.birthday}
+                  max={new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"})).toISOString().split('T')[0]}
                   onChange={(e) => setEditUserData({ ...editUserData, birthday: e.target.value })}
                   className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all bg-red-50 text-base"
                 />
