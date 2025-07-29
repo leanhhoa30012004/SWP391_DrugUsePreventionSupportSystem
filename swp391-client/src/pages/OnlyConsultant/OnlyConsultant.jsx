@@ -578,7 +578,7 @@ const ConsultantAppointmentsDashboard = () => {
                 className="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-600 hover:to-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
                 <Award className="w-5 h-5" />
-                {certificateList && certificateList.length > 0 ? "Edit Certificate" : "Add Certificate"}
+                {"Add Certificate"}
               </button>
               <button
                 onClick={handleRefresh}
