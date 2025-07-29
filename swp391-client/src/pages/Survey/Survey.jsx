@@ -12,7 +12,6 @@ import {
   Target,
   Loader
 } from 'lucide-react';
-import Navbar from '../../components/Navbar/Navbar';
 
 const SurveyPage = () => {
   const { sid } = useParams();
@@ -505,7 +504,6 @@ const SurveyPage = () => {
   if (loading) {
     return (
       <>
-        <Navbar />
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-red-600 mx-auto"></div>
@@ -519,7 +517,6 @@ const SurveyPage = () => {
   if (isSubmitted) {
     return (
       <>
-        <Navbar />
         <ResultDisplay />
       </>
     );
@@ -527,7 +524,6 @@ const SurveyPage = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-4">
         {/* Header */}
         <div className="max-w-3xl mx-auto mb-8">
