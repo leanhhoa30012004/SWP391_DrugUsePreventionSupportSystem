@@ -1,25 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { FaCertificate, FaSearch } from 'react-icons/fa';
+import { FaCertificate, FaSearch, FaTimes, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 
 const statusColor = {
   approved: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
-  pending: 'bg-yellow-100 text-yellow-700',
+  waiting: 'bg-yellow-100 text-yellow-700',
 };
 
 const CertificateManagement = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [rejectModal, setRejectModal] = useState({ isOpen: false, certificateId: null, certificateName: '', consultantName: '' });
   const [rejectReason, setRejectReason] = useState('');
-  const [rejectingCertId, setRejectingCertId] = useState(null);
+  const [rejectReasonError, setRejectReasonError] = useState('');
   const [modalImage, setModalImage] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [consultants, setConsultants] = useState([]);
+  const [actionLoading, setActionLoading] = useState({ approving: null, rejecting: null });
   
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
   const manager_id = user?.user_id;
+
+  // Common reject reasons for quick selection
+  const commonRejectReasons = [
+    "Certificate image is not clear or readable",
+    "Certificate has expired",
+    "Certificate information does not match consultant profile",
+    "Invalid or fake certificate detected",
+    "Missing required information on certificate",
+    "Certificate issued by non-recognized institution",
+    "Other (please specify)"
+  ];
+
   console.log("Manager ID:", manager_id);
 
   // Fetch consultants data
@@ -29,6 +43,11 @@ const CertificateManagement = () => {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
       const response = await fetch('http://localhost:3000/api/manager/users', { headers });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
 
       // Extract users array from response
@@ -48,7 +67,7 @@ const CertificateManagement = () => {
       return consultantUsers;
     } catch (error) {
       console.error('Error fetching consultants:', error);
-      alert('Error fetching consultants');
+      setError('Error fetching consultants: ' + error.message);
       return [];
     }
   };
@@ -102,7 +121,7 @@ const CertificateManagement = () => {
       setCertificates(allCertificates);
     } catch (err) {
       console.error('Error in fetchCertificates:', err);
-      setError('Failed to fetch certificates.');
+      setError('Failed to fetch certificates: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -129,6 +148,7 @@ const CertificateManagement = () => {
         console.log("Fetched all certificates:", data);
         setCertificates(Array.isArray(data) ? data : []);
       } else {
+        console.log("Manager endpoint not available, falling back to individual fetching");
         // Fallback to individual consultant fetching
         await fetchCertificates();
       }
@@ -142,18 +162,35 @@ const CertificateManagement = () => {
   };
 
   useEffect(() => {
-    // Try to fetch all certificates for manager first, fallback to individual fetching
-    fetchAllCertificatesForManager();
-  }, []);
-
-  const handleApprove = async (certificate_id) => {
     if (!manager_id) {
-      alert('Manager ID not found!');
+      setError('Manager ID not found in user data');
+      setLoading(false);
       return;
     }
+    fetchAllCertificatesForManager();
+  }, [manager_id]);
+
+  const handleApprove = async (certificate_id) => {
+
+    console.log("Certificate ID received:", certificate_id, typeof certificate_id);
+  
+  if (!certificate_id || certificate_id === 'undefined') {
+    alert('Certificate ID is missing!');
+    return;
+  }
+    
+    setActionLoading(prev => ({ ...prev, approving: certificate_id }));
     
     try {
       const token = localStorage.getItem('token');
+      
+      // Debug: Log the request details
+      console.log('Approving certificate:', {
+        
+        consultant_id: certificate_id,
+        token: token ? 'present' : 'missing'
+      });
+      
       const response = await fetch(`http://localhost:3000/api/consultation/approve-certificate-request/${certificate_id}`, {
         method: 'POST',
         headers: { 
@@ -163,53 +200,108 @@ const CertificateManagement = () => {
         body: JSON.stringify({ manager_id: manager_id })
       });
       
-      if (response.ok) {
-        alert('Certificate approved successfully!');
-        fetchAllCertificatesForManager(); // Refresh the data
-      } else {
-        throw new Error('Approval failed');
+      // Debug: Log response details
+      console.log('Approve response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Approve response error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
+      
+      const responseData = await response.json();
+      console.log('Approve success:', responseData);
+      
+      alert('Certificate approved successfully!');
+      fetchAllCertificatesForManager(); 
     } catch (err) {
       console.error('Approval error:', err);
-      alert('Approval failed!');
+      alert(`Approval failed: ${err.message}`);
+    } finally {
+      setActionLoading(prev => ({ ...prev, approving: null }));
     }
   };
 
-  const handleReject = async (certificate_id, reason) => {
+  const openRejectModal = (certificate_id, certificate_name, consultant_name) => {
+    console.log("Opening reject modal for certificate:>>>>>>>>>>>>>>>", certificate_id, certificate_name, consultant_name);
+    setRejectModal({
+      isOpen: true,
+      certificateId: certificate_id,
+      certificateName: certificate_name,
+      consultantName: consultant_name
+    });
+    setRejectReason('');
+    setRejectReasonError('');
+  };
+
+  const closeRejectModal = () => {
+    setRejectModal({ isOpen: false, certificateId: null, certificateName: '', consultantName: '' });
+    setRejectReason('');
+    setRejectReasonError('');
+  };
+
+  const handleReject = async () => {
     if (!manager_id) {
       alert('Manager ID not found!');
       return;
     }
-    if (!reason || !reason.trim()) {
-      alert('Please enter a reject reason!');
+    
+    if (!rejectReason || !rejectReason.trim()) {
+      setRejectReasonError('Please enter a reject reason!');
       return;
     }
     
+    if (rejectReason.trim().length < 10) {
+      setRejectReasonError('Reject reason must be at least 10 characters long');
+      return;
+    }
+    
+    setActionLoading(prev => ({ ...prev, rejecting: rejectModal.certificateId }));
+    console.log("Rejecting certificate:", rejectModal.certificateId, rejectReason.trim(), manager_id);
+    
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/consultation/reject-certificate-request/${certificate_id}`, {
+      
+      // Debug: Log the request details
+      console.log('Rejecting certificate:', {
+        certificate_id: rejectModal.certificateId,
+        manager_id,
+        reject_reason: rejectReason.trim(),
+        token: token ? 'present' : 'missing'
+      });
+      
+      const response = await fetch(`http://localhost:3000/api/consultation/reject-certificate-request/${rejectModal.certificateId}`, {
         method: 'POST',
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
-          reject_reason: reason,
+          reject_reason: rejectReason.trim(),
           manager_id: manager_id 
         })
       });
       
-      if (response.ok) {
-        alert('Certificate rejected successfully!');
-        setRejectingCertId(null);
-        setRejectReason('');
-        fetchAllCertificatesForManager(); // Refresh the data
-      } else {
-        throw new Error('Reject failed');
+      // Debug: Log response details
+      console.log('Reject response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Reject response error:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
+      
+      const responseData = await response.json();
+      console.log('Reject success:', responseData);
+      
+      alert('Certificate rejected successfully!');
+      closeRejectModal();
+      fetchAllCertificatesForManager();
     } catch (err) {
       console.error('Reject error:', err);
-      alert('Reject failed!');
+      alert(`Reject failed: ${err.message}`);
+    } finally {
+      setActionLoading(prev => ({ ...prev, rejecting: null }));
     }
   };
 
@@ -218,14 +310,13 @@ const CertificateManagement = () => {
     const consultantName = cert.consultant_info?.fullname || cert.fullname || '';
     const certificateName = cert.certificate_name || '';
     const consultantId = cert.consultant_info?.user_id || cert.consultant_id || '';
-    
+    const certificateId = cert.certificate_id ? cert.certificate_id.toString() : '';
     const matchesSearch = search === '' || 
       certificateName.toLowerCase().includes(search.toLowerCase()) ||
       consultantName.toLowerCase().includes(search.toLowerCase()) ||
-      consultantId.toString().includes(search);
-    
+      consultantId.toString().includes(search) ||
+      certificateId.includes(search);
     const matchesStatus = statusFilter === 'All' || cert.status === statusFilter;
-    
     return matchesSearch && matchesStatus;
   });
 
@@ -270,7 +361,7 @@ const CertificateManagement = () => {
             onChange={e => setStatusFilter(e.target.value)}
           >
             <option value="All">All Status</option>
-            <option value="pending">Pending</option>
+            <option value="waiting">Waiting</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
@@ -279,7 +370,14 @@ const CertificateManagement = () => {
 
       {/* Certificate Table */}
       <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
-        {error && <div className="text-red-500 mb-4 px-4">{error}</div>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded m-4">
+            <div className="flex items-center">
+              <FaExclamationTriangle className="mr-2" />
+              {error}
+            </div>
+          </div>
+        )}
         {loading ? (
           <div className="p-4 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#e11d48]"></div>
@@ -302,6 +400,7 @@ const CertificateManagement = () => {
               </thead>
               <tbody>
                 {filteredCertificates.map(cert => (
+                    
                   <tr key={cert.certificate_id} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
                     <td className="px-4 py-3 max-w-xs whitespace-normal break-words">
                       <div className="font-bold text-[#e11d48] whitespace-normal break-words text-sm">
@@ -314,10 +413,12 @@ const CertificateManagement = () => {
                         <div className="text-xs text-gray-500">
                           {cert.consultant_info.email}
                         </div>
+                        
                       )}
                     </td>
                     <td className="px-4 py-3 max-w-sm whitespace-normal break-words text-sm font-medium">
                       {cert.certificate_name || 'No name'}
+                      {console.log("Consultant Info:", JSON.stringify(cert))}
                     </td>
                     <td className="px-4 py-3">
                       {cert.url ? (
@@ -340,56 +441,55 @@ const CertificateManagement = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor[cert.status] || 'bg-gray-100 text-gray-500'}`}>
-                        {cert.status || 'pending'}
+                        {cert.status || 'waiting'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-700 text-sm max-w-xs whitespace-normal break-words">
                       {cert.reject_reason || '-'}
                     </td>
                     <td className="px-4 py-3 text-center align-middle">
-                      {(!cert.status || cert.status === 'pending') && (
+                      {(!cert.status || cert.status === 'waiting') && (
                         <div className="flex flex-col items-center gap-2">
                           <button 
-                            onClick={() => handleApprove(cert.certificate_id)} 
-                            className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold p-2 rounded-lg shadow w-24"
+                            onClick={() => {handleApprove(cert.certificate_id); console.log("Ceart"+cert.certificate_id); }} 
+                            disabled={actionLoading.approving === cert.certificate_id}
+                            className={`${
+                              actionLoading.approving === cert.certificate_id 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-green-600 hover:bg-green-700'
+                            } text-white text-sm font-semibold p-2 rounded-lg shadow w-24 flex items-center justify-center`}
                           >
-                            Approve
+                            {actionLoading.approving === cert.certificateId ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <>
+                                <FaCheck className="mr-1" />
+                                Approve
+                              </>
+                            )}
                           </button>
                           <button
-                            onClick={() => {
-                              setRejectingCertId(cert.certificate_id);
-                              setRejectReason('');
-                            }}
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold p-2 rounded-lg shadow w-24"
+                            onClick={() => openRejectModal(
+                              cert.certificate_id, 
+                              cert.certificate_name || 'Certificate', 
+                              cert.consultant_info?.fullname || 'Unknown Consultant'
+                            )}
+                            disabled={actionLoading.rejecting === cert.certificate_id}
+                            className={`${
+                              actionLoading.rejecting === cert.certificate_id 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-red-600 hover:bg-red-700'
+                            } text-white text-sm font-semibold p-2 rounded-lg shadow w-24 flex items-center justify-center`}
                           >
-                            Reject
+                            {actionLoading.rejecting === cert.certificateId ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <>
+                                <FaTimes className="mr-1" />
+                                Reject
+                              </>
+                            )}
                           </button>
-                        </div>
-                      )}
-                      {rejectingCertId === cert.certificate_id && (
-                        <div className="flex flex-col gap-2 mt-2 items-center">
-                          <input
-                            type="text"
-                            value={rejectReason}
-                            onChange={e => setRejectReason(e.target.value)}
-                            placeholder="Enter reject reason..."
-                            className="border px-2 py-1 rounded w-full text-sm"
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleReject(cert.certificate_id, rejectReason)}
-                              className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold p-2 rounded-lg shadow"
-                              disabled={!rejectReason.trim()}
-                            >
-                              Confirm Reject
-                            </button>
-                            <button
-                              onClick={() => setRejectingCertId(null)}
-                              className="bg-gray-500 hover:bg-gray-600 text-white text-sm font-semibold p-2 rounded-lg shadow"
-                            >
-                              Cancel
-                            </button>
-                          </div>
                         </div>
                       )}
                     </td>
@@ -406,7 +506,127 @@ const CertificateManagement = () => {
         )}
       </div>
 
-      {/* Modal xem ảnh lớn */}
+      {/* Reject Modal */}
+      {rejectModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-70 backdrop-blur-md">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-red-50 px-6 py-4 border-b border-red-200 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-red-100 p-2 rounded-full">
+                    <FaExclamationTriangle className="text-red-600 text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-red-800">Reject Certificate</h3>
+                    <p className="text-red-600 text-sm">Please provide a detailed reason for rejection</p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeRejectModal}
+                  className="text-red-400 hover:text-red-600 text-2xl"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {/* Certificate Info */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h4 className="font-semibold text-gray-800 mb-2">Certificate Details:</h4>
+                <div className="text-sm text-gray-600">
+                  <p><span className="font-medium">Consultant:</span> {rejectModal.consultantName}</p>
+                  <p><span className="font-medium">Certificate:</span> {rejectModal.certificateName}</p>
+                </div>
+              </div>
+
+              {/* Common Reasons */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-800 mb-3">Common Reject Reasons:</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {commonRejectReasons.map((reason, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setRejectReason(reason === "Other (please specify)" ? "" : reason)}
+                      className={`text-left p-3 rounded-lg border transition-all ${
+                        rejectReason === reason
+                          ? 'bg-red-50 border-red-300 text-red-800'
+                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Reason Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Detailed Reject Reason *
+                </label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => {
+                    setRejectReason(e.target.value);
+                    setRejectReasonError('');
+                  }}
+                  placeholder="Please provide a detailed reason for rejecting this certificate..."
+                  className={`w-full p-3 border rounded-lg resize-none h-32 ${
+                    rejectReasonError 
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                      : 'border-gray-300 focus:border-red-500 focus:ring-red-200'
+                  } focus:ring-2 focus:outline-none`}
+                />
+                {rejectReasonError && (
+                  <p className="mt-2 text-sm text-red-600 flex items-center">
+                    <FaExclamationTriangle className="mr-1" />
+                    {rejectReasonError}
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-gray-500">
+                  Minimum 10 characters required. Current: {rejectReason.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-2xl flex justify-end gap-3">
+              <button
+                onClick={closeRejectModal}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={!rejectReason.trim() || rejectReason.trim().length < 10 || actionLoading.rejecting}
+                className={`px-6 py-2 rounded-lg font-semibold transition-colors flex items-center ${
+                  !rejectReason.trim() || rejectReason.trim().length < 10 || actionLoading.rejecting
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
+              >
+                {actionLoading.rejecting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Rejecting...
+                  </>
+                ) : (
+                  <>
+                    <FaTimes className="mr-2" />
+                    Confirm Reject
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Modal */}
       {modalImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" onClick={() => setModalImage(null)}>
           <div className="relative" onClick={e => e.stopPropagation()}>

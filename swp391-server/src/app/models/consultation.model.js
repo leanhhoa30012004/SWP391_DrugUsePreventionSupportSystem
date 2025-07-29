@@ -185,7 +185,7 @@ VALUES (?, ?, ?, ?, NOW())`, [certificate.consultant_id, certificate.certificate
 }
 
 const getConsultantProfileByConsultantId = async (consultant_id) => {
-    const [profile] = await db.execute(`SELECT u.fullname, cc.certificate_name, cc.url, cc.expired, cc.date_submit, cc.date_submit, cc.status, cc.reject_reason
+    const [profile] = await db.execute(`SELECT cc.certificate_id, u.fullname, cc.certificate_name, cc.url, cc.expired, cc.date_submit, cc.date_submit, cc.status, cc.reject_reason
 FROM Consultant_certificate cc JOIN Users u ON cc.consultant_id = u.user_id
 WHERE cc.consultant_id = ?`, [consultant_id])
     return profile;
@@ -199,8 +199,9 @@ WHERE certificate_id = ?`, [certificate_id])
 }
 
 const rejectCertificateRequest = async (certificate_id, reject_reason) => {
+    console.log('Rejecting certificate request with ID:', certificate_id, 'Reason:', reject_reason);
     const [isReject] = await db.execute(`UPDATE Consultant_certificate
-SET status = 'rejeceted', reject_reason = ?
+SET status = 'rejected', reject_reason = ?
 WHERE certificate_id = ?`, [reject_reason, certificate_id])
     return isReject.affectedRows > 0
 }
