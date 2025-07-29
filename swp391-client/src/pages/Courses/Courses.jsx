@@ -167,7 +167,6 @@ function Courses() {
     if (loading) {
         return (
             <>
-                <Navbar />
                 <div className="bg-white min-h-screen py-12">
                     <div className="container mx-auto px-4">
                         <div className="flex justify-center items-center h-64">

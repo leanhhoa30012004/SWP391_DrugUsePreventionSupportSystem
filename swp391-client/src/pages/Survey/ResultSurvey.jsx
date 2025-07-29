@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { 
-  CheckCircle, 
-  AlertTriangle, 
-  FileText, 
+import {
+  CheckCircle,
+  AlertTriangle,
+  FileText,
   ArrowRight,
   Heart,
   Clock,
@@ -20,11 +20,10 @@ const ResultSurvey = () => {
   const { sid } = useParams();
 
   console.log("Survey Enrollment ID:", sid);
-  
+
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState({});
-  const [memberInfo, setMemberInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [surveyInfo, setSurveyInfo] = useState(null);
   const [error, setError] = useState(null);
@@ -33,12 +32,12 @@ const ResultSurvey = () => {
   useEffect(() => {
     // Get user information from localStorage
     try {
-      const user = JSON.parse(localStorage.getItem("user")); 
-      const userID = user?.user_id; 
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userID = user?.user_id;
       console.log("user:", userID)
       // if (userString) {
       //   const userObject = JSON.parse(userString);
-        
+
       //   setMemberInfo(userObject);
       // }
     } catch (error) {
@@ -56,24 +55,24 @@ const ResultSurvey = () => {
   const fetchSurveyResults = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       console.log("Fetching survey results for enrollment ID:", sid);
-      
+
       const response = await fetch(`http://localhost:3000/api/survey/survey-history-by-survey-enrollment-id/${sid}`, {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem('token') || ''}`,
           "Content-Type": "application/json"
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log("Survey results data:", data);
-        
+
         // Store full survey data for navigation
         setSurveyData(data);
-        
+
         // Set survey questions from survey_content
         if (data.survey_content && Array.isArray(data.survey_content)) {
           setQuestions(data.survey_content);
@@ -89,11 +88,11 @@ const ResultSurvey = () => {
           console.warn("No survey content found in response");
           setError("Survey content not found");
         }
-        
+
         // Set user answers from member_answers
         if (data.member_answers) {
           console.log("User answers:", data.member_answers);
-          
+
           // Handle different answer formats
           let parsedAnswers = {};
           if (typeof data.member_answers === 'string') {
@@ -106,13 +105,13 @@ const ResultSurvey = () => {
           } else if (typeof data.member_answers === 'object') {
             parsedAnswers = data.member_answers;
           }
-          
+
           setUserAnswers(parsedAnswers);
         } else {
           console.warn("No member answers found in response");
           setUserAnswers({});
         }
-        
+
       } else {
         console.error("Failed to fetch survey results, status:", response.status);
         const errorData = await response.text();
@@ -170,7 +169,7 @@ const ResultSurvey = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Error Loading Results</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <div className="space-y-3">
-              <button 
+              <button
                 onClick={fetchSurveyResults}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300"
               >
@@ -215,7 +214,7 @@ const ResultSurvey = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-4 flex items-center space-x-6 text-white/80">
               <div className="flex items-center">
                 <Clock className="w-5 h-5 mr-2" />
@@ -230,7 +229,7 @@ const ResultSurvey = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Survey Results Form */}
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg border border-blue-100 overflow-hidden">
@@ -247,15 +246,15 @@ const ResultSurvey = () => {
                           {q.question}
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2 pl-11">
                         {Array.isArray(q.options) && q.options.map((opt, optIndex) => {
                           const optionText = typeof opt === 'object' ? opt.text : opt;
-                          
+
                           // Check if this option is selected
                           let isSelected = false;
                           const userAnswer = userAnswers[q.id || (index + 1)];
-                          
+
                           if (q.type === "multiple_choice") {
                             // For multiple choice, check if answer is an array and includes this option
                             isSelected = Array.isArray(userAnswer) && userAnswer.includes(optionText);
@@ -263,25 +262,22 @@ const ResultSurvey = () => {
                             // For single choice, check direct equality
                             isSelected = userAnswer === optionText;
                           }
-                          
+
                           return (
-                            <div 
-                              key={optIndex} 
-                              className={`flex items-center space-x-3 py-3 px-4 rounded-lg border transition-all duration-200 ${
-                                isSelected 
-                                  ? "border-green-300 bg-green-50" 
+                            <div
+                              key={optIndex}
+                              className={`flex items-center space-x-3 py-3 px-4 rounded-lg border transition-all duration-200 ${isSelected
+                                  ? "border-green-300 bg-green-50"
                                   : "border-gray-200 bg-gray-50"
-                              }`}
+                                }`}
                             >
-                              <div className={`h-5 w-5 flex items-center justify-center ${
-                                q.type === "multiple_choice" ? "rounded" : "rounded-full"
-                              } ${
-                                isSelected 
-                                  ? "bg-green-500 text-white" 
+                              <div className={`h-5 w-5 flex items-center justify-center ${q.type === "multiple_choice" ? "rounded" : "rounded-full"
+                                } ${isSelected
+                                  ? "bg-green-500 text-white"
                                   : "bg-gray-300"
-                              }`}>
+                                }`}>
                                 {isSelected && (
-                                  q.type === "multiple_choice" 
+                                  q.type === "multiple_choice"
                                     ? <CheckCircle className="w-4 h-4" />
                                     : <div className="w-2 h-2 bg-white rounded-full"></div>
                                 )}
@@ -308,17 +304,17 @@ const ResultSurvey = () => {
                   <p className="text-sm mt-2">The survey content could not be loaded.</p>
                 </div>
               )}
-              
+
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
+                <button
                   onClick={handleBackToHistory}
                   className="bg-white border border-blue-500 text-blue-600 hover:bg-blue-50 font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center"
                 >
                   <ChevronLeft className="w-5 h-5 mr-2" />
                   <span>Back to History</span>
                 </button>
-                
-                <button 
+
+                <button
                   onClick={handleRetakeSurvey}
                   className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center group"
                 >
@@ -329,14 +325,14 @@ const ResultSurvey = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Additional information */}
           <div className="mt-8 bg-white rounded-xl shadow-lg border border-blue-100 p-6">
             <div className="flex items-center text-gray-800 mb-4">
               <AlertTriangle className="w-5 h-5 text-blue-500 mr-2" />
               <h3 className="font-semibold">Survey Review Notes</h3>
             </div>
-            
+
             <ul className="space-y-3 text-sm text-gray-600">
               <li className="flex items-start">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 mr-2"></div>

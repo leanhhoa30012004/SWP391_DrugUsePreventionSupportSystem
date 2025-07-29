@@ -1,5 +1,31 @@
 const db = require("../../config/db.config");
 
+const findByID = async (id) => {
+    const [rows] = await db.execute(`WITH Ranked AS (
+  SELECT 
+   	c.course_id , cv.course_img , cv.course_name , c.created_by , c.created_at , cv.content , cv.version, 
+    ROW_NUMBER() OVER (PARTITION BY c.course_id ORDER BY cv.version DESC) AS rn
+  FROM Course c
+  JOIN Course_version cv  ON c.course_id = cv.course_id
+  WHERE c.is_active = 1 AND cv.course_id = ?
+)
+SELECT * FROM Ranked WHERE rn = 1;`, [id]);
+    if (rows.length === 0) {
+
+        return null; // Hoặc throw new Error("Course not found");
+    }
+    return {
+        course_id: rows[0].course_id,
+        course_name: rows[0].course_name,
+        course_img: rows[0].course_img,
+        content: JSON.parse(rows[0].content),
+        created_by: rows[0].created_by,
+        created_at: rows[0].created_at,
+        version: rows[0].version,
+        age_group: rows[0].age_group,
+    }
+};
+
 const listOfCourse = async () => {
     const [rows] = await db.execute(
         `WITH Ranked AS (
@@ -438,5 +464,6 @@ module.exports = {
     listOfCourseFullInfo,
     getAllCourseForMemberByMemberId,
     getParticipantCourseByMemberId,
-    getLearningProcessByCourseIdAndMemberId
+    getLearningProcessByCourseIdAndMemberId,
+    findByID
 };

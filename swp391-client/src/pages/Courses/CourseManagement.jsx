@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import Navbar from '../../components/Navbar/Navbar';
-import logoWehope from '../../assets/logo-Wehope.png';
 
 function Courses() {
     const [filters, setFilters] = useState({
@@ -46,7 +44,6 @@ function Courses() {
 
     return (
         <>
-            <Navbar />
             <div className="bg-white min-h-screen py-12">
                 <div className="container mx-auto px-4">
                     {/* Header */}

@@ -11,10 +11,11 @@ router.get('/get-all-appointment-by-id/:member_id', consultationController.getAl
 router.get('/get-all-appointment-by-consultant-id/:consultant_id', consultationController.getAllAppointmentByConsultantId);
 router.get('/reject-appointment/:appointment_id/:is_active', consultationController.rejectAppointment)
 router.get('/get-all-appointment/:appointment_date/:appointment_time', consultationController.getAllAppointment);
-router.get('/complete-appointment/:appointment_id', consultationController.completeAppointment);
+router.get('/change-appointment-status/:appointment_id/:appointment_status', consultationController.changeAppointmentStatus);
 router.post('/update-consultant-certificate', imageUpload.single("certificate_img"), consultationController.updateCertificate);
 router.post('/add-consultant-certificate', imageUpload.single('certificate_img'), consultationController.addCertificate);
 router.get('/get-certificate-by-consultant-id/:consultant_id', consultationController.getCertificateByConsultantId);
 router.post('/approve-certificate-request/:certificate_id', protectManager, restrictTo('manager', 'admin'), consultationController.approveCertificateRequest);
 router.post('/reject-certificate-request/:certificate_id', protectManager, restrictTo('manager', 'admin'), consultationController.rejectCertificateRequest);
+router.post('/change-consultant/:appointment_id', consultationController.changeConsultant);
 module.exports = router;

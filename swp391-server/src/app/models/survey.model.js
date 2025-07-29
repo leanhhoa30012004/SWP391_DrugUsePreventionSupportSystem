@@ -158,10 +158,6 @@ const getSurveyHistoryByMember = async (member_id) => {
 FROM Survey_enrollment se JOIN Users u ON se.member_id = u.user_id
 JOIN Survey s ON se.survey_id = s.survey_id
 WHERE se.member_id = ? AND se.is_active = 1`,
-
-    `SELECT se.survey_enrollment_id, se.survey_id, u.fullname, se.response, se.date, se.enroll_version
-FROM Survey_enrollment se JOIN Users u ON se.member_id = u.user_id AND se.is_active = 1
-WHERE se.member_id = ?`,
     [member_id]
   );
   return rows;
