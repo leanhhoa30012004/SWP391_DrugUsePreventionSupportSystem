@@ -77,8 +77,7 @@ import Navbar from './components/Navbar/Navbar.jsx'
 
 function App() {
   const location = useLocation();
-  // Ẩn chatbot ở các trang manager và admin
-  const hideChatbot = location.pathname.startsWith('/manager') || location.pathname.startsWith('/admin');
+  const hide = location.pathname.startsWith('/manager') || location.pathname.startsWith('/onlyconsultant');
 
   // Lấy userID từ localStorage, redux, context... (tùy app bạn)
   const user = JSON.parse(localStorage.getItem("user"));
@@ -87,7 +86,7 @@ function App() {
 
   return (
     <NotificationProvider userID={userID}>
-      <Navbar />
+      {!hide && <><Chatbot /> <Navbar /></>}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Homepage />} />
@@ -162,8 +161,7 @@ function App() {
           <Route path="blogs" element={<BlogsManagement />} />
         </Route>
       </Routes>
-      {/* Global Chatbot - appears on all pages except manager/admin */}
-      {!hideChatbot && <Chatbot />}
+
     </NotificationProvider>
   )
 }

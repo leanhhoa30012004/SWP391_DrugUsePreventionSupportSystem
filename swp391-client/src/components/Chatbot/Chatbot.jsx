@@ -12,16 +12,14 @@ const Chatbot = () => {
   const [language, setLanguage] = useState('en');
   const messagesEndRef = useRef(null);
 
-  // Thêm state trong component Chatbot
   const [conversationContext, setConversationContext] = useState({
     waitingForDate: false,
     waitingForTime: false,
     selectedDate: null,
     availableSlots: [],
-    action: null // 'booking_date', 'booking_time', etc.
+    action: null
   });
 
-  // Fallback responses khi AI không hoạt động
   const fallbackResponses = {
     en: {
       greetings: [
@@ -97,7 +95,6 @@ const Chatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Thay thế hàm getAIResponse trong component Chatbot của bạn
   const getAIResponse = async (userMessage) => {
     const lowerMsg = userMessage.toLowerCase();
 
@@ -164,7 +161,6 @@ const Chatbot = () => {
           const month = String(m1 || m2).padStart(2, '0');
           const year = y1 || y2;
 
-          // Validate năm
           if (year < 2024 || year > 2030) {
             return language === 'en'
               ? "❌ Please provide a valid year (2024-2030)."
@@ -175,7 +171,6 @@ const Chatbot = () => {
           console.log('✅ Custom date formatted:', selectedDate);
         }
 
-        // SỬA: Kiểm tra selectedDate có hợp lệ không
         if (!selectedDate || selectedDate.includes('undefined') || selectedDate.includes('NaN')) {
           console.log('❌ Invalid date format:', selectedDate);
           return language === 'en'
@@ -206,7 +201,6 @@ const Chatbot = () => {
             const user = JSON.parse(userData);
             console.log('Parsed user object:', user);
 
-            // SỬA: Kiểm tra nhiều trường có thể
             const memberId = user.user_id || user.id || user.userId || user.member_id;
             console.log('Found member ID:', memberId);
 
@@ -227,7 +221,6 @@ const Chatbot = () => {
 
             console.log('✅ Using member ID:', memberId, 'for date:', selectedDate);
 
-            // Tiếp tục check slots với memberId và selectedDate hợp lệ
             const availableSlots = await checkAvailableSlots(memberId, selectedDate);
 
             console.log('Available slots found:', availableSlots);
@@ -280,19 +273,16 @@ const Chatbot = () => {
         }
       }
 
-      // Nếu đang đợi user chọn giờ
       if (conversationContext.waitingForTime) {
         const timeInput = userMessage.trim();
         console.log('Processing time input:', timeInput);
         console.log('Available slots:', conversationContext.availableSlots);
 
-        // Kiểm tra xem input có match với available slots không
         const matchedSlot = conversationContext.availableSlots.find(slot =>
           timeInput.includes(slot) || slot.includes(timeInput)
         );
 
         if (matchedSlot) {
-          // Tiến hành booking
           try {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const memberId = user.user_id || user.id;
@@ -348,7 +338,6 @@ const Chatbot = () => {
         }
       }
 
-      // Bắt đầu flow booking mới
       setConversationContext({
         waitingForDate: true,
         action: 'booking_date',
@@ -499,7 +488,6 @@ CÂU HỎI NGƯỜI DÙNG: `;
     setIsTyping(true);
 
     try {
-      // Gọi AI thực thụ
       const aiResponseText = await getAIResponse(inputMessage);
 
       const aiResponse = {
@@ -614,7 +602,6 @@ CÂU HỎI NGƯỜI DÙNG: `;
     }
   };
 
-  // Thêm vào phần API functions
   const checkAvailableSlots = async (memberId, date) => {
     try {
       console.log('=== CHECKING AVAILABLE SLOTS ===');
@@ -641,14 +628,12 @@ CÂU HỎI NGƯỜI DÙNG: `;
 
       const availableSlots = [];
 
-      // Check từng time slot
       for (const time of timeSlots) {
         try {
           console.log(`\n--- Checking slot: ${time} ---`);
           const url = `${import.meta.env.VITE_API_URL}/consultation/check-appointment/${memberId}/${date}/${time}`;
           console.log('Full URL:', url);
 
-          // SỬA: Kiểm tra URL có hợp lệ không
           if (url.includes('undefined')) {
             console.error('❌ URL contains undefined:', url);
             continue;
@@ -723,7 +708,6 @@ CÂU HỎI NGƯỜI DÙNG: `;
     }
   };
 
-  // Component để render message với clickable links
   const MessageText = ({ text }) => {
     const renderTextWithLinks = (text) => {
       const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -840,7 +824,6 @@ CÂU HỎI NGƯỜI DÙNG: `;
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Actions - Thêm vào phần messages area, trước input */}
           {messages.length <= 1 && (
             <div className="quick-actions">
               <h4>{language === 'en' ? 'Quick Actions:' : 'Hành động nhanh:'}</h4>
