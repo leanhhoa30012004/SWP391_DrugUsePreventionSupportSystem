@@ -239,5 +239,5 @@ module.exports = {
     approveCertificateRequest,
     rejectCertificateRequest,
     addConsultantRefused,
-    changeConsultantInAppointment
+    changeConsultantInAppointment,
 }
