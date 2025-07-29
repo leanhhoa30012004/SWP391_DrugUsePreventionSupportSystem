@@ -212,20 +212,20 @@ const SurveyHistoryPage = () => {
                     <MessageCircle className="w-5 h-5 mr-2 text-red-500" />
                     Questions & Answers
                 </h4>
-                
+
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                     {survey_content.map((question, qIndex) => {
                         // Get user answer using question id or index + 1
                         const answerKey = question.id || (qIndex + 1);
                         const userAnswer = member_answers[answerKey];
-                        
+
                         return (
                             <div key={qIndex} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                 <div className="mb-3">
                                     <p className="font-medium text-gray-800 mb-2">
                                         Q{qIndex + 1}: {question.question}
                                     </p>
-                                    
+
                                     {/* Handle multiple_choice type */}
                                     {question.type === 'multiple_choice' && question.options && (
                                         <div className="space-y-1 mb-3">
@@ -233,20 +233,19 @@ const SurveyHistoryPage = () => {
                                                 // Extract text from option (could be string or object)
                                                 const optionText = typeof option === 'string' ? option : option?.text || option;
                                                 const optionScore = typeof option === 'object' ? option?.score : null;
-                                                
+
                                                 // For multiple choice, userAnswer might be an array
-                                                const isSelected = Array.isArray(userAnswer) 
+                                                const isSelected = Array.isArray(userAnswer)
                                                     ? userAnswer.includes(optionText)
                                                     : userAnswer === optionText;
-                                                
+
                                                 return (
-                                                    <div 
-                                                        key={optIndex} 
-                                                        className={`flex items-center p-2 rounded text-sm ${
-                                                            isSelected 
-                                                                ? 'bg-red-100 text-red-700 border border-red-200' 
+                                                    <div
+                                                        key={optIndex}
+                                                        className={`flex items-center p-2 rounded text-sm ${isSelected
+                                                                ? 'bg-red-100 text-red-700 border border-red-200'
                                                                 : 'bg-white text-gray-600 border border-gray-100'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {isSelected ? (
                                                             <CheckCircle className="w-4 h-4 mr-2 text-red-500" />
@@ -272,17 +271,16 @@ const SurveyHistoryPage = () => {
                                                 // Extract text from option (could be string or object)
                                                 const optionText = typeof option === 'string' ? option : option?.text || option;
                                                 const optionScore = typeof option === 'object' ? option?.score : null;
-                                                
+
                                                 const isSelected = userAnswer === optionText;
-                                                
+
                                                 return (
-                                                    <div 
-                                                        key={optIndex} 
-                                                        className={`flex items-center p-2 rounded text-sm ${
-                                                            isSelected 
-                                                                ? 'bg-red-100 text-red-700 border border-red-200' 
+                                                    <div
+                                                        key={optIndex}
+                                                        className={`flex items-center p-2 rounded text-sm ${isSelected
+                                                                ? 'bg-red-100 text-red-700 border border-red-200'
                                                                 : 'bg-white text-gray-600 border border-gray-100'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {isSelected ? (
                                                             <CheckCircle className="w-4 h-4 mr-2 text-red-500" />
@@ -319,11 +317,10 @@ const SurveyHistoryPage = () => {
                                                     {[...Array(5)].map((_, i) => (
                                                         <div
                                                             key={i}
-                                                            className={`w-4 h-4 mr-1 rounded-full ${
-                                                                i < parseInt(userAnswer) 
-                                                                    ? 'bg-red-500' 
+                                                            className={`w-4 h-4 mr-1 rounded-full ${i < parseInt(userAnswer)
+                                                                    ? 'bg-red-500'
                                                                     : 'bg-gray-200'
-                                                            }`}
+                                                                }`}
                                                         ></div>
                                                     ))}
                                                     <span className="ml-2 text-sm font-medium">
@@ -488,7 +485,7 @@ const SurveyHistoryPage = () => {
                                                 <div className="flex space-x-2">
                                                     <button
                                                         onClick={() => toggleResultExpansion(
-                                                            result.survey_enrollment_id || index, 
+                                                            result.survey_enrollment_id || index,
                                                             result.survey_enrollment_id
                                                         )}
                                                         className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center"
@@ -518,17 +515,7 @@ const SurveyHistoryPage = () => {
                                                         {renderQuestionAnswerDetails(result.survey_enrollment_id)}
                                                     </div>
 
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <button className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center text-sm">
-                                                            <Download className="w-4 h-4 mr-1" />
-                                                            <span>Download PDF</span>
-                                                        </button>
-                                                        <button className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center text-sm">
-                                                            <Printer className="w-4 h-4 mr-1" />
-                                                            <span>Print Results</span>
-                                                        </button>
-                                                        
-                                                    </div>
+
                                                 </div>
                                             )}
                                         </div>

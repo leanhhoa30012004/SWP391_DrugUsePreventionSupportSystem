@@ -6,9 +6,6 @@ import Swal from 'sweetalert2';
 
 function CourseDetail() {
     const location = useLocation();
-    const course_name = location.state?.course_name;
-    console.log("location:", location);
-    console.log("course_name:", course_name);
     const course_version = parseFloat(location?.state?.enroll_version || "1.0");
     const { course_id } = useParams()
     const navigate = useNavigate();
@@ -19,20 +16,19 @@ function CourseDetail() {
     const [activeTab, setActiveTab] = useState('overview');
     const uid = JSON.parse(localStorage.getItem('user')).user_id;
     const [isCompleted, setIsCompleted] = useState(false);
-    console.log(`http://localhost:3000/api/course/get-course-by-name/${course_name}`)
     // Fetch course details
     useEffect(() => {
         const fetchCourseDetail = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3000/api/course/get-course-by-name/${course_name}`, {
+                const response = await axios.get(import.meta.env.VITE_API_URL + `/course/get-course-detail-by-id/${course_id}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
                 console.log('Course detail response:', response.data);
-                setCourse(response.data[0]);
+                setCourse(response.data);
 
                 // Check if user is already enrolled
                 await checkEnrollmentStatus(course_id, course_version);
@@ -59,7 +55,6 @@ function CourseDetail() {
         try {
             const response = await axios.get(`http://localhost:3000/api/course/check-enrollment-course/${uid}/${course_id}/${course_version}`
             );
-            console.log('du lieu response:', response)
             setIsEnrolled(response.data.isEnrolled || false);
             setIsCompleted(response.data.status === 'completed' || false);
 
@@ -165,7 +160,7 @@ function CourseDetail() {
                                     </div>
 
                                     <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                                        {course_name}
+                                        {course.course_name}
                                     </h1>
                                     <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl">
                                         {course.description || 'Comprehensive anti-drug training program designed to educate and prevent substance abuse through evidence-based approaches and interactive learning.'}
