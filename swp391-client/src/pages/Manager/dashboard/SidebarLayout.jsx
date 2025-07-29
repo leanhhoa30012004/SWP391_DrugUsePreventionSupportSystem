@@ -12,6 +12,7 @@ const navItems = [
   { label: 'Consultant', path: '/manager/dashboard/consultant' },
   { label: 'Community Program', path: '/manager/dashboard/community-program' },
   { label: 'Blogs', path: '/manager/dashboard/blogs'},
+  { label: 'Certificate', path: '/manager/dashboard/certificate' }
 ];
 
 const SidebarLayout = () => {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaCalendarAlt, FaUser, FaEye, FaHeart, FaShareAlt, FaBookmark, FaTags, FaClock, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/footer';
 import CreateBlogForm from './CreateBlogForm';
 import ImageModal from '../../components/ImageModal/ImageModal';
+
 
 const Blogs = () => {
     const navigate = useNavigate();
@@ -210,7 +210,6 @@ const Blogs = () => {
     if (loading) {
         return (
             <>
-                <Navbar />
                 <div className="min-h-screen flex items-center justify-center bg-gray-50">
                     <span className="text-red-500 text-xl font-semibold">Loading blogs...</span>
                 </div>
@@ -223,7 +222,6 @@ const Blogs = () => {
     if (error) {
         return (
             <>
-                <Navbar />
                 <div className="min-h-screen flex items-center justify-center bg-gray-50">
                     <span className="text-red-500 text-xl font-semibold">{error}</span>
                 </div>
@@ -234,9 +232,25 @@ const Blogs = () => {
 
     return (
         <>
-            <Navbar />
             <div className="min-h-screen bg-gray-50">
                 <div className="mx-auto px-2 py-10 max-w-[700px]">
+                    {/* Tab Navigation */}
+                    <div className="flex bg-white rounded-xl shadow-lg p-2 mb-6">
+                        <button
+                            className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-3 px-6 rounded-lg font-medium transition-all"
+                        >
+                            <FaUser className="text-sm" />
+                            <span>All Blogs</span>
+                        </button>
+                        <button
+                            onClick={() => navigate('/my-blogs')}
+                            className="flex-1 flex items-center justify-center gap-2 text-gray-600 hover:text-red-500 py-3 px-6 rounded-lg font-medium transition-all hover:bg-gray-50"
+                        >
+                            <FaBookmark className="text-sm" />
+                            <span>My Blogs</span>
+                        </button>
+                    </div>
+
                     {/* Create Blog Form */}
                     <CreateBlogForm onPostSuccess={fetchBlogs} />
 
@@ -269,12 +283,12 @@ const Blogs = () => {
                                     <div className="text-2xl font-semibold text-gray-900 mb-2">{blog.title}</div>
                                     <div className="text-gray-700 text-base mb-4 whitespace-pre-line">{blog.content}</div>
                                     {blog.image && (
-                                        <img 
-                                            src={blog.image} 
-                                            alt="cover" 
-                                            className="w-full rounded-xl mb-4 object-cover max-h-96 border cursor-pointer hover:opacity-90 transition-opacity" 
+                                        <img
+                                            src={blog.image}
+                                            alt="cover"
+                                            className="w-full rounded-xl mb-4 object-cover max-h-96 border cursor-pointer hover:opacity-90 transition-opacity"
                                             onClick={(e) => handleImageClick(blog, e)}
-                                            onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }} 
+                                            onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Blog+Image' }}
                                         />
                                     )}
                                     {blog.tags && blog.tags.length > 0 && (
@@ -347,7 +361,7 @@ const Blogs = () => {
                     )}
                 </div>
             </div>
-            
+
             {/* Image Modal */}
             <ImageModal
                 isOpen={isImageModalOpen}
@@ -360,7 +374,7 @@ const Blogs = () => {
                 setCommentInputs={setCommentInputs}
                 handleCommentSubmit={handleCommentSubmit}
             />
-            
+
             <Footer />
         </>
     );

@@ -73,12 +73,15 @@ import { NotificationProvider } from "./context/NotificationContext";
 import AppointmentPage from './components/Navbar/Appointment.jsx'
 import ResultSurvey from './pages/Survey/ResultSurvey.jsx'
 import CourseHistory from './pages/Courses/CourseHistory.jsx'
+
+import CertificateManagement from './pages/Manager/dashboard/CertificateManagement.jsx'
+
 import Navbar from './components/Navbar/Navbar.jsx'
+
 
 function App() {
   const location = useLocation();
-  // Ẩn chatbot ở các trang manager và admin
-  const hideChatbot = location.pathname.startsWith('/manager') || location.pathname.startsWith('/admin');
+  const hide = location.pathname.startsWith('/manager') || location.pathname.startsWith('/onlyconsultant');
 
   // Lấy userID từ localStorage, redux, context... (tùy app bạn)
   const user = JSON.parse(localStorage.getItem("user"));
@@ -87,7 +90,7 @@ function App() {
 
   return (
     <NotificationProvider userID={userID}>
-      <Navbar />
+      {!hide && <><Chatbot /> <Navbar /></>}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Homepage />} />
@@ -160,10 +163,11 @@ function App() {
           <Route path="consultant" element={<ConsultantManagement />} />
           <Route path="community-program" element={<CommunityProgramManagement />} />
           <Route path="blogs" element={<BlogsManagement />} />
+          <Route path="certificate" element={<CertificateManagement/>} />
+
         </Route>
       </Routes>
-      {/* Global Chatbot - appears on all pages except manager/admin */}
-      {!hideChatbot && <Chatbot />}
+
     </NotificationProvider>
   )
 }

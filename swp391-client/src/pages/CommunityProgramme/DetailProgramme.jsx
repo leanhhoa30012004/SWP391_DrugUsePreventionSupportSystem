@@ -26,7 +26,7 @@ function ProgramDetail() {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                
+
                 const response_ = await axios.get(`http://localhost:3000/api/program/get-all-member-by-program-id/${program_id}`, {
                     headers: {
                         'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ function ProgramDetail() {
                 } else {
                     throw new Error('Program not found');
                 }
-                
+
             } catch (err) {
                 console.error("Program detail API error:", err);
                 Swal.fire({
@@ -92,7 +92,7 @@ function ProgramDetail() {
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
-                
+
             } else {
                 throw new Error(response.data);
             }
@@ -179,10 +179,10 @@ function ProgramDetail() {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
                         }
                     });
-                    
+
                     const updatedStatus = updatedResponse.data.find(i => i.fullname == fname)?.status;
                     setParticipantStatus(updatedStatus);
-                    
+
                     console.log('Updated status:', updatedStatus);
                 } catch (refreshError) {
                     console.error('Error refreshing data:', refreshError);

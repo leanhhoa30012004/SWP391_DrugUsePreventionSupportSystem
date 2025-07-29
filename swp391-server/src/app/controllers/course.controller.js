@@ -41,6 +41,19 @@ exports.checkEnrollmentCourse = async (req, res) => {
         res.status(500).json({ error: error.message || "Internal Server Error" })
     }
 }
+exports.getCourseDetailByID = async (req, res) => {
+    const course_id = req.params.course_id;
+    try {
+        const course = await courseModel.findByID(course_id);
+        if (!course) {
+            return res.status(404).json({ error: "Course not found" });
+        }
+        res.json(course);
+    } catch (error) {
+        console.log('getCourseDetailByID error: ', error)
+        res.status(500).json({ error: error.message || "Internal Server Error" })
+    }
+}
 exports.memberContinuesLearnCourseById = async (req, res) => {
     const { member_id, course_id } = req.params;
     try {
