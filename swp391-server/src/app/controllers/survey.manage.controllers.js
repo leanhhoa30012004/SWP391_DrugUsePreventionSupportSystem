@@ -1,14 +1,10 @@
 const surveyModels = require("../models/survey.model");
 exports.createSurvey = async (req, res) => {
-  console.log("req.body:", req.body);
-  const { survey_type, content } = req.body;
-  const created_by = req.user.user_id; // Assuming user_id is set in the request by authentication middleware
+
+  const survey = req.body;
+  // Assuming user_id is set in the request by authentication middleware
   try {
-    const survey_id = await surveyModels.addSurvey({
-      survey_type,
-      content: content,
-      created_by,
-    });
+    const survey_id = await surveyModels.addSurvey(survey);
     res.status(201).json({ message: "Survey created successfully", survey_id });
   } catch (error) {
     console.error("Error creating survey:", error);

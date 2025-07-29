@@ -36,8 +36,9 @@ GROUP BY program_id`)
 
 const registeredProgram = async (program_id, member_id) => {
     console.log("Reg >>>")
-    const row = await db.execute(`INSERT INTO Community_program_participant(member_id, program_id, status)
+    const [row] = await db.execute(`INSERT INTO Community_program_participant(member_id, program_id, status)
 VALUES (?, ?, 'registered')`, [member_id, program_id])
+    console.log("Row >>>", row.affectedRows)
     return row.affectedRows > 0;
 }
 
@@ -125,11 +126,28 @@ JOIN Users u ON cpp.member_id = u.user_id
 WHERE cp.program_id = ? AND cp.is_active = 1`, [program_id]);
     return list;
 }
+const createProgram = async (program) => {
+    const { title, description, start_date, end_date, location, detail, age_group, manager_id, survey_question } = program;
+    const [row] = await db.execute(`INSERT INTO Community_programs(title, description, start_date, end_date, location, detail, age_group, manager_id, survey_question)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [title, JSON.stringify(description), start_date, end_date, JSON.stringify(location), JSON.stringify(detail), age_group, manager_id, JSON.stringify(survey_question)]);
+    return row.affectedRows > 0;
+}
+
+const checkMemberRegistered = async (program_id, member_id) => {
+    const [member] = await db.execute(`SELECT *
+FROM Community_program_participant WHERE member_id = ? AND program_id = ?`, [member_id, program_id]);
+    if (!member[0])
+        return false;
+    return true;
+}
 
 module.exports = {
     getAllCommunityProgram,
     numberParticipantProgram,
     registeredProgram,
+    checkMemberRegistered,
+    createProgram,
     markParticipantAsPresent,
     updateStatusProgram,
     getProgramById,

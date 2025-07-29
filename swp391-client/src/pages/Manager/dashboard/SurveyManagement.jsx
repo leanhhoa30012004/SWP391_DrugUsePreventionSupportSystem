@@ -13,16 +13,16 @@ const SurveyManagement = () => {
   const [editSurvey, setEditSurvey] = useState(null);
   const [deleteSurvey, setDeleteSurvey] = useState(null);
   const [createSurveyModal, setCreateSurveyModal] = useState(false);
-  
+
   // State for existing surveys
   const [existingSurveys, setExistingSurveys] = useState([]);
   const [loadingExisting, setLoadingExisting] = useState(true);
   const [errorExisting, setErrorExisting] = useState(null);
-  
+
   // State for managed surveys (CRUD operations)
   const [managedSurveys, setManagedSurveys] = useState([]);
   const [loadingManaged, setLoadingManaged] = useState(false);
-  
+
   // Tab state
   const [activeTab, setActiveTab] = useState('existing'); // 'existing' or 'managed'
 
@@ -58,7 +58,7 @@ const SurveyManagement = () => {
         setLoadingExisting(true);
       }
       setErrorExisting(null);
-      
+
       const response = await fetch('http://localhost:3000/api/survey/view-survey', {
         method: 'GET',
         headers: {
@@ -72,7 +72,7 @@ const SurveyManagement = () => {
 
       const data = await response.json();
       console.log('Existing surveys data:', data);
-      
+
       // Transform data to match our display format
       const transformedData = Array.isArray(data) ? data.map(survey => ({
         ...survey,
@@ -90,14 +90,14 @@ const SurveyManagement = () => {
         duration: survey.duration || '30 days',
         lastResponse: survey.last_response || 'N/A'
       })) : [];
-      
+
       // Check if data has changed (for real-time indicator)
       const hasChanged = JSON.stringify(transformedData) !== JSON.stringify(existingSurveys);
       if (hasChanged && !showLoading) {
         setHasNewData(true);
         setTimeout(() => setHasNewData(false), 3000); // Clear indicator after 3 seconds
       }
-      
+
       setExistingSurveys(transformedData);
       setLastUpdate(new Date());
     } catch (err) {
@@ -122,7 +122,8 @@ const SurveyManagement = () => {
     try {
       await axios.post('http://localhost:3000/api/manager/survey/create', {
         survey_type: newSurvey.survey_type.trim(),
-        content: newSurvey.content
+        content: newSurvey.content,
+        created_by: JSON.parse(localStorage.getItem('user')).user_id // Assuming user_id is stored in localStorage
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -182,10 +183,10 @@ const SurveyManagement = () => {
 
       alert('Survey deleted successfully!');
       setDeleteSurvey(null);
-      
+
       // Remove from managed surveys list
       setManagedSurveys(prev => prev.filter(survey => survey.survey_id !== deleteSurvey.survey_id));
-      
+
     } catch (err) {
       console.error('Error deleting survey:', err);
       alert(`Error deleting survey: ${err.message}`);
@@ -195,7 +196,7 @@ const SurveyManagement = () => {
   // Helper function to safely parse survey content
   const parseSurveyContent = (content) => {
     if (!content) return [];
-    
+
     try {
       if (typeof content === 'string') {
         return JSON.parse(content);
@@ -213,10 +214,10 @@ const SurveyManagement = () => {
   // Survey Content Management Functions
   const openContentEditor = (survey) => {
     setEditSurvey(survey);
-    
+
     // Parse content safely
     const parsedContent = parseSurveyContent(survey.content);
-    
+
     setContentData(parsedContent);
     setEditSurveyData({
       survey_id: survey.survey_id || survey.id,
@@ -235,7 +236,7 @@ const SurveyManagement = () => {
         { text: "", score: 0 }
       ]
     };
-    
+
     const updatedContent = [...contentData, newQuestion];
     setContentData(updatedContent);
     setEditSurveyData(prev => ({
@@ -251,7 +252,7 @@ const SurveyManagement = () => {
       video: "",
       quiz: []
     };
-    
+
     const updatedContent = [...contentData, newVideoSection];
     setContentData(updatedContent);
     setEditSurveyData(prev => ({
@@ -354,18 +355,18 @@ const SurveyManagement = () => {
 
       alert('Survey content updated successfully!');
       setShowContentEditor(false);
-      
+
       // Update managed surveys list
-      setManagedSurveys(prev => prev.map(survey => 
-        survey.survey_id === editSurveyData.survey_id 
+      setManagedSurveys(prev => prev.map(survey =>
+        survey.survey_id === editSurveyData.survey_id
           ? {
-              ...survey,
-              content: editSurveyData.content,
-              totalQuestions: editSurveyData.content.length
-            }
+            ...survey,
+            content: editSurveyData.content,
+            totalQuestions: editSurveyData.content.length
+          }
           : survey
       ));
-      
+
     } catch (err) {
       console.error('Error updating survey content:', err);
       alert(`Error updating survey content: ${err.message}`);
@@ -386,8 +387,8 @@ const SurveyManagement = () => {
 
   // Update filtered surveys to use current data
   const filteredSurveys = getCurrentSurveys().filter(survey => {
-    const matchesSearch = survey.name?.toLowerCase().includes(search.toLowerCase()) || 
-                         survey.survey_type?.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = survey.name?.toLowerCase().includes(search.toLowerCase()) ||
+      survey.survey_type?.toLowerCase().includes(search.toLowerCase());
     const matchesType = typeFilter === 'All' || survey.type === typeFilter || survey.survey_type === typeFilter;
     const matchesStatus = statusFilter === 'All' || survey.status === statusFilter;
     return matchesSearch && matchesType && matchesStatus;
@@ -483,7 +484,7 @@ const SurveyManagement = () => {
             </p>
           </div>
         </div>
-        <button 
+        <button
           className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
           onClick={() => setCreateSurveyModal(true)}
         >
@@ -524,7 +525,7 @@ const SurveyManagement = () => {
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
-          
+
           {/* Manual Refresh Control */}
           <div className="flex items-center gap-2 ml-4">
             <button
@@ -550,11 +551,11 @@ const SurveyManagement = () => {
         <table className="min-w-full text-sm text-left table-fixed">
           <thead className="bg-[#fff1f2] text-[#e11d48] border-b border-[#e11d48]/20">
             <tr>
-              <th className="px-4 py-3 font-bold" style={{width: '35%'}}>Survey Details</th>
-              <th className="px-4 py-3 font-bold" style={{width: '20%'}}>Progress</th>
-              <th className="px-4 py-3 font-bold" style={{width: '20%'}}>Statistics</th>
-              <th className="px-4 py-3 font-bold" style={{width: '12%'}}>Status</th>
-              <th className="px-4 py-3 font-bold" style={{width: '13%'}}>Actions</th>
+              <th className="px-4 py-3 font-bold" style={{ width: '35%' }}>Survey Details</th>
+              <th className="px-4 py-3 font-bold" style={{ width: '20%' }}>Progress</th>
+              <th className="px-4 py-3 font-bold" style={{ width: '20%' }}>Statistics</th>
+              <th className="px-4 py-3 font-bold" style={{ width: '12%' }}>Status</th>
+              <th className="px-4 py-3 font-bold" style={{ width: '13%' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -582,7 +583,7 @@ const SurveyManagement = () => {
             ) : (
               filteredSurveys.map(survey => (
                 <tr key={survey.survey_id} className="border-b last:border-b-0 hover:bg-[#fff1f2] transition">
-                  <td className="px-4 py-3" style={{width: '35%'}}>
+                  <td className="px-4 py-3" style={{ width: '35%' }}>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#be123c] flex items-center justify-center text-white font-bold">
                         <FaClipboardList />
@@ -599,14 +600,14 @@ const SurveyManagement = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3" style={{width: '20%'}}>
+                  <td className="px-4 py-3" style={{ width: '20%' }}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs text-black">
                         <span>Enrolled</span>
                         <span className="font-bold">{survey.responses || 0}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="h-2 rounded-full bg-[#e11d48]"
                           style={{ width: `${Math.min((survey.responses || 0) * 10, 100)}%` }}
                         ></div>
@@ -616,28 +617,28 @@ const SurveyManagement = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3" style={{width: '20%'}}>
+                  <td className="px-4 py-3" style={{ width: '20%' }}>
                     <div className="space-y-1 text-black">
                       <div className="flex items-center gap-1 text-xs">
-                        <FaClipboardList className="text-[#e11d48]" /> 
+                        <FaClipboardList className="text-[#e11d48]" />
                         {survey.totalQuestions || survey.total_questions || 0} lessons
                       </div>
                       <div className="flex items-center gap-1 text-xs">
-                        <FaCheckCircle className="text-[#e11d48]" /> 
+                        <FaCheckCircle className="text-[#e11d48]" />
                         {survey.responses || 0} completed
                       </div>
                       <div className="flex items-center gap-1 text-xs">
-                        <span className="text-[#e11d48]">●</span> 
+                        <span className="text-[#e11d48]">●</span>
                         {survey.type || survey.survey_type}
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3" style={{width: '12%'}}>
+                  <td className="px-4 py-3" style={{ width: '12%' }}>
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold whitespace-nowrap">
                       <FaCheckCircle className="text-green-500" /> Active
                     </span>
                   </td>
-                  <td className="px-4 py-3" style={{width: '13%'}}>
+                  <td className="px-4 py-3" style={{ width: '13%' }}>
                     <div className="flex gap-1 justify-start">
                       <button
                         className="p-2 rounded-xl bg-red-600 hover:bg-red-700 text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
@@ -901,7 +902,7 @@ const SurveyManagement = () => {
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-[#e11d48] text-xl" onClick={() => setViewSurvey(null)}>&times;</button>
-            
+
             {/* Header with icon and basic info */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 pb-6 border-b">
               <div className="flex flex-col items-center md:items-start col-span-1">
@@ -939,20 +940,20 @@ const SurveyManagement = () => {
 
             {/* Statistics Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.participants || viewSurvey.total_participants || 0}</div>
+              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.participants || viewSurvey.total_participants || 0}</div>
                 <div className="text-xs text-black">Participants</div>
               </div>
-                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.responses || 0}</div>
+              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.responses || 0}</div>
                 <div className="text-xs text-black">Responses</div>
               </div>
-                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.completionRate || viewSurvey.completion_rate || 0}%</div>
+              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.completionRate || viewSurvey.completion_rate || 0}%</div>
                 <div className="text-xs text-black">Completion</div>
               </div>
-                              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.totalQuestions || viewSurvey.total_questions || 0}</div>
+              <div className="bg-[#fff1f2] rounded-xl p-4 text-center">
+                <div className="text-2xl font-bold text-[#e11d48]">{viewSurvey.totalQuestions || viewSurvey.total_questions || 0}</div>
                 <div className="text-xs text-black">Questions</div>
               </div>
             </div>
@@ -982,7 +983,7 @@ const SurveyManagement = () => {
                       <span className="font-bold">{viewSurvey.completionRate || viewSurvey.completion_rate || 0}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${getCompletionColor(viewSurvey.completionRate || viewSurvey.completion_rate || 0)}`}
                         style={{ width: `${viewSurvey.completionRate || viewSurvey.completion_rate || 0}%` }}
                       ></div>
@@ -1001,10 +1002,10 @@ const SurveyManagement = () => {
               <h3 className="text-lg font-bold text-[#e11d48] mb-4 flex items-center gap-2">
                 <FaQuestionCircle /> Survey Content
               </h3>
-              
+
               {(() => {
                 const parsedContent = parseSurveyContent(viewSurvey.content);
-                
+
                 if (parsedContent.length === 0) {
                   return (
                     <div className="text-center py-8 text-gray-500">
@@ -1025,9 +1026,9 @@ const SurveyManagement = () => {
                             <div className="flex items-center gap-2 mb-2">
                               <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">Video</span>
                             </div>
-                            <a 
-                              href={String(item.video)} 
-                              target="_blank" 
+                            <a
+                              href={String(item.video)}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:text-blue-800 text-sm break-all"
                             >
@@ -1077,9 +1078,8 @@ const SurveyManagement = () => {
                                     {question.options?.map((option, oIndex) => (
                                       <div key={oIndex} className="flex justify-between items-center bg-white p-2 rounded text-sm">
                                         <span>{String(option.text || '')}</span>
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                          (option.score || 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                        }`}>
+                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${(option.score || 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                          }`}>
                                           Score: {option.score || 0}
                                         </span>
                                       </div>
@@ -1121,8 +1121,8 @@ const SurveyManagement = () => {
           <div className="bg-white rounded-2xl shadow-lg w-full max-w-xl relative flex flex-col p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-[#e11d48]">Survey Content Management</h2>
-              <button 
-                className="text-gray-400 hover:text-[#e11d48] text-2xl font-bold" 
+              <button
+                className="text-gray-400 hover:text-[#e11d48] text-2xl font-bold"
                 onClick={() => setShowContentEditor(false)}
               >
                 &times;
@@ -1259,14 +1259,14 @@ const SurveyManagement = () => {
               )}
             </div>
             <div className="flex gap-3 justify-end pt-4 border-t mt-4 bg-white sticky bottom-0 z-10">
-              <button 
+              <button
                 type="button"
-                className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black" 
+                className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-black"
                 onClick={() => setShowContentEditor(false)}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={saveContentChanges}
                 className="px-6 py-2 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white flex items-center gap-2"
               >
