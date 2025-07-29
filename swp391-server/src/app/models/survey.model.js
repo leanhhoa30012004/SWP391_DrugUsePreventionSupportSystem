@@ -171,31 +171,32 @@ const addEnrollmentSurvey = async (survey_id, member_id, response, enroll_versio
   return rows;
 };
 const addSurvey = async (survey) => {
+  console.log(survey);
   const { survey_type, content, created_by } = survey;
-  await db.beginTransaction();
+
   try {
-    // Thêm vào bảng Survey
+    // Thêm vào bảng Survey trước
     const [insertSurvey] = await db.execute(
-      'INSERT INTO Survey (survey_type, created_by, created_date) VALUES (?, ?, NOW());',
+      'INSERT INTO Survey (survey_type, created_by, created_date) VALUES (?, ?, NOW())',
       [survey_type, created_by]
     );
     const survey_id = insertSurvey.insertId;
+    console.log("Survey ID:", survey_id);
 
-    // Thêm vào bảng Survey_version
+    // Sau đó thêm vào bảng Survey_version với survey_id vừa tạo
     const [insertSurveyVersion] = await db.execute(
-      'INSERT INTO Survey_version (survey_id, content, version) VALUES (?, ?, ?);',
+      'INSERT INTO Survey_version (survey_id, content, version) VALUES (?, ?, ?)',
       [survey_id, JSON.stringify(content), 1.0]
     );
 
-    await db.commit();
     return {
       success: true,
       survey_id,
       survey_version_id: insertSurveyVersion.insertId
     };
   } catch (error) {
-    await db.rollback();
-    return { success: false, error };
+    console.error('Error adding survey:', error);
+    return { success: false, error: error.message };
   }
 };
 const updateSurvey = async (survey) => {

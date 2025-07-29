@@ -13,9 +13,9 @@ const API_BASE = '/api/program';
 function toDatetimeLocal(str) {
   if (!str) return '';
   // Hỗ trợ cả dạng ISO và dạng 'YYYY-MM-DD HH:mm:ss'
-  if (str.includes('T')) return str.slice(0,16);
+  if (str.includes('T')) return str.slice(0, 16);
   const [date, time] = str.split(' ');
-  return date + 'T' + (time ? time.slice(0,5) : '00:00');
+  return date + 'T' + (time ? time.slice(0, 5) : '00:00');
 }
 
 // Thêm helper ở đầu file
@@ -364,14 +364,14 @@ const CommunityProgramManagement = () => {
 
   // Filter programs based on search and filters
   const filteredPrograms = programs.filter(program => {
-    const matchesSearch = search === '' || 
+    const matchesSearch = search === '' ||
       program.title?.toLowerCase().includes(search.toLowerCase()) ||
       program.description?.host?.toLowerCase().includes(search.toLowerCase()) ||
       (typeof program.description === 'object' ? program.description.detail?.toLowerCase().includes(search.toLowerCase()) : program.description?.toLowerCase().includes(search.toLowerCase()));
-    
+
     const matchesStatus = statusFilter === 'All' || program.status === statusFilter;
     const matchesAge = ageFilter === 'All' || program.age_group === ageFilter;
-    
+
     return matchesSearch && matchesStatus && matchesAge;
   });
 
@@ -390,7 +390,7 @@ const CommunityProgramManagement = () => {
             </p>
           </div>
         </div>
-        <button 
+        <button
           className="flex items-center gap-2 bg-[#e11d48] hover:bg-[#be123c] text-white font-bold px-7 py-3 rounded-2xl shadow transition-all duration-200 text-base"
           onClick={handleAdd}
         >
@@ -426,10 +426,10 @@ const CommunityProgramManagement = () => {
             value={ageFilter}
             onChange={e => setAgeFilter(e.target.value)}
           >
-            <option value="All">All Ages</option>
+
             <option value="Teenagers">Teenagers</option>
-            <option value="Young Adult (20-30)">Young Adult (20-30)</option>
-            <option value="Adult (30+)">Adult (30+)</option>
+            <option value="Young Adult">Young Adult (20-30)</option>
+            <option value="Adult">Adult (30+)</option>
           </select>
         </div>
       </div>
@@ -509,23 +509,23 @@ const CommunityProgramManagement = () => {
                   </td>
                   {/* Actions */}
                   <td className="px-4 py-3 flex gap-2">
-                    <button 
-                      title="View" 
-                      onClick={() => handleView(p)} 
+                    <button
+                      title="View"
+                      onClick={() => handleView(p)}
                       className="p-2 rounded-xl bg-[#fff1f2] hover:bg-[#e11d48]/10 text-[#e11d48] border border-[#e11d48]/20 shadow transition-colors duration-150"
                     >
                       <FaEye />
                     </button>
-                    <button 
-                      onClick={() => handleEdit(p)} 
-                      title="Edit" 
+                    <button
+                      onClick={() => handleEdit(p)}
+                      title="Edit"
                       className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
                     >
                       <FaEdit className="text-white" />
                     </button>
-                    <button 
-                      onClick={() => handleDelete(p.program_id)} 
-                      title="Delete" 
+                    <button
+                      onClick={() => handleDelete(p.program_id)}
+                      title="Delete"
                       className="p-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c] text-white border border-[#e11d48]/20 shadow transition-colors duration-150"
                     >
                       <FaTrash className="text-white" />
@@ -597,12 +597,12 @@ const CommunityProgramManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block font-semibold mb-1">Location Link</label>
-                <input 
-                  type="text" 
-                  placeholder="Location (address or link)" 
+                <input
+                  type="text"
+                  placeholder="Location (address or link)"
                   className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#e11d48]"
-                  value={form.location} 
-                  onChange={e => setForm({ ...form, location: e.target.value })} 
+                  value={form.location}
+                  onChange={e => setForm({ ...form, location: e.target.value })}
                 />
               </div>
               <div className="mb-4">
@@ -610,8 +610,8 @@ const CommunityProgramManagement = () => {
                 <select className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#e11d48]" value={form.age_group || ''} onChange={e => setForm({ ...form, age_group: e.target.value })} required>
                   <option value="">Select age group</option>
                   <option value="Teenagers">Teenagers</option>
-                  <option value="Young Adult (20-30)">Young Adult (20-30)</option>
-                  <option value="Adult (30+)">Adult (30+)</option>
+                  <option value="Young Adult">Young Adult (20-30)</option>
+                  <option value="Adult">Adult (30+)</option>
                 </select>
               </div>
               <div className="mb-4">
@@ -684,7 +684,7 @@ const CommunityProgramManagement = () => {
               <button onClick={() => setShowView(false)} className="absolute top-2 right-4 text-5xl text-gray-400 hover:text-[#e11d48] font-bold cursor-pointer z-10 p-2">×</button>
             </div>
             {/* Info + Content */}
-            <div className="overflow-y-auto px-6 pb-6" style={{maxHeight: 'calc(90vh - 80px)'}}>
+            <div className="overflow-y-auto px-6 pb-6" style={{ maxHeight: 'calc(90vh - 80px)' }}>
               {/* Info */}
               <div className="mb-4">
                 <div className="font-semibold">Description:</div>
@@ -720,7 +720,7 @@ const CommunityProgramManagement = () => {
               {/* Survey Questions */}
               <div className="mb-4">
                 <div className="font-semibold mb-2 text-[#e11d48]">Survey Responses:</div>
-                
+
                 {/* Pre-survey Responses */}
                 <div className="mb-4">
                   <div className="font-medium mb-2 text-sm text-gray-600">Pre-survey Responses:</div>
