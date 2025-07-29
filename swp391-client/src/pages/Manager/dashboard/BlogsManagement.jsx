@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaBlog, FaSearch } from 'react-icons/fa';
+import { FaBlog, FaSearch, FaTimes } from 'react-icons/fa';
 
 const statusColor = {
   Approved: 'bg-green-100 text-green-700',
@@ -137,9 +137,27 @@ const BlogsManagement = () => {
 
       {/* Blog Table */}
       <div className="overflow-auto rounded-b-2xl shadow bg-white mt-0 flex-1 border border-[#e11d48]/10">
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+        {error && (
+          <div className="text-red-500 mb-4 p-4 bg-red-50 rounded-lg border border-red-200">
+            <div className="font-semibold">Error:</div>
+            <div>{error}</div>
+          </div>
+        )}
         {loading ? (
-          <div>Loading...</div>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e11d48]"></div>
+            <span className="ml-3 text-gray-600">Loading blogs...</span>
+          </div>
+        ) : filteredBlogs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+            <FaBlog className="text-6xl text-gray-300 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No blogs found</h3>
+            <p className="text-gray-400">
+              {search || statusFilter !== 'All'
+                ? 'Try adjusting your search or filter criteria.'
+                : 'No blogs have been submitted yet.'}
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-left">
@@ -176,28 +194,14 @@ const BlogsManagement = () => {
                       {blog.tags ? (
                         <div className="flex flex-wrap gap-1">
                           {blog.tags.split(',').map((tag, index) => (
-                            <span 
+                            <span
                               key={index}
-                              className="text-gray-700 text-xs font-bold"
+                              className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium"
                               title={tag.trim()}
                             >
                               #{tag.trim()}
                             </span>
                           ))}
-
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {blog.tags.split(',').map((tag, index) => (
-                              <span
-                                key={index}
-                                className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium"
-                                title={tag.trim()}
-                              >
-                                #{tag.trim()}
-                              </span>
-                            ))}
-                          </div>
-
                         </div>
                       ) : (
                         <span className="text-xs text-gray-400 italic">No tags</span>
@@ -260,25 +264,27 @@ const BlogsManagement = () => {
         )}
       </div>
       {/* Modal xem ảnh lớn */}
-      {modalImage && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setModalImage(null)}>
-          <div className="relative" onClick={e => e.stopPropagation()}>
-            <button
-              className="absolute top-0 right-0 m-4 text-black text-2xl font-bold bg-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-all duration-200 z-10 shadow-lg border border-gray-200"
-              onClick={() => setModalImage(null)}
-              title="Close"
-            >
-              ×
-            </button>
-            <img
-              src={modalImage}
-              alt="blog large"
-              className="rounded-xl shadow-xl max-w-[90vw] max-h-[80vh] object-contain bg-white"
-            />
+      {
+        modalImage && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setModalImage(null)}>
+            <div className="relative" onClick={e => e.stopPropagation()}>
+              <button
+                className="absolute -top-2 -right-2 text-white bg-red-500 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 shadow-lg"
+                onClick={() => setModalImage(null)}
+                title="Close"
+              >
+                <FaTimes className="text-sm" />
+              </button>
+              <img
+                src={modalImage}
+                alt="blog large"
+                className="rounded-xl shadow-xl max-w-[90vw] max-h-[80vh] object-contain bg-white"
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 
