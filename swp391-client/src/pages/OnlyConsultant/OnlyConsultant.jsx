@@ -36,7 +36,7 @@ const ConsultantAppointmentsDashboard = () => {
   const queryParams = new URLSearchParams(location.search);
   const consultant_id = queryParams.get('user');
   const username = queryParams.get('username');
-  
+
   console.log('Username value:', username);
 
   // Initialize user info from query params
@@ -134,10 +134,10 @@ const ConsultantAppointmentsDashboard = () => {
       setError('Consultant ID is required');
       return;
     }
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await axiosInstance.get(`/consultation/get-all-appointment-by-consultant-id/${id}`);
       console.log('Appointments response:', response.data);
@@ -156,8 +156,8 @@ const ConsultantAppointmentsDashboard = () => {
     }
   };
 
-   // Thêm hàm refresh để có thể reload dữ liệu
-   const handleRefresh = () => {
+  // Thêm hàm refresh để có thể reload dữ liệu
+  const handleRefresh = () => {
     if (consultant_id) {
       fetchAppointments(consultant_id);
     }
@@ -168,16 +168,16 @@ const ConsultantAppointmentsDashboard = () => {
     setHistoryLoading(true);
     setSelectedPatientHistory(appointment);
     setShowHistoryModal(true);
-    
+
     console.log('=== Fetching Patient History ===');
     console.log('Appointment data:', appointment);
     console.log('All appointment keys:', Object.keys(appointment));
     console.log('Member ID:', appointment.member_id);
-    
+
     // Try to find the correct member ID field
     const possibleMemberFields = ['member_id', 'memberId', 'user_id', 'userId', 'patient_id', 'patientId', 'id'];
     let memberId = null;
-    
+
     for (const field of possibleMemberFields) {
       if (appointment[field]) {
         memberId = appointment[field];
@@ -185,7 +185,7 @@ const ConsultantAppointmentsDashboard = () => {
         break;
       }
     }
-    
+
     if (!memberId) {
       console.error('No member ID found in appointment data!');
       console.log('Available fields:', Object.keys(appointment));
@@ -197,14 +197,14 @@ const ConsultantAppointmentsDashboard = () => {
       setHistoryLoading(false);
       return;
     }
-    
+
     try {
       // Fetch course history
       console.log('Fetching course history for member ID:', memberId);
       const courseResponse = await axiosInstance.get(`/course/get-all-course-follow-course-enrollment-by-member-id/${memberId}`);
       console.log('Course history response:', courseResponse.data);
       setCourseHistory(courseResponse.data || []);
-      
+
       // Fetch survey history data
       try {
         // Use the survey-history API as requested
@@ -212,10 +212,10 @@ const ConsultantAppointmentsDashboard = () => {
         const surveyHistoryResponse = await axiosInstance.get(`/survey/survey-history/${memberId}`);
         console.log('Survey history full response:', surveyHistoryResponse);
         console.log('Survey history response data:', surveyHistoryResponse.data);
-        
+
         const surveyHistoryData = surveyHistoryResponse.data?.consultHistorySurvey || [];
         console.log('Survey history data array:', surveyHistoryData);
-        
+
         if (surveyHistoryData.length > 0) {
           // Transform history data for display
           const transformedHistoryData = surveyHistoryData.map(survey => ({
@@ -227,7 +227,7 @@ const ConsultantAppointmentsDashboard = () => {
             member_name: survey.memberName,
             version: survey.version
           }));
-          
+
           console.log('Transformed survey data:', transformedHistoryData);
           setSurveyHistory(transformedHistoryData);
         } else {
@@ -240,7 +240,7 @@ const ConsultantAppointmentsDashboard = () => {
         console.error('Survey error response:', surveyError.response?.data);
         setSurveyHistory([]);
       }
-      
+
     } catch (error) {
       console.error('Error fetching patient history:', error);
       Swal.fire({
@@ -255,63 +255,182 @@ const ConsultantAppointmentsDashboard = () => {
     }
   };
 
-  const handleRejectHistory = (type, id) => {
-    // Hard-coded reject function as requested
-    Swal.fire({
-      icon: "success",
-      title: "Rejected",
-      text: `${type} with ID ${id} has been rejected (hard-coded)`
-    });
-  };
+  // const handleRejectHistory = (type, id) => {
+  //   // Hard-coded reject function as requested
+  //   Swal.fire({
+  //     icon: "success",
+  //     title: "Rejected",
+  //     text: `${type} with ID ${id} has been rejected (hard-coded)`
+  //   });
+  // };
 
+  // Appointment Action Functions
   // Appointment Action Functions
   const handleCompleted = async (appointmentId) => {
     try {
-      Swal.fire({
-        icon: "success",
-        title: "Completed",
-        text: "Appointment marked as completed successfully!"
+      const result = await Swal.fire({
+        title: 'Confirm Completion',
+        text: 'Are you sure you want to mark this appointment as completed?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#dc2626',
+        confirmButtonText: 'Yes, mark as completed',
+        cancelButtonText: 'Cancel'
       });
+
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: 'Updating...',
+          text: 'Please wait while we update the appointment status',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        // Gọi API với appointment_status = 'completed'
+        const response = await axiosInstance.get(`/consultation/change-appointment-status/${appointmentId}/completed`);
+
+        if (response.data) {
+          // Refresh danh sách appointments sau khi cập nhật thành công
+          if (consultant_id) {
+            await fetchAppointments(consultant_id);
+          }
+
+          Swal.fire({
+            icon: "success",
+            title: "Completed",
+            text: "Appointment marked as completed successfully!"
+          });
+        } else {
+          throw new Error('Failed to update appointment status');
+        }
+      }
     } catch (error) {
+      console.error('Error updating appointment status:', error);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to mark appointment as completed"
+        text: error.response?.data?.message || "Failed to mark appointment as completed"
       });
     }
   };
 
-  const handleAbsent = async (appointmentId) => {
+  const handleNotCompleted = async (appointmentId) => {
     try {
-      Swal.fire({
-        icon: "warning",
-        title: "Marked as Absent",
-        text: "Appointment marked as absent successfully!"
+      const result = await Swal.fire({
+        title: 'Confirm Completion',
+        text: 'Are you sure you want to mark this appointment as not completed?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#dc2626',
+        confirmButtonText: 'Yes, mark as not completed',
+        cancelButtonText: 'Cancel'
       });
+
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: 'Updating...',
+          text: 'Please wait while we update the appointment status',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        const status = encodeURIComponent('not completed');
+        // Gọi API với appointment_status = 'not completed'
+        const response = await axiosInstance.get(`/consultation/change-appointment-status/${appointmentId}/${status}`);
+
+        if (response.data) {
+          // Refresh danh sách appointments sau khi cập nhật thành công
+          if (consultant_id) {
+            await fetchAppointments(consultant_id);
+          }
+
+          Swal.fire({
+            icon: "success",
+            title: "Completed",
+            text: "Appointment marked as not completed successfully!"
+          });
+        } else {
+          throw new Error('Failed to update appointment status');
+        }
+      }
     } catch (error) {
+      console.error('Error updating appointment status:', error);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to mark appointment as absent"
+        text: error.response?.data?.message || "Failed to mark appointment as not completed"
       });
     }
   };
 
-  const handleReject = (appointmentId) => {
-    Swal.fire({
-      icon: "success",
-      title: "Rejected",
-      text: `Appointment with ID ${appointmentId} has been rejected (hard-coded)`
-    });
+  const handleReject = async (appointmentId) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Confirm Rejection',
+        text: 'Are you sure you want to reject this appointment?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, reject it',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: 'Updating...',
+          text: 'Please wait while we update the appointment status',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        // Gọi API để reject appointment
+        const response = await axiosInstance.post(`consultation/change-consultant/${appointmentId}`);
+
+        if (response.data) {
+          // Refresh danh sách appointments sau khi cập nhật thành công
+          if (consultant_id) {
+            await fetchAppointments(consultant_id);
+          }
+
+          Swal.fire({
+            icon: "success",
+            title: "Rejected",
+            text: "Appointment has been rejected successfully!"
+          });
+        } else {
+          throw new Error('Failed to reject appointment');
+        }
+      }
+    } catch (error) {
+      console.error('Error rejecting appointment:', error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.message || "Failed to reject appointment"
+      });
+    }
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
-      case 'confirmed':
+    switch (status?.toLowerCase()) {
+      case 'completed':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'pending':
         return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-      case 'cancelled':
+      case 'not completed':
+        return <XCircle className="w-5 h-5 text-orange-500" />;
+      case 'rejected':
         return <XCircle className="w-5 h-5 text-red-500" />;
       default:
         return <AlertCircle className="w-5 h-5 text-gray-500" />;
@@ -319,25 +438,29 @@ const ConsultantAppointmentsDashboard = () => {
   };
 
   const getStatusText = (status) => {
-    switch (status) {
-      case 'confirmed':
-        return 'Confirmed';
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'Completed';
       case 'pending':
         return 'Pending';
-      case 'cancelled':
-        return 'Cancelled';
+      case 'not completed':
+        return 'Not Completed';
+      case 'rejected':
+        return 'Rejected';
       default:
-        return 'Unknown';
+        return status || 'Unknown';
     }
   };
 
   const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'confirmed':
+    switch (status?.toLowerCase()) {
+      case 'completed':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'cancelled':
+      case 'not completed':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -347,14 +470,14 @@ const ConsultantAppointmentsDashboard = () => {
   function formatDate(isoString) {
     const date = new Date(isoString);
     date.setHours(date.getHours());
-    
-    
+
+
     const dd = String(date.getDate()).padStart(2, '0');
     const MM = String(date.getMonth() + 1).padStart(2, '0');
     const yyyy = date.getFullYear();
-    
+
     return ` ${dd}/${MM}/${yyyy}`;
-}
+  }
 
   const handleMeetingLinkClick = (meetingLink) => {
     if (window.confirm('Do you want to open the meeting link in a new tab?')) {
@@ -367,7 +490,7 @@ const ConsultantAppointmentsDashboard = () => {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-      
+
     });
   };
 
@@ -393,7 +516,7 @@ const ConsultantAppointmentsDashboard = () => {
                 <p className="text-gray-600 text-lg">Manage your appointments and profile</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg border border-red-100">
                 <span className="text-gray-600 text-sm">Welcome back,</span>
@@ -401,7 +524,7 @@ const ConsultantAppointmentsDashboard = () => {
                   {username || 'Consultant'}
                 </span>
               </div>
-              
+
               <button
                 onClick={() => setEditMode(true)}
                 className="bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-500 hover:to-blue-600 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
@@ -409,7 +532,7 @@ const ConsultantAppointmentsDashboard = () => {
                 <Edit className="w-5 h-5" />
                 Edit Profile
               </button>
-              
+
               <button
                 onClick={handleLogout}
                 className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
@@ -447,7 +570,7 @@ const ConsultantAppointmentsDashboard = () => {
                 </button>
               </div>
             </div>
-            
+
             <form onSubmit={handleUpdateProfile} className="p-8 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
@@ -519,11 +642,10 @@ const ConsultantAppointmentsDashboard = () => {
                 <button
                   type="submit"
                   disabled={updating}
-                  className={`px-8 py-3 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg flex items-center gap-2 ${
-                    updating
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 hover:shadow-xl"
-                  }`}
+                  className={`px-8 py-3 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg flex items-center gap-2 ${updating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 hover:shadow-xl"
+                    }`}
                 >
                   {updating ? (
                     <>
@@ -658,21 +780,21 @@ const ConsultantAppointmentsDashboard = () => {
                         {appointment.status === 'pending' ? (
                           <div className="flex flex-wrap gap-2">
                             <button
-                              onClick={() => handleCompleted(appointment.id || index)}
+                              onClick={() => handleCompleted(appointment.appointment_id || index)}
                               className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg text-xs"
                             >
                               <CheckCircle className="w-3 h-3 mr-1" />
                               Completed
                             </button>
                             <button
-                              onClick={() => handleAbsent(appointment.id || index)}
+                              onClick={() => handleNotCompleted(appointment.appointment_id || index)}
                               className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-md hover:shadow-lg text-xs"
                             >
                               <XCircle className="w-3 h-3 mr-1" />
-                              Absent
+                              Not completed
                             </button>
                             <button
-                              onClick={() => handleReject(appointment.id || index)}
+                              onClick={() => handleReject(appointment.appointment_id || index)}
                               className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg text-xs"
                             >
                               <AlertCircle className="w-3 h-3 mr-1" />
@@ -750,7 +872,7 @@ const ConsultantAppointmentsDashboard = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-8">
               {/* Patient Information Section */}
               <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-6 mb-8 border border-red-100">
@@ -777,11 +899,10 @@ const ConsultantAppointmentsDashboard = () => {
                   </div>
                   <div>
                     <label className="text-sm font-semibold text-gray-600">Status</label>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                      selectedPatientHistory.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${selectedPatientHistory.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                       selectedPatientHistory.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                        'bg-red-100 text-red-800'
+                      }`}>
                       {selectedPatientHistory.status || 'N/A'}
                     </span>
                   </div>
@@ -805,22 +926,20 @@ const ConsultantAppointmentsDashboard = () => {
               {/* History Tabs */}
               <div className="flex border-b border-gray-200 mb-6">
                 <button
-                  className={`px-6 py-3 font-semibold flex items-center gap-2 ${
-                    activeHistoryTab === 'courses'
-                      ? 'border-b-2 border-red-600 text-red-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                  className={`px-6 py-3 font-semibold flex items-center gap-2 ${activeHistoryTab === 'courses'
+                    ? 'border-b-2 border-red-600 text-red-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   onClick={() => setActiveHistoryTab('courses')}
                 >
                   <Book className="w-5 h-5" />
                   Course History ({courseHistory.length})
                 </button>
                 <button
-                  className={`px-6 py-3 font-semibold flex items-center gap-2 ${
-                    activeHistoryTab === 'surveys'
-                      ? 'border-b-2 border-red-600 text-red-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                  className={`px-6 py-3 font-semibold flex items-center gap-2 ${activeHistoryTab === 'surveys'
+                    ? 'border-b-2 border-red-600 text-red-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   onClick={() => setActiveHistoryTab('surveys')}
                 >
                   <ClipboardList className="w-5 h-5" />
@@ -861,19 +980,18 @@ const ConsultantAppointmentsDashboard = () => {
                             <td className="px-6 py-4">{course.enrollment_date ? new Date(course.enrollment_date).toLocaleDateString() : 'N/A'}</td>
                             <td className="px-6 py-4">
                               <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-                                <div 
-                                  className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full" 
-                                  style={{width: `${course.progress || 0}%`}}
+                                <div
+                                  className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full"
+                                  style={{ width: `${course.progress || 0}%` }}
                                 ></div>
                               </div>
                               <span className="text-xs text-gray-600">{course.progress || 0}%</span>
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                course.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${course.status === 'completed' ? 'bg-green-100 text-green-800' :
                                 course.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
                                 {course.status || 'enrolled'}
                               </span>
                             </td>
@@ -910,25 +1028,24 @@ const ConsultantAppointmentsDashboard = () => {
                               {survey.survey_type || `Survey ${survey.survey_id}` || 'Unknown Survey'}
                             </td>
                             <td className="px-6 py-4">
-                              {survey.submission_date ? 
-                                new Date(survey.submission_date).toLocaleDateString() : 
+                              {survey.submission_date ?
+                                new Date(survey.submission_date).toLocaleDateString() :
                                 'N/A'
                               }
                             </td>
                             <td className="px-6 py-4">
                               <span className="font-semibold text-red-600">
-                                {(survey.score !== undefined && survey.score !== null) ? 
-                                  survey.score : 
+                                {(survey.score !== undefined && survey.score !== null) ?
+                                  survey.score :
                                   'N/A'
                                 }
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                survey.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${survey.status === 'completed' ? 'bg-green-100 text-green-800' :
                                 survey.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
                                 {survey.status || 'Submitted'}
                               </span>
                             </td>
