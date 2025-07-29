@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Clock, User, Link, AlertCircle, CheckCircle, XCircle, Search, RefreshCw, Edit, Lock, Save, X, History, Book, ClipboardList, Ban } from 'lucide-react';
+import { Calendar, Clock, User, Link, AlertCircle, CheckCircle, XCircle, Search, RefreshCw, Edit, Lock, Save, X, History, Book, ClipboardList, Ban, Award, Upload, Eye } from 'lucide-react';
 import Logo from "../../assets/logo-WeHope.png";
 import Swal from "sweetalert2";
 import axiosInstance from '../../config/axios/axiosInstance';
@@ -9,18 +9,27 @@ const ConsultantAppointmentsDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [editMode, setEditMode] = useState(false);
+  const [editCertificateMode, setEditCertificateMode] = useState(false);
+  const [viewCertificateMode, setViewCertificateMode] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    username: '',
+  const [certificateLoading, setCertificateLoading] = useState(false);
+  const [certificateList, setCertificateList] = useState([]);
+  const [selectedCertificate, setSelectedCertificate] = useState(null);
+
+  // Certificate related states
+  const [certificateInfo, setCertificateInfo] = useState({
+    certificate_name: '',
+    date_submit: '',
+    expired: '',
     fullname: '',
-    email: '',
-    birthday: ''
+    reject_reason: null,
+    status: '',
+    url: ''
   });
-  const [formData, setFormData] = useState({
-    fullname: '',
-    email: '',
-    birthday: ''
+  const [certificateFormData, setCertificateFormData] = useState({
+    certificate_name: '',
+    expired: '',
+    certificate_img: null
   });
 
   // History related states
@@ -39,12 +48,74 @@ const ConsultantAppointmentsDashboard = () => {
 
   console.log('Username value:', username);
 
-  // Initialize user info from query params
-  useEffect(() => {
-    if (username) {
-      setUserInfo(prev => ({ ...prev, username }));
+  // Fetch certificate data
+  const fetchCertificate = async () => {
+    if (!consultant_id) {
+      console.log('❌ No consultant_id found:', consultant_id);
+      return;
     }
-  }, [username]);
+
+    console.log('🔍 Fetching certificate for consultant_id:', consultant_id);
+    setCertificateLoading(true);
+
+    try {
+      const response = await axiosInstance.get(`/consultation/get-certificate-by-consultant-id/${consultant_id}`);
+      console.log('✅ Certificate response:', response.data);
+
+      if (response.data && response.data.length > 0) {
+        // Lưu toàn bộ array certificates
+        setCertificateList(response.data);
+
+        // Set certificate đầu tiên làm selected (hoặc approved nếu có)
+        const approvedCert = response.data.find(cert => cert.status === 'approved');
+        const defaultCert = approvedCert || response.data[0];
+
+        setSelectedCertificate(defaultCert);
+        setCertificateInfo(defaultCert);
+
+        // Set form data
+        setCertificateFormData({
+          certificate_name: defaultCert.certificate_name || '',
+          expired: defaultCert.expired ? defaultCert.expired.split('T')[0] : '',
+          certificate_img: null
+        });
+
+        console.log('✅ Certificate list updated:', response.data);
+      } else {
+        console.log('📭 No certificates found');
+        setCertificateList([]);
+        setSelectedCertificate(null);
+        setCertificateInfo({
+          certificate_name: '',
+          date_submit: '',
+          expired: '',
+          fullname: '',
+          reject_reason: null,
+          status: '',
+          url: ''
+        });
+      }
+    } catch (error) {
+      console.error('💥 Error fetching certificate:', error);
+      setCertificateList([]);
+      if (error.response?.status !== 404) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to load certificate data"
+        });
+      }
+    } finally {
+      setCertificateLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (consultant_id) {
+      fetchCertificate();
+      fetchAppointments(consultant_id);
+    }
+  }, [consultant_id]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -59,75 +130,75 @@ const ConsultantAppointmentsDashboard = () => {
     navigate('/');
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleCertificateInputChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'certificate_img') {
+      setCertificateFormData((prev) => ({
+        ...prev,
+        [name]: files[0]
+      }));
+    } else {
+      setCertificateFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
-  const handleUpdateProfile = async (e) => {
+  const handleUpdateCertificate = async (e) => {
     e.preventDefault();
     setUpdating(true);
 
     try {
-      const token = localStorage.getItem("token");
-      console.log("Token gửi lên:", token);
+      const formData = new FormData();
+      formData.append('consultant_id', consultant_id);
+      formData.append('certificate_name', certificateFormData.certificate_name);
+      formData.append('expired', certificateFormData.expired);
 
-      const response = await fetch("http://localhost:3000/api/auth/profile", {
-        method: 'PUT',
+      if (certificateFormData.certificate_img) {
+        formData.append('certificate_img', certificateFormData.certificate_img);
+      }
+
+      const response = await axiosInstance.post('/consultation/add-consultant-certificate', formData, {
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData)
+          'Content-Type': 'multipart/form-data',
+        }
       });
 
-      const data = await response.json();
+      if (response.data && response.data.includes('Successfully')) {
+        setEditCertificateMode(false);
 
-      if (data.success) {
-        setUserInfo({ ...userInfo, ...formData });
-        setEditMode(false);
-        // Show success message
+        // Refresh certificate list
+        await fetchCertificate();
+
         Swal.fire({
           icon: "success",
           title: "Success!",
-          text: "Profile updated successfully!"
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Update failed",
-          text: data.message || "Update failed"
+          text: "Certificate updated successfully!",
+          timer: 3000,
+          timerProgressBar: true
         });
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("Error updating certificate:", error);
       Swal.fire({
         icon: "error",
         title: "Update failed",
-        text: "Failed to update profile"
+        text: error.response?.data?.message || "Failed to update certificate"
       });
     } finally {
       setUpdating(false);
     }
   };
 
-  const handleCancelEdit = () => {
-    setFormData({
-      fullname: userInfo.fullname,
-      email: userInfo.email,
-      birthday: userInfo.birthday,
+  const handleCancelCertificateEdit = () => {
+    setCertificateFormData({
+      certificate_name: '',
+      expired: '',
+      certificate_img: null
     });
-    setEditMode(false);
+    setEditCertificateMode(false);
   };
-
-  useEffect(() => {
-    if (consultant_id) {
-      fetchAppointments(consultant_id);
-    }
-  }, [consultant_id]);
 
   const fetchAppointments = async (id) => {
     if (!id || !id.toString().trim()) {
@@ -156,10 +227,10 @@ const ConsultantAppointmentsDashboard = () => {
     }
   };
 
-  // Thêm hàm refresh để có thể reload dữ liệu
   const handleRefresh = () => {
     if (consultant_id) {
       fetchAppointments(consultant_id);
+      fetchCertificate();
     }
   };
 
@@ -174,7 +245,6 @@ const ConsultantAppointmentsDashboard = () => {
     console.log('All appointment keys:', Object.keys(appointment));
     console.log('Member ID:', appointment.member_id);
 
-    // Try to find the correct member ID field
     const possibleMemberFields = ['member_id', 'memberId', 'user_id', 'userId', 'patient_id', 'patientId', 'id'];
     let memberId = null;
 
@@ -207,7 +277,6 @@ const ConsultantAppointmentsDashboard = () => {
 
       // Fetch survey history data
       try {
-        // Use the survey-history API as requested
         console.log('Calling survey history API with member ID:', memberId);
         const surveyHistoryResponse = await axiosInstance.get(`/survey/survey-history/${memberId}`);
         console.log('Survey history full response:', surveyHistoryResponse);
@@ -217,7 +286,6 @@ const ConsultantAppointmentsDashboard = () => {
         console.log('Survey history data array:', surveyHistoryData);
 
         if (surveyHistoryData.length > 0) {
-          // Transform history data for display
           const transformedHistoryData = surveyHistoryData.map(survey => ({
             survey_id: survey.survey_id,
             survey_name: `Survey ${survey.survey_id}`,
@@ -231,7 +299,6 @@ const ConsultantAppointmentsDashboard = () => {
           console.log('Transformed survey data:', transformedHistoryData);
           setSurveyHistory(transformedHistoryData);
         } else {
-          // Empty history
           console.log('No survey history data found');
           setSurveyHistory([]);
         }
@@ -255,16 +322,6 @@ const ConsultantAppointmentsDashboard = () => {
     }
   };
 
-  // const handleRejectHistory = (type, id) => {
-  //   // Hard-coded reject function as requested
-  //   Swal.fire({
-  //     icon: "success",
-  //     title: "Rejected",
-  //     text: `${type} with ID ${id} has been rejected (hard-coded)`
-  //   });
-  // };
-
-  // Appointment Action Functions
   // Appointment Action Functions
   const handleCompleted = async (appointmentId) => {
     try {
@@ -280,7 +337,6 @@ const ConsultantAppointmentsDashboard = () => {
       });
 
       if (result.isConfirmed) {
-        // Show loading
         Swal.fire({
           title: 'Updating...',
           text: 'Please wait while we update the appointment status',
@@ -290,11 +346,9 @@ const ConsultantAppointmentsDashboard = () => {
           }
         });
 
-        // Gọi API với appointment_status = 'completed'
         const response = await axiosInstance.get(`/consultation/change-appointment-status/${appointmentId}/completed`);
 
         if (response.data) {
-          // Refresh danh sách appointments sau khi cập nhật thành công
           if (consultant_id) {
             await fetchAppointments(consultant_id);
           }
@@ -332,7 +386,6 @@ const ConsultantAppointmentsDashboard = () => {
       });
 
       if (result.isConfirmed) {
-        // Show loading
         Swal.fire({
           title: 'Updating...',
           text: 'Please wait while we update the appointment status',
@@ -342,18 +395,16 @@ const ConsultantAppointmentsDashboard = () => {
           }
         });
         const status = encodeURIComponent('not completed');
-        // Gọi API với appointment_status = 'not completed'
         const response = await axiosInstance.get(`/consultation/change-appointment-status/${appointmentId}/${status}`);
 
         if (response.data) {
-          // Refresh danh sách appointments sau khi cập nhật thành công
           if (consultant_id) {
             await fetchAppointments(consultant_id);
           }
 
           Swal.fire({
             icon: "success",
-            title: "Completed",
+            title: "Updated",
             text: "Appointment marked as not completed successfully!"
           });
         } else {
@@ -384,7 +435,6 @@ const ConsultantAppointmentsDashboard = () => {
       });
 
       if (result.isConfirmed) {
-        // Show loading
         Swal.fire({
           title: 'Updating...',
           text: 'Please wait while we update the appointment status',
@@ -394,11 +444,9 @@ const ConsultantAppointmentsDashboard = () => {
           }
         });
 
-        // Gọi API để reject appointment
         const response = await axiosInstance.post(`consultation/change-consultant/${appointmentId}`);
 
         if (response.data) {
-          // Refresh danh sách appointments sau khi cập nhật thành công
           if (consultant_id) {
             await fetchAppointments(consultant_id);
           }
@@ -471,7 +519,6 @@ const ConsultantAppointmentsDashboard = () => {
     const date = new Date(isoString);
     date.setHours(date.getHours());
 
-
     const dd = String(date.getDate()).padStart(2, '0');
     const MM = String(date.getMonth() + 1).padStart(2, '0');
     const yyyy = date.getFullYear();
@@ -490,7 +537,6 @@ const ConsultantAppointmentsDashboard = () => {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-
     });
   };
 
@@ -500,44 +546,39 @@ const ConsultantAppointmentsDashboard = () => {
       <div className="bg-white shadow-2xl border-b-4 border-red-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 to-orange-600/5"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="flex-shrink-0">
-                <img
-                  src={Logo}
-                  alt="Logo"
-                  className="h-36 w-auto object-contain drop-shadow-lg"
-                />
-              </div>
-              <div className="flex-1 text-center pl-12">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-2">
+          <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-0">
+            {/* Logo + Title (center on desktop) */}
+            <div className="flex flex-col sm:flex-row items-center mx-auto sm:mx-0 w-full sm:w-auto">
+              <img
+                src={Logo}
+                alt="Logo"
+                className="h-24 w-auto object-contain drop-shadow-lg mb-2 sm:mb-0 sm:mr-6"
+              />
+              <div className="text-center sm:text-left">
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-1 sm:mb-2">
                   Consultant Dashboard
                 </h1>
-                <p className="text-gray-600 text-lg">Manage your appointments and profile</p>
+                <div className="text-gray-600 text-base sm:text-lg font-medium">
+                  Welcome back,
+                  <span className="font-bold text-red-600 ml-2">{username || "Consultant"}</span>
+                </div>
               </div>
             </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg border border-red-100">
-                <span className="text-gray-600 text-sm">Welcome back,</span>
-                <span className="text-lg font-bold text-red-600 ml-2">
-                  {username || 'Consultant'}
-                </span>
-              </div>
-
+            {/* Action buttons */}
+            <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4">
               <button
-                onClick={() => setEditMode(true)}
-                className="bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-500 hover:to-blue-600 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+                onClick={() => setViewCertificateMode(true)}
+                className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-600 hover:to-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
-                <Edit className="w-5 h-5" />
-                Edit Profile
+                <Eye className="w-5 h-5" />
+                View Certificate
               </button>
-
               <button
-                onClick={handleLogout}
-                className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                onClick={() => setEditCertificateMode(true)}
+                className="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-600 hover:to-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
-                Logout
+                <Award className="w-5 h-5" />
+                {"Add Certificate"}
               </button>
               <button
                 onClick={handleRefresh}
@@ -547,23 +588,29 @@ const ConsultantAppointmentsDashboard = () => {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
+              <button
+                onClick={handleLogout}
+                className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-600 hover:to-red-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
-      {editMode && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-red-600 to-orange-600 px-8 py-6 rounded-t-3xl">
+
+      {viewCertificateMode && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-40 p-4 pt-20 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[95vw] lg:max-w-6xl my-4 max-h-[85vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Edit className="w-7 h-7" />
-                  Edit Profile
+                  <Eye className="w-7 h-7" />
+                  My Certificates ({certificateList.length})
                 </h2>
                 <button
-                  onClick={handleCancelEdit}
+                  onClick={() => setViewCertificateMode(false)}
                   className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
                 >
                   <X className="w-6 h-6" />
@@ -571,96 +618,352 @@ const ConsultantAppointmentsDashboard = () => {
               </div>
             </div>
 
-            <form onSubmit={handleUpdateProfile} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={userInfo.username}
-                    disabled
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none"
-                  />
-                  <p className="mt-2 text-xs text-gray-500">Username cannot be changed</p>
+            <div className="p-4 sm:p-6 lg:p-8">
+              {certificateLoading ? (
+                <div className="text-center py-12">
+                  <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+                  <p className="text-gray-600">Loading certificate data...</p>
                 </div>
+              ) : certificateList.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Certificate List */}
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {certificateList.map((certificate, index) => (
+                      <div
+                        key={index}
+                        className={`border-2 rounded-2xl p-6 transition-all duration-200 cursor-pointer ${selectedCertificate && selectedCertificate === certificate
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                          }`}
+                        onClick={() => setSelectedCertificate(certificate)}
+                      >
+                        {/* Certificate Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
+                              {certificate.certificate_name || 'Unnamed Certificate'}
+                            </h3>
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${certificate.status === 'approved' ? 'bg-green-100 text-green-800 border border-green-200' :
+                                certificate.status === 'pending' || certificate.status === 'waiting' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                                  certificate.status === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                    'bg-gray-100 text-gray-800 border border-gray-200'
+                                }`}>
+                                <div className={`w-2 h-2 rounded-full mr-2 ${certificate.status === 'approved' ? 'bg-green-500' :
+                                  certificate.status === 'pending' || certificate.status === 'waiting' ? 'bg-yellow-500' :
+                                    certificate.status === 'rejected' ? 'bg-red-500' :
+                                      'bg-gray-500'
+                                  }`}></div>
+                                {certificate.status ? certificate.status.charAt(0).toUpperCase() + certificate.status.slice(1) : 'Unknown'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right text-sm text-gray-500 ml-4 flex-shrink-0">
+                            <div className="whitespace-nowrap">Submit: {certificate.date_submit ? new Date(certificate.date_submit).toLocaleDateString() : 'N/A'}</div>
+                            <div className="whitespace-nowrap">Expiry: {certificate.expired ? new Date(certificate.expired).toLocaleDateString() : 'N/A'}</div>
+                          </div>
+                        </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="fullname"
-                    value={formData.fullname}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200"
-                    placeholder="Enter your full name"
-                  />
-                </div>
+                        {/* Certificate Image Thumbnail */}
+                        {certificate.url && (
+                          <div className="mb-4">
+                            <div className="border border-gray-300 rounded-lg p-2 bg-gray-50">
+                              <img
+                                src={certificate.url}
+                                alt="Certificate"
+                                className="w-full h-32 object-cover rounded-lg shadow-sm"
+                              />
+                            </div>
+                          </div>
+                        )}
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200"
-                    placeholder="Enter your email"
-                  />
-                </div>
+                        {/* Reject Reason Preview */}
+                        {certificate.reject_reason && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-red-700 mb-1">Reject Reason:</p>
+                                <p className="text-xs text-red-600 break-words line-clamp-2">
+                                  {certificate.reject_reason.length > 100
+                                    ? `${certificate.reject_reason.substring(0, 100)}...`
+                                    : certificate.reject_reason
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Birthday
-                  </label>
-                  <input
-                    type="date"
-                    name="birthday"
-                    value={formData.birthday}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 transition-all duration-200"
-                  />
-                </div>
-              </div>
+                        {/* View Action Only */}
+                        <div className="flex justify-center">
+                          {certificate.url && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(certificate.url, '_blank');
+                              }}
+                              className="inline-flex items-center justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Full Image
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
-              <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={updating}
-                  className={`px-8 py-3 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg flex items-center gap-2 ${updating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 hover:shadow-xl"
-                    }`}
-                >
-                  {updating ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      Save Changes
-                    </>
+                  {/* Selected Certificate Detail */}
+                  {selectedCertificate && (
+                    <div className="border-t-2 border-blue-200 pt-6">
+                      <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                        <Award className="w-6 h-6" />
+                        <span className="truncate">Certificate Details - {selectedCertificate.certificate_name}</span>
+                      </h3>
+
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        {/* Certificate Info */}
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                          <h4 className="text-lg font-bold text-blue-800 mb-4 flex items-center gap-2">
+                            <Award className="w-5 h-5" />
+                            Certificate Information
+                          </h4>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="text-sm font-semibold text-gray-600 block mb-1">Certificate Name</label>
+                              <p className="text-lg font-semibold text-gray-900 break-words">{selectedCertificate.certificate_name || 'Not specified'}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-600 block mb-1">Consultant Name</label>
+                              <p className="text-lg font-semibold text-gray-900 break-words">{selectedCertificate.fullname || username || 'Not specified'}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-600 block mb-1">Submit Date</label>
+                              <p className="text-gray-900">{selectedCertificate.date_submit ? new Date(selectedCertificate.date_submit).toLocaleDateString() : 'Not specified'}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-600 block mb-1">Expiry Date</label>
+                              <p className="text-gray-900">{selectedCertificate.expired ? new Date(selectedCertificate.expired).toLocaleDateString() : 'Not specified'}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-gray-600 block mb-1">Status</label>
+                              <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-semibold ${selectedCertificate.status === 'approved' ? 'bg-green-100 text-green-800 border border-green-200' :
+                                selectedCertificate.status === 'pending' || selectedCertificate.status === 'waiting' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                                  selectedCertificate.status === 'rejected' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                    'bg-gray-100 text-gray-800 border border-gray-200'
+                                }`}>
+                                <div className={`w-2 h-2 rounded-full mr-2 ${selectedCertificate.status === 'approved' ? 'bg-green-500' :
+                                  selectedCertificate.status === 'pending' || selectedCertificate.status === 'waiting' ? 'bg-yellow-500' :
+                                    selectedCertificate.status === 'rejected' ? 'bg-red-500' :
+                                      'bg-gray-500'
+                                  }`}></div>
+                                {selectedCertificate.status ? selectedCertificate.status.charAt(0).toUpperCase() + selectedCertificate.status.slice(1) : 'Unknown'}
+                              </span>
+                            </div>
+
+                            {/* Full Reject Reason Display */}
+                            {/* Full Reject Reason Display */}
+                            {selectedCertificate.reject_reason && (
+                              <div>
+                                <label className="text-sm font-semibold text-gray-600 block mb-2">Reject Reason</label>
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                  <div className="flex items-start gap-3">
+                                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-red-700 leading-relaxed break-words whitespace-pre-wrap">
+                                        {selectedCertificate.reject_reason}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+
+                          </div>
+                        </div>
+
+                        {/* Certificate Image */}
+                        {selectedCertificate.url && (
+                          <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                            <label className="text-sm font-semibold text-gray-600 block mb-3">Certificate Image</label>
+                            <div className="border border-gray-300 rounded-xl p-4 bg-gray-50">
+                              <img
+                                src={selectedCertificate.url}
+                                alt="Certificate"
+                                className="w-full h-auto max-h-[50vh] object-contain mx-auto rounded-lg shadow-lg"
+                              />
+                            </div>
+                            <div className="mt-4 text-center">
+                              <button
+                                onClick={() => window.open(selectedCertificate.url, '_blank')}
+                                className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors shadow-md hover:shadow-lg"
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                View Full Size
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No Certificates Found</h3>
+                  <p className="text-gray-500 mb-6">You haven't uploaded any certificates yet.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Certificate Modal */}
+      {editCertificateMode && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-40 p-4 pt-20 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[95vw] lg:max-w-3xl my-4 max-h-[85vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6 rounded-t-3xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <Award className="w-7 h-7" />
+                  Add Certificate
+                </h2>
+                <button
+                  onClick={handleCancelCertificateEdit}
+                  className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-6 h-6" />
                 </button>
               </div>
-            </form>
+            </div>
+
+            {certificateLoading ? (
+              <div className="p-8 text-center">
+                <RefreshCw className="w-12 h-12 text-green-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Loading certificate data...</p>
+              </div>
+            ) : (
+              <form onSubmit={handleUpdateCertificate} className="p-4 sm:p-6 lg:p-8 space-y-6">
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Certificate Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="certificate_name"
+                      onChange={handleCertificateInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-all duration-200"
+                      placeholder="Enter certificate name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Expiry Date *
+                    </label>
+                    <input
+                      type="date"
+                      name="expired"
+                      onChange={handleCertificateInputChange}
+                      required
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-all duration-200"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Certificate must be valid in the future</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Certificate Image *
+                    </label>
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                          <p className="mb-2 text-sm text-gray-500">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG, JPEG (MAX. 5MB)</p>
+                        </div>
+                        <input
+                          type="file"
+                          name="certificate_img"
+                          onChange={handleCertificateInputChange}
+                          accept="image/*"
+                          className="hidden"
+                          required
+                        />
+                      </label>
+                    </div>
+                    {certificateFormData.certificate_img && (
+                      <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <p className="text-sm text-green-700 font-medium">
+                            Selected: {certificateFormData.certificate_img.name}
+                          </p>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">
+                          Size: {(certificateFormData.certificate_img.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Important Notice */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-semibold text-yellow-800 mb-1">Important Notice</h4>
+                      <ul className="text-xs text-yellow-700 space-y-1">
+                        <li>• Your certificate will be reviewed by administrators</li>
+                        <li>• Approval may take 1-3 business days</li>
+                        <li>• Ensure all information is accurate before submitting</li>
+                        <li>• Only valid, authentic certificates will be approved</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={handleCancelCertificateEdit}
+                    className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updating}
+                    className={`px-8 py-3 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg flex items-center gap-2 ${updating
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 hover:shadow-xl"
+                      }`}
+                  >
+                    {updating ? (
+                      <>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        Adding Certificate...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Add Certificate
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
@@ -854,7 +1157,7 @@ const ConsultantAppointmentsDashboard = () => {
         </div>
       )}
 
-      {/* History Modal */}
+      {/* History Modal - Same as before */}
       {showHistoryModal && selectedPatientHistory && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">

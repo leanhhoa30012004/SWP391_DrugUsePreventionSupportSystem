@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/footer';
 
 function Programs() {
@@ -120,7 +119,7 @@ function Programs() {
             // Initial check
             checkProgramStatusChanges();
             checkForCheckInReminders();
-            
+
             // Set up interval for checking every 30 seconds
             intervalRef.current = setInterval(() => {
                 checkProgramStatusChanges();
@@ -170,10 +169,10 @@ function Programs() {
     // NEW: Show popup when program starts
     const showStartPopup = (program) => {
         const programKey = `${program.program_id}-in_progress`;
-        
+
         let timerInterval;
         const timeLeft = 10;
-        
+
         Swal.fire({
             icon: 'info',
             title: '🎉 Program Started!',
@@ -199,13 +198,13 @@ function Programs() {
                 const timerBar = document.getElementById('timer-bar');
                 const timerText = document.getElementById('timer-text');
                 let currentTime = timeLeft;
-                
+
                 timerInterval = setInterval(() => {
                     currentTime--;
                     const percentage = (currentTime / timeLeft) * 100;
                     if (timerBar) timerBar.style.width = percentage + '%';
                     if (timerText) timerText.textContent = currentTime;
-                    
+
                     if (currentTime <= 0) {
                         clearInterval(timerInterval);
                     }
@@ -227,10 +226,10 @@ function Programs() {
     // NEW: Show popup when program ends
     const showEndPopup = (program) => {
         const programKey = `${program.program_id}-ended`;
-        
+
         let timerInterval;
         const timeLeft = 15;
-        
+
         Swal.fire({
             icon: 'success',
             title: '🏁 Program Completed!',
@@ -256,13 +255,13 @@ function Programs() {
                 const timerBar = document.getElementById('timer-bar-end');
                 const timerText = document.getElementById('timer-text-end');
                 let currentTime = timeLeft;
-                
+
                 timerInterval = setInterval(() => {
                     currentTime--;
                     const percentage = (currentTime / timeLeft) * 100;
                     if (timerBar) timerBar.style.width = percentage + '%';
                     if (timerText) timerText.textContent = currentTime;
-                    
+
                     if (currentTime <= 0) {
                         clearInterval(timerInterval);
                     }
@@ -302,9 +301,9 @@ function Programs() {
             });
 
             // Update the program status in local state to "presented"
-            setProgramsData(prevPrograms => 
-                prevPrograms.map(p => 
-                    p.program_id === program.program_id 
+            setProgramsData(prevPrograms =>
+                prevPrograms.map(p =>
+                    p.program_id === program.program_id
                         ? { ...p, status: 'presented' }
                         : p
                 )
@@ -313,13 +312,13 @@ function Programs() {
             // Navigate to camera page or open camera modal
             // You can implement camera functionality here
             openCameraForCheckIn(program);
-            
+
         } catch (error) {
             console.error('Check-in error:', error);
-            
+
             // Check if it's a specific error (e.g., already checked in)
             let errorMessage = 'An error occurred during check-in. Please try again.';
-            
+
             if (error.response?.status === 409) {
                 errorMessage = 'You have already checked in for this program.';
             } else if (error.response?.status === 404) {
@@ -372,18 +371,18 @@ function Programs() {
     // NEW: Check for check-in reminders
     const checkForCheckInReminders = () => {
         const now = new Date();
-        
+
         programsData.forEach(program => {
             const startDate = new Date(program.start_date);
             const endDate = new Date(program.end_date);
             const programKey = `checkin-${program.program_id}`;
-            
+
             // Check if program is currently in progress and we haven't shown reminder yet
             if (now >= startDate && now <= endDate && !checkInReminders.has(programKey)) {
                 // Check if it's within the first 30 minutes of the program start
                 const timeSinceStart = now - startDate;
                 const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
-                
+
                 if (timeSinceStart <= thirtyMinutes) {
                     showCheckInReminder(program);
                     setCheckInReminders(prev => new Set(prev.add(programKey)));
@@ -412,7 +411,7 @@ function Programs() {
         // Show popup reminder
         let timerInterval;
         const timeLeft = 30;
-        
+
         Swal.fire({
             icon: 'info',
             title: '⏰ Check-in Time!',
@@ -438,13 +437,13 @@ function Programs() {
                 const timerBar = document.getElementById('checkin-timer-bar');
                 const timerText = document.getElementById('checkin-timer-text');
                 let currentTime = timeLeft;
-                
+
                 timerInterval = setInterval(() => {
                     currentTime--;
                     const percentage = (currentTime / timeLeft) * 100;
                     if (timerBar) timerBar.style.width = percentage + '%';
                     if (timerText) timerText.textContent = currentTime;
-                    
+
                     if (currentTime <= 0) {
                         clearInterval(timerInterval);
                     }
@@ -477,7 +476,7 @@ function Programs() {
         }
 
         try {
-            const filtered = programsData.filter(program => 
+            const filtered = programsData.filter(program =>
                 program.title.toLowerCase().includes(programName.toLowerCase()) ||
                 program.description.toLowerCase().includes(programName.toLowerCase())
             );
@@ -542,7 +541,7 @@ function Programs() {
         const now = new Date();
         const start = new Date(startDate);
         const end = new Date(endDate);
-        
+
         if (now < start) {
             return 'not started';
         } else if (now >= start && now <= end) {
@@ -652,22 +651,22 @@ function Programs() {
     function formatDateTime(isoString) {
         const date = new Date(isoString);
         date.setHours(date.getHours());
-        
+
         const hh = String(date.getHours()).padStart(2, '0');
         const mm = String(date.getMinutes()).padStart(2, '0');
         const ss = String(date.getSeconds()).padStart(2, '0');
-        
+
         const dd = String(date.getDate()).padStart(2, '0');
         const MM = String(date.getMonth() + 1).padStart(2, '0');
         const yyyy = date.getFullYear();
-        
+
         return `${hh}:${mm}:${ss} ${dd}/${MM}/${yyyy}`;
     }
 
     if (loading) {
         return (
             <>
-                <Navbar />
+
                 <div className="bg-white min-h-screen py-12">
                     <div className="container mx-auto px-4">
                         <div className="flex justify-center items-center h-64">
@@ -682,7 +681,7 @@ function Programs() {
 
     return (
         <>
-            <Navbar />
+
             <div className="bg-white min-h-screen py-12">
                 <div className="container mx-auto px-4">
                     {/* Header */}
@@ -778,7 +777,7 @@ function Programs() {
                                             <div key={program.program_id} className="bg-white border border-red-100 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                                                 <div className="relative">
                                                     <img
-                                                        src={program.program_img || `https://source.unsplash.com/400x300/?community,program`}
+                                                        src={program.program_img || `https://tse4.mm.bing.net/th/id/OIP.D-45kvpMODaav4dvuYF25QHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3`}
                                                         alt={program.title}
                                                         className="h-48 w-full object-cover"
                                                         onError={(e) => {
@@ -805,7 +804,7 @@ function Programs() {
                                                         </div>
                                                         <div className="flex items-center">
                                                             <span>📍</span>
-                                                            <a href={program.location} style={{color: "blue"}}>{program.location}</a>
+                                                            <a href={program.location} style={{ color: "blue" }}>{program.location}</a>
                                                         </div>
                                                         <div className="flex items-center">
                                                             <span>👥</span>

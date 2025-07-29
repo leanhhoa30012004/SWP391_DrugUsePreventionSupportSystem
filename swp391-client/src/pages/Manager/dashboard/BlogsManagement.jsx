@@ -67,9 +67,11 @@ const BlogsManagement = () => {
     }
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`/api/blog/reject-blog/${manager_id}/${blog_id}`, { reason }, {
+      await axios.post(`/api/blog/reject-blog/${manager_id}/${blog_id}`, { reject_reason: reason }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('Reject reason:', reason);
+      alert('Blog rejected successfully!');
       setRejectingBlogId(null);
       fetchBlogs();
     } catch (err) {
@@ -79,14 +81,14 @@ const BlogsManagement = () => {
 
   // Filter blogs based on search and filters
   const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = search === '' || 
+    const matchesSearch = search === '' ||
       blog.title?.toLowerCase().includes(search.toLowerCase()) ||
       blog.content?.toLowerCase().includes(search.toLowerCase()) ||
       blog.fullname?.toLowerCase().includes(search.toLowerCase()) ||
       blog.tags?.toLowerCase().includes(search.toLowerCase()); // Thêm search theo tags
-    
+
     const matchesStatus = statusFilter === 'All' || blog.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -182,6 +184,20 @@ const BlogsManagement = () => {
                               #{tag.trim()}
                             </span>
                           ))}
+
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {blog.tags.split(',').map((tag, index) => (
+                              <span
+                                key={index}
+                                className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium"
+                                title={tag.trim()}
+                              >
+                                #{tag.trim()}
+                              </span>
+                            ))}
+                          </div>
+
                         </div>
                       ) : (
                         <span className="text-xs text-gray-400 italic">No tags</span>

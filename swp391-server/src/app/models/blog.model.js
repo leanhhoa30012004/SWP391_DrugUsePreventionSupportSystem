@@ -27,6 +27,7 @@ WHERE is_active = 1 AND blog_id = ?`, [manager_id, blog_id])
 }
 
 const rejectBlog = async (manager_id, blog_id, reject_reason) => {
+    console.log("rejectBlog>>>>", reject_reason + " " + manager_id + " " + blog_id)
     const [isReject] = await db.execute(`UPDATE Blog
 SET status = 'Rejected', approval_date = NOW(), manager_id = ?, reject_reason = ?
 WHERE is_active = 1 AND blog_id = ?`, [manager_id, reject_reason, blog_id])
