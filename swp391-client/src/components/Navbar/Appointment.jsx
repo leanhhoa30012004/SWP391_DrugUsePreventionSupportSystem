@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Calendar, Clock, User, MessageCircle, AlertCircle, CheckCircle, Info, XCircle, Home, Settings, LogOut, Menu, X } from 'lucide-react';
 import Navbar from './Navbar';
+import Swal from 'sweetalert2';
 
 const AppointmentPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -24,12 +25,12 @@ const AppointmentPage = () => {
       console.error("Error parsing user from localStorage:", e);
     }
   }
-  
+
   // Format date time function
   const formatDateTime = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -40,13 +41,54 @@ const AppointmentPage = () => {
   const formatNotificationDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleString('vi-VN', {
+    return date.toLocaleString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Get appointment status styling
+  const getStatusStyle = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return {
+          bg: 'bg-green-100',
+          text: 'text-green-800',
+          border: 'border-green-200',
+          label: 'Completed'
+        };
+      case 'pending':
+        return {
+          bg: 'bg-yellow-100',
+          text: 'text-yellow-800',
+          border: 'border-yellow-200',
+          label: 'Pending'
+        };
+      case 'not completed':
+        return {
+          bg: 'bg-orange-100',
+          text: 'text-orange-800',
+          border: 'border-orange-200',
+          label: 'Not Completed'
+        };
+      case 'rejected':
+        return {
+          bg: 'bg-red-100',
+          text: 'text-red-800',
+          border: 'border-red-200',
+          label: 'Rejected'
+        };
+      default:
+        return {
+          bg: 'bg-gray-100',
+          text: 'text-gray-800',
+          border: 'border-gray-200',
+          label: status || 'Unknown'
+        };
+    }
   };
 
   // Get notification type icon and color
@@ -69,28 +111,28 @@ const AppointmentPage = () => {
     try {
       const VITE_API_URL = 'http://localhost:3000/api'; // Replace with your actual API URL
       const response = await fetch(`${VITE_API_URL}/notice/${user_id}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
       }
-      
+
       const data = await response.json();
       console.log("Notification API response:", data);
-      
+
       if (data.error) {
         setNotifications([]);
         setError(data.error);
         return;
       }
 
-      // Đảm bảo data là array
+      // Ensure data is array
       const notificationArray = Array.isArray(data) ? data : [];
       setNotifications(notificationArray);
       console.log("array", notificationArray)
-     
+
     } catch (err) {
       console.error('Error fetching notifications:', err);
-      setError('Không thể tải thông báo');
+      setError('Unable to load notifications');
     }
   };
 
@@ -98,43 +140,82 @@ const AppointmentPage = () => {
   const fetchAppointments = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/consultation/get-all-appointment-by-id/${member_id}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch appointments');
       }
-      
+
       const data = await response.json();
       setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching appointments:', err);
-      setError('Không thể tải lịch hẹn');
+      setError('Unable to load appointments');
     }
   };
 
   // Handle cancel booking
+  // Handle cancel booking
+  // Handle cancel booking
   const handleCancelBooking = async (appointmentId) => {
-    if (!window.confirm('Bạn có chắc chắn muốn hủy cuộc hẹn này?')) {
-      return;
-    }
-
     try {
-      const response = await fetch(`http://localhost:3000/api/consultation/reject-appointment/${appointmentId}/0`,{
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const result = await Swal.fire({
+        title: 'Cancel Appointment?',
+        text: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, cancel it',
+        cancelButtonText: 'Keep appointment',
+        reverseButtons: true
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to cancel appointment');
-      }
+      if (result.isConfirmed) {
+        // Show loading
+        Swal.fire({
+          title: 'Cancelling...',
+          text: 'Please wait while we cancel your appointment',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
 
-      // Remove cancelled appointment from state
-      setAppointments(prev => prev.filter(apt => apt.appointment_id !== appointmentId));
-      alert('Cuộc hẹn đã được hủy thành công');
+        // Sử dụng API change-appointment-status với status "not completed"
+        const response = await fetch(`http://localhost:3000/api/consultation/change-appointment-status/${appointmentId}/not completed`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to cancel appointment');
+        }
+
+        // Refresh appointments list
+        await fetchAppointments();
+
+        // Success notification
+        Swal.fire({
+          icon: 'success',
+          title: 'Cancelled Successfully',
+          text: 'Your appointment has been cancelled successfully.',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true
+        });
+      }
     } catch (err) {
       console.error('Error cancelling appointment:', err);
-      alert('Không thể hủy cuộc hẹn. Vui lòng thử lại.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Cancellation Failed',
+        text: err.message || 'Unable to cancel appointment. Please try again.',
+        confirmButtonColor: '#dc2626'
+      });
     }
   };
 
@@ -159,7 +240,7 @@ const AppointmentPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center">
         <div className="flex flex-col items-center bg-white p-8 rounded-2xl shadow-lg">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-200 border-t-red-600"></div>
-          <p className="mt-6 text-gray-700 font-medium">Đang tải dữ liệu...</p>
+          <p className="mt-6 text-gray-700 font-medium">Loading data...</p>
         </div>
       </div>
     );
@@ -167,7 +248,7 @@ const AppointmentPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
-      <Navbar/>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -196,22 +277,20 @@ const AppointmentPage = () => {
             <nav className="flex space-x-0">
               <button
                 onClick={() => setActiveTab('appointments')}
-                className={`flex-1 py-4 px-6 font-medium text-sm transition-all duration-200 ${
-                  activeTab === 'appointments'
-                    ? 'bg-red-600 text-white shadow-md'
-                    : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
-                }`}
+                className={`flex-1 py-4 px-6 font-medium text-sm transition-all duration-200 ${activeTab === 'appointments'
+                  ? 'bg-red-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                  }`}
               >
                 <Calendar className="inline h-5 w-5 mr-2" />
                 Consultation Appointments ({appointments.length})
               </button>
               <button
                 onClick={() => setActiveTab('notifications')}
-                className={`flex-1 py-4 px-6 font-medium text-sm transition-all duration-200 ${
-                  activeTab === 'notifications'
-                    ? 'bg-red-600 text-white shadow-md'
-                    : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
-                }`}
+                className={`flex-1 py-4 px-6 font-medium text-sm transition-all duration-200 ${activeTab === 'notifications'
+                  ? 'bg-red-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                  }`}
               >
                 <Bell className="inline h-5 w-5 mr-2" />
                 System Notifications ({notifications.length})
@@ -226,13 +305,13 @@ const AppointmentPage = () => {
             <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white">
               <h2 className="text-xl font-bold text-gray-900">Consultation Appointments</h2>
             </div>
-            
+
             {appointments.length === 0 ? (
               <div className="text-center py-16">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Calendar className="h-8 w-8 text-red-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Appointments</h3>
                 <p className="text-gray-600">You have no consultation appointments scheduled.</p>
               </div>
             ) : (
@@ -250,6 +329,9 @@ const AppointmentPage = () => {
                         Time
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Meeting Link
                       </th>
                       <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -258,57 +340,75 @@ const AppointmentPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {appointments.map((appointment) => (
-                      <tr key={appointment.appointment_id} className="hover:bg-red-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                              <User className="h-5 w-5 text-red-600" />
+                    {appointments.map((appointment) => {
+                      const statusStyle = getStatusStyle(appointment.status);
+
+                      return (
+                        <tr key={appointment.appointment_id} className="hover:bg-red-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                <User className="h-5 w-5 text-red-600" />
+                              </div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {appointment.fullname || 'Not Assigned'}
+                              </div>
                             </div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {appointment.fullname || 'Not updated'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900 font-medium">
+                              {formatDateTime(appointment.appointment_date)}
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 font-medium">
-                            {formatDateTime(appointment.appointment_date)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 text-gray-500 mr-2" />
-                            <span className="text-sm text-gray-900 font-medium">
-                              {appointment.appointment_time}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 text-gray-500 mr-2" />
+                              <span className="text-sm text-gray-900 font-medium">
+                                {appointment.appointment_time}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                              {statusStyle.label}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {appointment.meeting_link ? (
-                            <a
-                              href={appointment.meeting_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full hover:bg-green-200 transition-colors"
-                            >
-                              Join Meeting
-                            </a>
-                          ) : (
-                            <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
-                              No link yet
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <button
-                            onClick={() => handleCancelBooking(appointment.appointment_id)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow-md"
-                          >
-                            Cancel
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {appointment.meeting_link ? (
+                              <a
+                                href={appointment.meeting_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full hover:bg-green-200 transition-colors"
+                              >
+                                Join Meeting
+                              </a>
+                            ) : (
+                              <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
+                                No Link Yet
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            {appointment.status?.toLowerCase() === 'pending' && (
+                              <button
+                                onClick={() => handleCancelBooking(appointment.appointment_id)}
+                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow-md"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {appointment.status?.toLowerCase() !== 'pending' && (
+                              <span className="text-gray-400 text-sm font-medium">
+                                {appointment.status?.toLowerCase() === 'completed' ? 'Completed' :
+                                  appointment.status?.toLowerCase() === 'rejected' ? 'Cancelled' :
+                                    'Unavailable'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -322,13 +422,13 @@ const AppointmentPage = () => {
             <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white">
               <h2 className="text-xl font-bold text-gray-900">System Notifications</h2>
             </div>
-            
+
             {notifications.length === 0 ? (
               <div className="text-center py-16">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Bell className="h-8 w-8 text-red-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Notifications</h3>
                 <p className="text-gray-600">You have no notifications from the system.</p>
               </div>
             ) : (
@@ -336,7 +436,7 @@ const AppointmentPage = () => {
                 {notifications.map((notification, index) => {
                   const typeStyle = getNotificationTypeStyle(notification.type);
                   const IconComponent = typeStyle.icon;
-                  
+
                   return (
                     <div key={index} className="p-6 hover:bg-gray-50 transition-colors">
                       <div className="flex items-start">
@@ -359,7 +459,7 @@ const AppointmentPage = () => {
                           </div>
                           <div className="mt-4 flex items-center justify-between">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${typeStyle.color} ${typeStyle.bg} ${typeStyle.border} border`}>
-                              {notification.type || 'info'}
+                              {(notification.type || 'info').toUpperCase()}
                             </span>
                             <span className="text-xs text-gray-400 font-medium">
                               User ID: {notification.user_id}
