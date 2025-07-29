@@ -73,7 +73,11 @@ import { NotificationProvider } from "./context/NotificationContext";
 import AppointmentPage from './components/Navbar/Appointment.jsx'
 import ResultSurvey from './pages/Survey/ResultSurvey.jsx'
 import CourseHistory from './pages/Courses/CourseHistory.jsx'
+
+import CertificateManagement from './pages/Manager/dashboard/CertificateManagement.jsx'
+
 import Navbar from './components/Navbar/Navbar.jsx'
+
 
 function App() {
   const location = useLocation();
@@ -159,6 +163,8 @@ function App() {
           <Route path="consultant" element={<ConsultantManagement />} />
           <Route path="community-program" element={<CommunityProgramManagement />} />
           <Route path="blogs" element={<BlogsManagement />} />
+          <Route path="certificate" element={<CertificateManagement/>} />
+
         </Route>
       </Routes>
 
