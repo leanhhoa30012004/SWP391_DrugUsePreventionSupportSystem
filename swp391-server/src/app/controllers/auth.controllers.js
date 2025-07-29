@@ -103,9 +103,9 @@ exports.loginManager = async (req, res) => {
 
     // Check if password is hashed (bcrypt hashes start with $2b$, $2a$, or $2y$)
     const isPasswordHashed = user.password.startsWith('$2b$') || user.password.startsWith('$2a$') || user.password.startsWith('$2y$');
-    
+
     let isMatch = false;
-    
+
     if (isPasswordHashed) {
       // Password is hashed, use bcrypt compare
       isMatch = await bcrypt.compare(password, user.password);
@@ -114,7 +114,7 @@ exports.loginManager = async (req, res) => {
       // Password is plain text, do direct comparison (temporary fix)
       isMatch = password === user.password;
       console.log("Using plain text comparison - Match:", isMatch);
-      
+
       // Hash the password for future use
       if (isMatch) {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -122,7 +122,7 @@ exports.loginManager = async (req, res) => {
         console.log("Password has been hashed and updated in database");
       }
     }
-    
+
     if (!isMatch) {
       console.log("Password mismatch");
       return res.status(401).json({ message: "Invalid username or password" });

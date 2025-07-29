@@ -6,7 +6,7 @@ const passport = require('passport');
 
 // Debug route
 router.get("/debug", (req, res) => {
-  res.json({ 
+  res.json({
     message: "Auth routes are working!",
     availableFunctions: Object.keys(auth)
   });
